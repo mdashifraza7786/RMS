@@ -1,9 +1,7 @@
 "use client";
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FaEye } from "react-icons/fa";
 import { FaPenToSquare } from "react-icons/fa6";
-
-
 
 const sampleData = [
     { id: '#CHEF119', name: 'John Doe', role: 'Chef', phone: '+917643088251' },
@@ -16,9 +14,12 @@ const sampleData = [
 ];
 
 const Page: React.FC = () => {
-    document.title = "Members";
     const [selectedDate, setSelectedDate] = useState('12/07/2024');
     const [attendance, setAttendance] = useState<{ [key: string]: string }>({});
+
+    useEffect(() => {
+        document.title = "Members";
+    }, []);
 
     const dates = Array.from({ length: 31 }, (_, i) => {
         const day = (i + 1).toString().padStart(2, '0');

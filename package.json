@@ -14,7 +14,7 @@
     "@mui/material": "^5.15.18",
     "@mui/styled-engine-sc": "^6.0.0-alpha.18",
     "@mui/x-charts": "^7.5.0",
-    "@next/font": "^14.2.3",
+    "next/font": "^14.2.3",
     "next": "14.2.3",
     "nextjs-toploader": "^1.6.12",
     "react": "^18",

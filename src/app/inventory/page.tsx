@@ -51,7 +51,7 @@ const Page: React.FC = () => {
             </div>
 
 
-            <div className='bg-white rounded-[10px] p-[4vh] font-semibold flex flex-col gap-3'>
+            <div className='bg-white rounded-[10px] p-[4vh] font-semibold flex flex-col gap-6'>
                 {/* Display current inventory levels ,List of all inventory items with details like quantity, last ordered date, and supplier.
 Filters and search functionality. */}
                 {/* navigate buttons */}
@@ -61,12 +61,6 @@ Filters and search functionality. */}
                         onClick={() => setSelectedFilter('inventory')}
                     >
                         Inventory
-                    </div>
-                    <div
-                        className={`px-[10px] py-2 rounded-xl cursor-pointer ${selectedFilter === 'recent' ? 'font-bold bg-[#FA9F1B70]  transition-colors duration-300 text-[#fc9802e3]' : ''}`}
-                        onClick={() => setSelectedFilter('recent')}
-                    >
-                        Recent
                     </div>
                     <div
                         className={`px-[10px] py-2 rounded-xl cursor-pointer ${selectedFilter === 'order' ? 'font-bold bg-[#FA9F1B70]  transition-colors duration-300 text-[#fc9802e3]' : ''}`}
@@ -79,6 +73,12 @@ Filters and search functionality. */}
                         onClick={() => setSelectedFilter('kitchenOrders')}
                     >
                         Kitchen Orders
+                    </div>
+                    <div
+                        className={`px-[10px] py-2 rounded-xl cursor-pointer ${selectedFilter === 'recent' ? 'font-bold bg-[#FA9F1B70]  transition-colors duration-300 text-[#fc9802e3]' : ''}`}
+                        onClick={() => setSelectedFilter('recent')}
+                    >
+                        Recent Orders
                     </div>
                 </div>
 

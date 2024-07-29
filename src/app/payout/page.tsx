@@ -14,7 +14,7 @@ const sampleData = [
 
 const Page = () => {
     const [searchQuery, setSearchQuery] = useState('');
-    const [currentPage, setCurrentPage] = useState(1);
+    const [currentPage, setCurrentPage] = useState(1); 
     const [itemsPerPage] = useState(5);
     const [selectedFilter, setSelectedFilter] = useState('All');
     const [editPopupVisible, setEditPopupVisible] = useState(false);
@@ -126,8 +126,10 @@ const Page = () => {
                                 <td className="border px-4 py-2 transition-colors duration-300">{item.role}</td>
                                 <td className={`${item.status === 'paid' ? 'text-green-600' : 'text-red-600'} font-bold border px-4 py-2 transition-colors duration-300`}>{item.amount}</td>
                                 <td className="border px-4 py-2 flex gap-[10px] text-[20px]">
-                                    <HiEye className="text-black cursor-pointer" onClick={() => handleEyeClick(item)} />
-                                    <HiPencilAlt className="text-black cursor-pointer" onClick={() => handleEditClick(item)} />
+                                    <div className='flex gap-4 justify-center'>
+                                        <button  className="bg-primary text-white px-4 py-2 rounded text-[12px] flex items-center gap-10" onClick={() => handleEyeClick(item)}><div>View</div> <HiEye /></button>
+                                        <button  className="bg-primary text-white px-4 py-2 rounded text-[12px] flex items-center gap-10" onClick={() => handleEditClick(item)}><div>Edit</div> <HiPencilAlt /></button>
+                                    </div>
                                 </td>
                             </tr>
                         ))}
@@ -197,7 +199,7 @@ const Page = () => {
             {/* Details Popup */}
             {detailsPopupVisible && selectedItem && (
                 <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50">
-                    <div className="bg-white p-8 rounded-lg">
+                    <div className="bg-white p-8 rounded-lg w-96">
                         <h2 className="text-xl font-semibold mb-4">Details</h2>
                         <div className="mb-4">
                             <p><strong>ID:</strong> {selectedItem.id}</p>

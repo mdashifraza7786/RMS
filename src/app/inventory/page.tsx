@@ -1,7 +1,7 @@
 "use client";
 import { Quando, Quantico } from 'next/font/google';
 import React, { useState, useEffect } from 'react';
-import LowStock from '@/components/LowStock';
+import LowStock from '@/app/inventory/components/LowStock';
 import InventoryCard from '@/app/inventory/components/InventoryCard';
 import KitchenOrdersCard from '@/app/inventory/components/KitchenOrdersCard';
 import OrderCard from '@/app/inventory/components/OrderCard';
@@ -19,12 +19,13 @@ const sampleData = [
     { name: 'Jeera powder', lowlimit: 100, quantity: 120, unit: 'g' },
     { name: 'Dahi', lowlimit: 2, quantity: 1.5, unit: 'kg' },
     { name: 'Mutton', lowlimit: 5, quantity: 15, unit: 'kg' },
+    { name: 'Lehsun', lowlimit: 15, quantity: 5, unit: 'kg' }
 ]
 
 const Page: React.FC = () => {
     const [inventory, setInventory] = useState(sampleData);
     const [lowStock, setLowStock] = useState([{ name: '', lowlimit: 0, quantity: 0, unit: '' }]);
-    const [selectedFilter,setSelectedFilter] = useState('inventory');
+    const [selectedFilter, setSelectedFilter] = useState('inventory');
 
     useEffect(() => {
         const checkLowStock = () => {

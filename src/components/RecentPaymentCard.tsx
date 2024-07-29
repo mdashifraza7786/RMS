@@ -25,20 +25,24 @@ const RecentPaymentCard: React.FC<RecentPaymentCardProps> = ({
     return (
 
 
-        <div className='rounded-[10px] border border-primary min-w-full h-[7rem] grid grid-cols-3 gap-[10px] px-4 py-2'>
-            <div className=' flex flex-col gap-[3px] col-span-2'>
-                <h2 className='text-[17px] font-extrabold'>{customername}</h2>
-                <p className='text-[13px] font-light'>{customermobile}</p>
-                <p className='text-[13px]'>Table: #{tablenumber}</p>
-                <p className='text-[13px]'>Waiter: {waiter}</p>
-            </div>
-            <div className='flex flex-col gap-[3px]'>
-                <h2 className='text-[17px] font-extrabold'>₹{amount}</h2>
-                <p className='text-[13px] font-light'>{date}</p>
-                <p className='text-[13px] font-light'>{time}</p>
-                <button className='bg-supporting2 rounded-[10px] py-[1px] px-[7px] min-w-full text-white text-[15px]'>Details</button>
-            </div>
-        </div>
+        <div className='rounded-md min-w-full border border-primary grid grid-cols-3 gap-2 px-3 py-2 font-semibold font-raleway text-[#3a3636]'>
+    <div className='flex flex-col gap-1 col-span-2'>
+        <h2 className='text-sm font-extrabold text-[#131212]'>{customername}</h2>
+        <p className='text-xs '>{customermobile}</p>
+        <p className='text-xs'>Table: #{tablenumber}</p>
+        <p className='text-xs'>Waiter: {waiter}</p>
+    </div>
+    <div className='flex flex-col gap-1'>
+        <h2 className='text-sm font-extrabold text-primary'>₹{amount}</h2>
+        <p className='text-xs '>{date}</p>
+        <p className='text-xs '>{time}</p>
+        <button className='bg-supporting2 rounded-md py-1 px-2 text-white text-xs font-semibold hover:bg-supporting1 transition-colors'>
+            Details
+        </button>
+    </div>
+</div>
+
+    
     );
 };
 

@@ -21,7 +21,7 @@ const KitchenOrdersCard: React.FC = () => {
                         <th className="px-4 py-2 text-left w-[200px]">ID</th>
                         <th className="px-4 py-2 text-left">Item</th>
                         <th className="px-4 py-2 text-left">Price</th>
-                        <th className="px-4 py-2 text-left">Current Quantity</th>
+                        {/* <th className="px-4 py-2 text-left">Current Quantity</th> */}
                         <th className="px-4 py-2 text-left">Order Quantity</th>
                         <th className="px-4 py-2 text-left w-[100px]">Action</th>
                     </tr>
@@ -32,7 +32,7 @@ const KitchenOrdersCard: React.FC = () => {
                             <td className="border px-4 py-2 transition-colors duration-300">{item.id}</td>
                             <td className="border px-4 py-2 transition-colors duration-300">{item.name}</td>
                             <td className="border px-4 py-2 transition-colors duration-300">{item.price}</td>
-                            <td className="border px-4 py-2 transition-colors duration-300">{item.quantity} {item.unit}</td>
+                            {/* <td className="border px-4 py-2 transition-colors duration-300">{item.quantity} {item.unit}</td> */}
                             <td className="border px-4 py-2 transition-colors duration-300">{item.amount} {item.unit}</td>
                             <td className="border px-4 py-4 transition-colors duration-300">
                                 <div className='flex gap-4 justify-center'>

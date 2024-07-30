@@ -10,6 +10,7 @@ import { MdOutlineInventory } from 'react-icons/md';
 import { PiChefHatThin } from 'react-icons/pi';
 import { TbReportAnalytics } from 'react-icons/tb';
 import { PiCowboyHatFill } from 'react-icons/pi';
+import { MdOutlineRestaurantMenu } from "react-icons/md";
 import { usePathname } from 'next/navigation';
 const raleway = Raleway({
     weight: ['400', '700'],
@@ -67,6 +68,12 @@ const AdminNavbar: React.FC = () => {
                     <div className={`flex items-center gap-2 cursor-pointer ${pathName?.includes( '/reports') ? 'text-green-500' : ''}`}>
                         <div><TbReportAnalytics /></div>
                         <div>Reports</div>
+                    </div>
+                </Link>
+                <Link href='/menu' passHref>
+                    <div className={`flex items-center gap-2 cursor-pointer ${pathName?.includes( '/menu') ? 'text-green-500' : ''}`}>
+                        <div><MdOutlineRestaurantMenu /></div>
+                        <div>Menu</div>
                     </div>
                 </Link>
             </div>

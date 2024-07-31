@@ -1,40 +1,36 @@
-// components/LoginManager.tsx
 "use client"; // Ensure this component is a client component
 
-import React, { useEffect, useState } from "react";
+import React, { Suspense } from "react";
 import AdminNavbar from "@/components/AdminNavbar";
 import NextTopLoader from "nextjs-toploader";
 import Login from "@/components/Login";
+import { useSession, SessionProvider } from "next-auth/react";
+import Loading from "@/app/loading";
 
 const MiddleWare: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const [loading, setLoading] = useState(true);
-    const [isLogged, setIsLogged] = useState(false);
-    
-    useEffect(() => {
-      // Simulate loading and check localStorage
-      setTimeout(() => {
-        const loggedStatus = localStorage.getItem("islogged") === "true";
-        setIsLogged(loggedStatus);
-        setLoading(false);
-      }, 1000); // simulate loading time
-    }, []);
-    
-    return (
-      <div>
-        {loading ? (
-          <h1 className="text-3xl">Loading...</h1>
-        ) : isLogged ? (
-          <>
-            <NextTopLoader color="#FFFFFF" />
-            <AdminNavbar />
-            {children}
-          </>
-        ) : (
-          <Login />
-        )}
-      </div>
-    );
-    
+  const { data: session, status } = useSession();
+
+  return (
+    <div>
+      {status === "authenticated" ? (
+         <>
+         <NextTopLoader color="#FFFFFF" />
+         <AdminNavbar />
+         {children}
+       </>
+      ) : status === 'loading' ?(
+        <Loading/>
+      ):(
+      <Login />
+      )}
+    </div>
+  );
 };
 
-export default MiddleWare;
+const LoginManager: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+  <SessionProvider>
+    <MiddleWare>{children}</MiddleWare>
+  </SessionProvider>
+);
+
+export default LoginManager;

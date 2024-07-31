@@ -1,13 +1,43 @@
 "use client"
+
+import { useRouter } from "next/navigation";
+import { FormEvent } from "react";
+import { toast, ToastContainer } from "react-toastify";
+import 'react-toastify/dist/ReactToastify.css';
+import axios from "axios";
+
 function Login() {
-  const handleLogin = (event: React.FormEvent) => {
+  const router = useRouter();
+  const handleLogin = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    localStorage.setItem('islogged', 'true');
-    window.location.reload();
+    try {
+      const formData = new FormData(event.currentTarget);
+      const userid = formData.get('userid') as string;
+      const password = formData.get('password') as string;
+      
+      const response = await axios.post('/api/login', {
+        userid,
+        password
+      });
+
+      const data = response.data;
+      if(data.success){
+        localStorage.setItem('user', data.userdata);
+        toast.success(data.message);
+      }else{
+        toast.error(data.message || 'Login Failed');
+      }
+      
+      router.refresh();
+    } catch (error: any) {
+      console.error('Error logging in:', error);
+      toast.error(error.response?.data?.error || error.message || 'Failed to login');
+    }
   };
 
   return (
     <div className="w-screen h-screen flex justify-center items-center">
+      
       <div className="w-[400px] px-5 py-6 bg-white rounded-md flex flex-col gap-7">
         <h1 className="font-medium uppercase text-3xl text-center tracking-widest">Login</h1>
         <div>
@@ -34,6 +64,7 @@ function Login() {
           </form>
         </div>
       </div>
+      <ToastContainer />
     </div>
   );
 }

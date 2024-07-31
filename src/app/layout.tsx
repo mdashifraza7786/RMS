@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import MiddleWare from "@/components/MiddleWare";
+import LoginManager from "@/components/MiddleWare";
 
 export const metadata: Metadata = {
   title: "Dashboard",
@@ -14,7 +14,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <MiddleWare>{children}</MiddleWare>
+        <LoginManager>{children}</LoginManager>
       </body>
     </html>
   );

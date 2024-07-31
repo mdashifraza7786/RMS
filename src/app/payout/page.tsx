@@ -53,20 +53,20 @@ const Page = () => {
         setDetailsPopupVisible(true); // Show details popup
     };
 
-    // Function to handle editing of data
+
     const handleEdit = () => {
-        // Find the index of the item being edited in the sampleData array
+
         const dataIndex = sampleData.findIndex(item => item.id === editData.id);
 
-        // If the item is found, update its properties with the edited values
+
         if (dataIndex !== -1) {
             const updatedData = [...sampleData];
             updatedData[dataIndex] = { ...updatedData[dataIndex], amount: editData.amount, status: editData.status };
-            // Update the sampleData array directly
+  
             sampleData.splice(0, sampleData.length, ...updatedData);
         }
 
-        setEditPopupVisible(false); // Close the edit popup after editing
+        setEditPopupVisible(false); 
     };
 
     return (

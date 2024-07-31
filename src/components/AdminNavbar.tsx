@@ -12,6 +12,7 @@ import { TbReportAnalytics } from 'react-icons/tb';
 import { PiCowboyHatFill } from 'react-icons/pi';
 import { MdOutlineRestaurantMenu } from "react-icons/md";
 import { usePathname } from 'next/navigation';
+import { signOut } from 'next-auth/react';
 const raleway = Raleway({
     weight: ['400', '700'],
     subsets: ['latin'],
@@ -19,6 +20,10 @@ const raleway = Raleway({
 
 const AdminNavbar: React.FC = () => {
     const pathName = usePathname();
+    async function  handleLogout(){
+        await signOut({ callbackUrl: '/' });
+        localStorage.removeItem('user');
+    }
     return (
         <div className='shadow-lg sticky top-0 left-0 z-50'>
             {/* upper nav */}
@@ -26,10 +31,17 @@ const AdminNavbar: React.FC = () => {
                 <div>
                     Restaurant Management System
                 </div>
-                <div className='flex items-center gap-4 cursor-pointer'>
+                <div className='flex gap-4'>
+                <div className='flex items-center gap-2 cursor-pointer'>
                     <div><BsPersonCircle /></div>
                     <div>Admin</div>
                 </div>
+                <div className='flex items-center gap-2 cursor-pointer' onClick={handleLogout}>
+                    <div><BsPersonCircle /></div>
+                    <div>Logout</div>
+                </div>
+                </div>
+                
             </div>
 
             {/* lower nav */}

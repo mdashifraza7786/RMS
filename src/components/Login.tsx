@@ -1,13 +1,11 @@
 "use client"
 
-import { useRouter } from "next/navigation";
 import { FormEvent } from "react";
 import { toast, ToastContainer } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
 import axios from "axios";
 
 function Login() {
-  const router = useRouter();
   const handleLogin = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     try {
@@ -24,11 +22,12 @@ function Login() {
       if(data.success){
         localStorage.setItem('user', data.userdata);
         toast.success(data.message);
+        
       }else{
         toast.error(data.message || 'Login Failed');
       }
       
-      router.refresh();
+      window.location.href = "/";
     } catch (error: any) {
       console.error('Error logging in:', error);
       toast.error(error.response?.data?.error || error.message || 'Failed to login');

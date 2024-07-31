@@ -77,6 +77,7 @@ const Page: React.FC = () => {
                                     <div className='flex gap-4 justify-center'>
                                         {/* <button  className="bg-primary text-white px-4 py-2 rounded text-[12px] flex items-center gap-10"><div>View</div> <FaEye /></button> */}
                                         <button  className="bg-primary text-white px-4 py-2 rounded text-[12px] flex items-center gap-10"><div>Edit</div> <FaPenToSquare /></button>
+                                        
                                     </div>
                                 </td>
                             </tr>

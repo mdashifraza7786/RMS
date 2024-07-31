@@ -1,6 +1,7 @@
 "use client"
 import React, { useState } from 'react';
 import { FaPenToSquare } from "react-icons/fa6";
+import { MdBorderColor } from "react-icons/md";
 
 const sampleData = [
     { name: 'Apples', quantity: 10, unit: 'kg', amount: 5 ,id:'#CFG758',price: '₹10'},
@@ -36,7 +37,7 @@ const KitchenOrdersCard: React.FC = () => {
                             <td className="border px-4 py-2 transition-colors duration-300">{item.amount} {item.unit}</td>
                             <td className="border px-4 py-4 transition-colors duration-300">
                                 <div className='flex gap-4 justify-center'>
-                                    {/* <button  className="bg-primary text-white px-4 py-2 rounded text-[12px] flex items-center gap-10"><div>View</div> <FaEye /></button> */}
+                                <button  className="bg-primary text-white px-4 py-2 rounded text-[12px] flex items-center gap-10"><div>Order</div> <MdBorderColor /></button>
                                     <button className="bg-primary text-white px-4 py-2 rounded text-[12px] flex items-center gap-10"><div>Edit</div> <FaPenToSquare /></button>
                                 </div>
                             </td>

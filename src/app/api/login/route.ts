@@ -41,8 +41,8 @@ export async function POST(request:Request) {
       const err = error as CredentialsSignin;
       return NextResponse.json({success:false, message:err});
     }
-
-  } catch (error) {
+  } 
+  catch (error) {
     return NextResponse.json({ success:false, message: 'Internal Server Error' });
   }
 }

@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, ChangeEvent } from 'react';
 import { FaEye } from "react-icons/fa";
 import { FaPenToSquare } from "react-icons/fa6";
 import AddMenu from './popup';
@@ -15,75 +15,90 @@ const sampleData = [
     { itemID: 'SED1J4', name: 'Pizza', price: '450', img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS1_PintKUupd_BtEDs2BJhSgjqfCzw-ErzFA&s' },
     { itemID: 'LKJ12H', name: 'Lehsun soup', price: '200', img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS1_PintKUupd_BtEDs2BJhSgjqfCzw-ErzFA&s' },
     { itemID: 'HJK12A', name: 'Chocolate Shake', price: '150', img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS1_PintKUupd_BtEDs2BJhSgjqfCzw-ErzFA&s' },
-]
+];
 
 const Page: React.FC = () => {
+    const [popupopened, setPopupopened] = useState<true | false>(false);
+    const [searchTerm, setSearchTerm] = useState<string>('');
 
-    const [popupopened,setPopupopened] = useState<true | false>(false);
     useEffect(() => {
         document.title = "Menu";
     }, []);
 
-    function addMenuHandler(){
+    const addMenuHandler = () => {
         setPopupopened(!popupopened);
-    }
+    };
 
+    const handleSearchChange = (event: ChangeEvent<HTMLInputElement>) => {
+        setSearchTerm(event.target.value);
+    };
+
+    const filteredData = sampleData.filter(item =>
+        item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        item.itemID.toLowerCase().includes(searchTerm.toLowerCase())
+    );
 
     return (
         <div className='bg-[#e6e6e6] py-[5vh] px-[8vw] font-raleway flex flex-col gap-[6vh] relative'>
             {popupopened ? (
-                <AddMenu popuphandle={addMenuHandler}/>
-            ):(
+                <AddMenu popuphandle={addMenuHandler} />
+            ) : (
+                <>
+                    <h1 className="font-bold">Menu</h1>
 
-            <>
-            <h1 className="font-bold">Menu</h1>
+                    <section className='bg-white rounded-[10px] p-[4vh] font-semibold flex flex-col gap-3 relative'>
+                        <section className='flex justify-between items-center py-4'>
+                            <input
+                                type='search'
+                                placeholder='Search Name, ID...'
+                                className='border border-[#807c7c] rounded-xl px-4 py-1'
+                                value={searchTerm}
+                                onChange={handleSearchChange}
+                            />
+                            <div className="flex">
+                                <button onClick={addMenuHandler} className='bg-primary px-5 py-1 text-white text-lg font-medium rounded-md'>Add Menu</button>
+                            </div>
+                        </section>
 
-            <section className='bg-white rounded-[10px] p-[4vh] font-semibold flex flex-col gap-3 relative'>
-
-                <section className='flex justify-between items-center py-4'>
-                    
-
-                    <input type='search' placeholder='Search Name,ID...' className='border border-[#807c7c] rounded-xl px-4 py-1'>
-                    </input>
-                    <div className="flex">
-                        <button onClick={addMenuHandler} className='bg-primary px-5 py-1 text-white text-lg font-medium rounded-md'>Add Menu</button>
-                    </div>
-                </section>
-
-                {/* lower section */}
-                <table className="table-auto w-full">
-                    <thead>
-                        <tr className='bg-primary text-white font-light'>
-                            <th className="px-4 py-2 text-left w-[200px]">Item ID</th>
-                            <th className="px-4 py-2 text-left w-[400px]">Item Name</th>
-                            <th className="px-4 py-2 text-left w-[200px]">Price</th>
-                            <th className="px-4 py-2 text-left w-[200px]">Image</th>
-                            <th className="px-4 py-2 text-left ">Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {sampleData.map((item, index) => (
-                            <tr key={index} className='text-[14px] font-medium font-montserrat'>
-                                <td className="border px-4 py-4 transition-colors duration-300">{item.itemID}</td>
-                                <td className="border px-4 py-4 transition-colors duration-300">{item.name}</td>
-                                <td className="border px-4 py-4 transition-colors duration-300">₹ {item.price}</td>
-                                <td className="border px-4 py-4 transition-colors duration-300"><img className='w-[150px] h-[100px] object-cover' src={item.img}/></td>
-                                <td className="border px-4 py-4 transition-colors duration-300">
-                                    <div className='flex gap-4 justify-center'>
-                                        {/* <button  className="bg-primary text-white px-4 py-2 rounded text-[12px] flex items-center gap-10"><div>View</div> <FaEye /></button> */}
-                                        <button  className="bg-primary text-white px-4 py-2 rounded text-[12px] flex items-center gap-10"><div>Edit</div> <FaPenToSquare /></button>
-                                        
-                                    </div>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </section>
-            </>
-        )}
+                        {/* Lower section */}
+                        <table className="table-auto w-full">
+                            <thead>
+                                <tr className='bg-primary text-white font-light'>
+                                    <th className="px-4 py-2 text-left w-[200px]">Item ID</th>
+                                    <th className="px-4 py-2 text-left w-[400px]">Item Name</th>
+                                    <th className="px-4 py-2 text-left w-[200px]">Price</th>
+                                    <th className="px-4 py-2 text-left w-[200px]">Image</th>
+                                    <th className="px-4 py-2 text-left">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {filteredData.map((item, index) => (
+                                    <tr key={index} className='text-[14px] font-medium font-montserrat'>
+                                        <td className="border px-4 py-4 transition-colors duration-300">{item.itemID}</td>
+                                        <td className="border px-4 py-4 transition-colors duration-300">{item.name}</td>
+                                        <td className="border px-4 py-4 transition-colors duration-300">₹ {item.price}</td>
+                                        <td className="border px-4 py-4 transition-colors duration-300">
+                                            <img className='w-[150px] h-[100px] object-cover' src={item.img} alt={item.name} />
+                                        </td>
+                                        <td className="border px-4 py-4 transition-colors duration-300">
+                                            <div className='flex gap-4 justify-center'>
+                                                {/* <button className="bg-primary text-white px-4 py-2 rounded text-[12px] flex items-center gap-10">
+                                                    <div>View</div> <FaEye />
+                                                </button> */}
+                                                <button className="bg-primary text-white px-4 py-2 rounded text-[12px] flex items-center gap-10">
+                                                    <div>Edit</div> <FaPenToSquare />
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </section>
+                </>
+            )}
         </div>
     );
-}
+};
 
 export default Page;

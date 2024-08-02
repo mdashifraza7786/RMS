@@ -36,3 +36,22 @@ export async function getUserByUserid(userID: string) {
         await connection.end();
     }
 }
+
+export async function getMembers() {
+    const connection = await dbConnect();
+    try {
+        const [rows] = await connection.execute<RowDataPacket[]>('SELECT * FROM user');
+
+        if (rows.length > 0) {
+            return  rows;
+        }else{
+            return false;
+        }
+
+        
+    } catch (error: any) {
+        throw error;
+    } finally {
+        await connection.end();
+    }
+}

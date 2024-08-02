@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { FaEye } from "react-icons/fa";
 import { FaPenToSquare } from "react-icons/fa6";
+import AddMenu from './popup';
 
 const sampleData = [
     { itemID: 'ASD124', name: 'Masala Dosa', price: '100', img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQMqY0HPqN5C9tpTWujLDCfsAMj4QDRtyqVrg&s' },
@@ -17,42 +18,36 @@ const sampleData = [
 ]
 
 const Page: React.FC = () => {
-    const [selectedDate, setSelectedDate] = useState('12/07/2024');
-    const [attendance, setAttendance] = useState<{ [key: string]: string }>({});
 
+    const [popupopened,setPopupopened] = useState<true | false>(false);
     useEffect(() => {
-        document.title = "Members";
+        document.title = "Menu";
     }, []);
 
-    const dates = Array.from({ length: 31 }, (_, i) => {
-        const day = (i + 1).toString().padStart(2, '0');
-        const month = '12';
-        const year = '2024';
-        return `${month}/${day}/${year}`;
-    });
-
-    const giveAttendance = (id: string, status: string) => {
-        setAttendance(prevState => ({ ...prevState, [id]: status }));
-        console.log(attendance);
+    function addMenuHandler(){
+        setPopupopened(!popupopened);
     }
 
+
     return (
-        <div className='bg-[#e6e6e6] py-[5vh] px-[8vw] font-raleway flex flex-col gap-[6vh]'>
+        <div className='bg-[#e6e6e6] py-[5vh] px-[8vw] font-raleway flex flex-col gap-[6vh] relative'>
+            {popupopened ? (
+                <AddMenu popuphandle={addMenuHandler}/>
+            ):(
+
+            <>
             <h1 className="font-bold">Menu</h1>
 
-            {/* attendance box */}
             <section className='bg-white rounded-[10px] p-[4vh] font-semibold flex flex-col gap-3 relative'>
 
-                {/* upper section */}
                 <section className='flex justify-between items-center py-4'>
-                    {/* date */}
-                    <div className="flex">
+                    
 
-                    </div>
-
-                    {/* search */}
                     <input type='search' placeholder='Search Name,ID...' className='border border-[#807c7c] rounded-xl px-4 py-1'>
                     </input>
+                    <div className="flex">
+                        <button onClick={addMenuHandler} className='bg-primary px-5 py-1 text-white text-lg font-medium rounded-md'>Add Menu</button>
+                    </div>
                 </section>
 
                 {/* lower section */}
@@ -85,7 +80,8 @@ const Page: React.FC = () => {
                     </tbody>
                 </table>
             </section>
-
+            </>
+        )}
         </div>
     );
 }

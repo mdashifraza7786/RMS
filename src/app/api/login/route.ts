@@ -13,35 +13,16 @@ export async function POST(request:Request) {
     if (!userid || !password) {
       return NextResponse.json({success:false, message: 'Please provide userid and password' });
     }
-// dummy login response for development mode
-    const user =  {
-      "success": true,
-      "message": "Login successful",
-      "userdata": {
-        "id": 1,
-        "userid": "ASHIF0327",
-        "name": "Md Ashif Raza",
-        "role": "admin",
-        "mobile": 764308825,
-        "email": "mdashifraza222jj@gmail.com",
-        "password": "test",
-        "photo": "https://avatars.githubusercontent.com/u/110925648?v=4",
-        "aadhaar": "000000000",
-        "pancard": "FHIPS8788M"
+
+
+    const user = await getUserByUserid(userid as string);
+
+    if (!user) {
+      return NextResponse.json({success:false, message: 'User not found' });
+    }
+    if (!user.password) {
+        return NextResponse.json({ success:false, message: 'Incorrect Password' });
       }
-    };
-
-    // development mode 
-
-
-    // const user = await getUserByUserid(userid as string);
-
-    // if (!user) {
-    //   return NextResponse.json({success:false, message: 'User not found' });
-    // }
-    // if (!user.password) {
-    //     return NextResponse.json({ success:false, message: 'Incorrect Password' });
-    //   }
     // const passwordMatch = await compare(password, user.password);
 
     // if (!passwordMatch) {

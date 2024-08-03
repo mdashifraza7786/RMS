@@ -204,20 +204,20 @@ const Page = () => {
             {/* Details Popup */}
             {detailsPopupVisible && selectedItem && (
                 <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50">
-                    <div className="bg-white p-8 rounded-lg w-96">
-                        <h2 className="text-xl font-semibold mb-4">Details</h2>
-                        <div className="mb-4">
-                            <p><strong>ID:</strong> {selectedItem.id}</p>
-                            <p><strong>Name:</strong> {selectedItem.name}</p>
-                            <p><strong>Role:</strong> {selectedItem.role}</p>
-                            <p><strong>Amount:</strong> {selectedItem.amount}</p>
-                            <p><strong>Status:</strong> {selectedItem.status}</p>
+                    <div className="bg-white p-8 rounded-lg shadow-lg w-96 max-w-sm">
+                        <h2 className="text-2xl font-semibold mb-6 text-primary">Details</h2>
+                        <div className="mb-6">
+                            <p className="text-gray-700"><strong>ID:</strong> <span className="text-secondary">{selectedItem.id}</span></p>
+                            <p className="text-gray-700"><strong>Name:</strong> <span className="text-secondary">{selectedItem.name}</span></p>
+                            <p className="text-gray-700"><strong>Role:</strong> <span className="text-secondary">{selectedItem.role}</span></p>
+                            <p className="text-gray-700"><strong>Amount:</strong> <span className={`font-semibold ${parseInt(selectedItem.amount, 10) > 0 ? 'text-supporting2' : 'text-bgred'}`}>{selectedItem.amount}</span></p>
+                            <p className="text-gray-700"><strong>Status:</strong> <span className={`font-semibold ${selectedItem.status === 'Paid' ? 'text-supporting2' : 'text-bgred'}`}>{selectedItem.status}</span></p>
                             {/* Add more details if necessary */}
                         </div>
                         <div className="flex justify-end">
                             <button
                                 onClick={() => setDetailsPopupVisible(false)}
-                                className="bg-blue-500 text-white rounded-md px-4 py-2"
+                                className="bg-primary text-white rounded-md px-4 py-2 hover:bg-primary-dark transition-colors"
                             >
                                 Close
                             </button>
@@ -225,7 +225,7 @@ const Page = () => {
                     </div>
                 </div>
             )}
-            
+
         </div>
     );
 };

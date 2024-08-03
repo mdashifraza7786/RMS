@@ -11,6 +11,10 @@ const Page: React.FC = () => {
     const [loading, setLoading] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [hasMore, setHasMore] = useState(true);
+    const [editPopupVisible, setEditPopupVisible] = useState(false);
+    const [detailsPopupVisible, setDetailsPopupVisible] = useState(false); // State for details popup
+    const [selectedItem, setSelectedItem] = useState({ id: '', name: '', role: '', amount: '', status: '' }); // State to store selected item data
+    const [editData, setEditData] = useState({ amount: '', status: 'paid', id: '' });
 
     useEffect(() => {
         document.title = "Members";
@@ -44,6 +48,19 @@ const Page: React.FC = () => {
         }
     };
 
+    // Function to handle edit icon click
+    const handleEditClick = (data: any) => {
+        setEditData(data);
+        setEditPopupVisible(true);
+    };
+
+    // Function to handle eye icon click
+    const handleEyeClick = (data: any) => {
+        setSelectedItem(data);
+        setDetailsPopupVisible(true); // Show details popup
+    };
+
+
     const handleLoadMore = () => {
         if (!loading && hasMore) {
             setPage(prevPage => prevPage + 1);
@@ -75,11 +92,11 @@ const Page: React.FC = () => {
                     />
 
                     <div className='flex justify-between items-center py-4'>
-                       
+
                         <button className="bg-primary text-white px-4 py-2 rounded flex items-center gap-2">
                             <FaUserPlus /> <span>Add Member</span>
                         </button>
-                        </div>
+                    </div>
                 </section>
 
                 <table className="table-auto w-full">
@@ -101,10 +118,10 @@ const Page: React.FC = () => {
                                 <td className="border px-4 py-4 transition-colors duration-300">{item.mobile}</td>
                                 <td className="border px-4 py-4 transition-colors duration-300">
                                     <div className='flex gap-4 justify-center'>
-                                        <button className="bg-primary text-white px-4 py-2 rounded text-[12px] flex items-center gap-10">
+                                        <button className="bg-primary text-white px-4 py-2 rounded text-[12px] flex items-center gap-10" onClick={() => handleEyeClick(item)}>
                                             <div>View</div> <FaEye />
                                         </button>
-                                        <button className="bg-primary text-white px-4 py-2 rounded text-[12px] flex items-center gap-10">
+                                        <button className="bg-primary text-white px-4 py-2 rounded text-[12px] flex items-center gap-10" onClick={() => handleEditClick(item)}>
                                             <div>Edit</div> <FaPenToSquare />
                                         </button>
                                     </div>
@@ -124,6 +141,47 @@ const Page: React.FC = () => {
                 )}
                 {loading && <div>Loading...</div>}
             </section>
+
+
+            {/* Edit Popup */}
+            {editPopupVisible && (
+                <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50">
+                    <div className="bg-white p-8 rounded-lg">
+
+                        <div className="flex justify-end">
+                            <button
+                                onClick={() => setEditPopupVisible(false)}
+                                className="bg-gray-200 text-gray-700 rounded-md px-4 py-2 mr-2"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                // onClick={handleEdit}
+                                className="bg-blue-500 text-white rounded-md px-4 py-2"
+                            >
+                                Save
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Details Popup */}
+            {detailsPopupVisible && selectedItem && (
+                <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50">
+                    <div className="bg-white p-8 rounded-lg w-96">
+
+                        <div className="flex justify-end">
+                            <button
+                                onClick={() => setDetailsPopupVisible(false)}
+                                className="bg-blue-500 text-white rounded-md px-4 py-2"
+                            >
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

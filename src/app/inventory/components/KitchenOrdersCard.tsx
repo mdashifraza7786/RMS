@@ -13,6 +13,21 @@ const sampleData = [
 
 const KitchenOrdersCard: React.FC = () => {
     const [inventory, setInventory] = useState(sampleData);
+    const [selectedItem, setSelectedItem] = useState({ name: '', quantity: 0, unit: '', lowlimit: 0, id: '', price: '' });
+    const [editData, setEditData] = useState({ name: '', quantity: 0, unit: '', lowlimit: 0, id: '', price: '' });
+    const [orderPopupVisible, setOrderPopupVisible] = useState(false);
+    const [editPopupVisible, setEditPopupVisible] = useState(false);
+
+
+    const handleEditClick = (data: any) => {
+        setEditData(data);
+        setEditPopupVisible(true);
+    };
+
+    const handleEyeClick = (data: any) => {
+        setSelectedItem(data);
+        setOrderPopupVisible(true); // Show details popup
+    };
 
     return (
         <div className='flex flex-col'>
@@ -37,14 +52,55 @@ const KitchenOrdersCard: React.FC = () => {
                             <td className="border px-4 py-2 transition-colors duration-300">{item.amount} {item.unit}</td>
                             <td className="border px-4 py-4 transition-colors duration-300">
                                 <div className='flex gap-4 justify-center'>
-                                <button  className="bg-primary text-white px-4 py-2 rounded text-[12px] flex items-center gap-10"><div>Order</div> <MdBorderColor /></button>
-                                    <button className="bg-primary text-white px-4 py-2 rounded text-[12px] flex items-center gap-10"><div>Edit</div> <FaPenToSquare /></button>
+                                <button  className="bg-primary text-white px-4 py-2 rounded text-[12px] flex items-center gap-10" onClick={() => handleEyeClick(item)}><div>Order</div> <MdBorderColor /></button>
+                                    <button className="bg-primary text-white px-4 py-2 rounded text-[12px] flex items-center gap-10" onClick={() => handleEditClick(item)}><div>Edit</div> <FaPenToSquare /></button>
                                 </div>
                             </td>
                         </tr>
                     ))}
                 </tbody>
             </table>
+
+            {/* Order Popup */}
+            {orderPopupVisible && selectedItem && (
+                <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50">
+                    <div className="bg-white p-8 rounded-lg w-96">
+                        hi
+                        <div className="flex justify-end">
+                            <button
+                                onClick={() => setOrderPopupVisible(false)}
+                                className="bg-blue-500 text-white rounded-md px-4 py-2"
+                            >
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Edit Popup */}
+            {editPopupVisible && (
+                <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50">
+                    <div className="bg-white p-8 rounded-lg">
+                        
+                        <div className="flex justify-end">
+                            <button
+                                onClick={() => setEditPopupVisible(false)}
+                                className="bg-gray-200 text-gray-700 rounded-md px-4 py-2 mr-2"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                // onClick={handleEdit}
+                                className="bg-blue-500 text-white rounded-md px-4 py-2"
+                            >
+                                Save
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+            
         </div>
     );
 };

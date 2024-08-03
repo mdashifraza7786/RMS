@@ -54,7 +54,7 @@ const Page: React.FC = () => {
 
             <div className='bg-white rounded-[10px] p-[4vh] font-semibold flex flex-col gap-6'>
                 {/* Display current inventory levels ,List of all inventory items with details like quantity, last ordered date, and supplier.
-Filters and search functionality. */}
+                Filters and search functionality. */}
                 {/* navigate buttons */}
                 <div className='flex text-md gap-4'>
                     <div

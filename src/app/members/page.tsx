@@ -2,31 +2,42 @@
 import axios from 'axios';
 import { RowDataPacket } from 'mysql2';
 import React, { useState, useEffect } from 'react';
-import { FaEye } from "react-icons/fa";
+import { FaEye, FaUserPlus } from "react-icons/fa";
 import { FaPenToSquare } from "react-icons/fa6";
 
-const Page = () => {
-    const [memberData, setMemberData] = useState<false | RowDataPacket[]>([]);
+const Page: React.FC = () => {
+    const [memberData, setMemberData] = useState<RowDataPacket[]>([]);
     const [page, setPage] = useState(1);
     const [loading, setLoading] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
     const [hasMore, setHasMore] = useState(true);
 
     useEffect(() => {
         document.title = "Members";
         fetchMemberData();
-    }, [page]);
+    }, [page, searchQuery]);
 
     const fetchMemberData = async () => {
         if (loading) return;
         setLoading(true);
         try {
-            const response = await axios.get(`/api/members?page=${page}`);
-            const data = await response.data;
+            const response = await axios.get(`/api/members`, {
+                params: { page, search: searchQuery }
+            });
+            const data = response.data;
+
+            // Check if the length of the data is less than the page size
             if (data.length < 10) {
                 setHasMore(false);
             }
-            setMemberData(data);
-        } catch (error: any) {
+
+            // Filter out duplicate data
+            setMemberData(prevData => {
+                const existingIds = new Set(prevData.map(item => item.id));
+                const newItems = data.filter((item: RowDataPacket) => !existingIds.has(item.id));
+                return [...prevData, ...newItems];
+            });
+        } catch (error) {
             console.error('Error fetching data:', error);
         } finally {
             setLoading(false);
@@ -39,6 +50,16 @@ const Page = () => {
         }
     };
 
+    const filteredData = memberData.filter(item =>
+        String(item.id).toLowerCase().includes(searchQuery.toLowerCase()) ||
+        String(item.name).toLowerCase().includes(searchQuery.toLowerCase()) ||
+        String(item.role).toLowerCase().includes(searchQuery.toLowerCase()) ||
+        String(item.mobile).toLowerCase().includes(searchQuery.toLowerCase()) ||
+        String(item.email).toLowerCase().includes(searchQuery.toLowerCase()) ||
+        String(item.aadhaar).toLowerCase().includes(searchQuery.toLowerCase()) ||
+        String(item.pancard).toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
     return (
         <div className='bg-[#e6e6e6] py-[5vh] px-[8vw] font-raleway flex flex-col gap-[6vh]'>
             <h1 className="font-bold">Members</h1>
@@ -49,7 +70,16 @@ const Page = () => {
                         type='search'
                         placeholder='Search Name, ID...'
                         className='border border-[#807c7c] rounded-xl px-4 py-1'
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
                     />
+
+                    <div className='flex justify-between items-center py-4'>
+                       
+                        <button className="bg-primary text-white px-4 py-2 rounded flex items-center gap-2">
+                            <FaUserPlus /> <span>Add Member</span>
+                        </button>
+                        </div>
                 </section>
 
                 <table className="table-auto w-full">
@@ -63,7 +93,7 @@ const Page = () => {
                         </tr>
                     </thead>
                     <tbody>
-                        {memberData && memberData.map((item, index) => (
+                        {filteredData.map((item, index) => (
                             <tr key={index} className='text-[14px] font-medium font-montserrat'>
                                 <td className="border px-4 py-4 transition-colors duration-300">{item.id}</td>
                                 <td className="border px-4 py-4 transition-colors duration-300">{item.name}</td>

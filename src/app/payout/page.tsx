@@ -14,13 +14,13 @@ const sampleData = [
 
 const Page = () => {
     const [searchQuery, setSearchQuery] = useState('');
-    const [currentPage, setCurrentPage] = useState(1); 
+    const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage] = useState(5);
     const [selectedFilter, setSelectedFilter] = useState('All');
     const [editPopupVisible, setEditPopupVisible] = useState(false);
     const [detailsPopupVisible, setDetailsPopupVisible] = useState(false); // State for details popup
-    const [selectedItem, setSelectedItem] = useState({id: '', name: '', role: '',amount: '', status: ''}); // State to store selected item data
-    const [editData, setEditData] = useState({ amount: '', status: 'paid',id: '' });
+    const [selectedItem, setSelectedItem] = useState({ id: '', name: '', role: '', amount: '', status: '' }); // State to store selected item data
+    const [editData, setEditData] = useState({ amount: '', status: 'paid', id: '' });
 
     // Logic to filter data based on search query and selected filter
     const filteredData = sampleData.filter(item =>
@@ -62,11 +62,11 @@ const Page = () => {
         if (dataIndex !== -1) {
             const updatedData = [...sampleData];
             updatedData[dataIndex] = { ...updatedData[dataIndex], amount: editData.amount, status: editData.status };
-  
+
             sampleData.splice(0, sampleData.length, ...updatedData);
         }
 
-        setEditPopupVisible(false); 
+        setEditPopupVisible(false);
     };
 
     return (
@@ -125,16 +125,21 @@ const Page = () => {
                                 <td className="border px-4 py-2 transition-colors duration-300">{item.name}</td>
                                 <td className="border px-4 py-2 transition-colors duration-300">{item.role}</td>
                                 <td className={`${item.status === 'paid' ? 'text-green-600' : 'text-red-600'} font-bold border px-4 py-2 transition-colors duration-300`}>{item.amount}</td>
-                                <td className="border px-4 py-2 flex gap-[10px] text-[20px]">
-                                    <div className='flex gap-4 justify-center'>
-                                        <button  className="bg-primary text-white px-4 py-2 rounded text-[12px] flex items-center gap-10" onClick={() => handleEyeClick(item)}><div>View</div> <HiEye /></button>
-                                        <button  className="bg-primary text-white px-4 py-2 rounded text-[12px] flex items-center gap-10" onClick={() => handleEditClick(item)}><div>Edit</div> <HiPencilAlt /></button>
+                                <td className="border px-4 py-2 text-center">
+                                    <div className='flex justify-center gap-4'>
+                                        <button className="bg-primary text-white px-4 py-2 rounded text-[12px] flex items-center gap-2" onClick={() => handleEyeClick(item)}>
+                                            <HiEye /> <span>View</span>
+                                        </button>
+                                        <button className="bg-primary text-white px-4 py-2 rounded text-[12px] flex items-center gap-2" onClick={() => handleEditClick(item)}>
+                                            <HiPencilAlt /> <span>Edit</span>
+                                        </button>
                                     </div>
                                 </td>
                             </tr>
                         ))}
                     </tbody>
                 </table>
+
 
                 {/* Pagination */}
                 <div className="flex justify-end gap-2">
@@ -220,6 +225,7 @@ const Page = () => {
                     </div>
                 </div>
             )}
+            
         </div>
     );
 };

@@ -19,7 +19,7 @@ const Page = () => {
     const [selectedFilter, setSelectedFilter] = useState('All');
     const [editPopupVisible, setEditPopupVisible] = useState(false);
     const [detailsPopupVisible, setDetailsPopupVisible] = useState(false); // State for details popup
-    const [selectedItem, setSelectedItem] = useState({ id: '', name: '', role: '', amount: '', status: '' }); // State to store selected item data
+    const [selectedItem, setSelectedItem] = useState({ id: '', name: '', role: '', amount: '', status: '', image: null, mobile: '', accountHolder: '', accountNumber: '', ifsc: '', branch: '' }); // State to store selected item data
     const [editData, setEditData] = useState({ amount: '', status: 'paid', id: '' });
 
     // Logic to filter data based on search query and selected filter
@@ -156,75 +156,123 @@ const Page = () => {
                 </div>
             </section>
 
+
+            {/* Details Popup */}
+            {detailsPopupVisible && selectedItem && (
+                <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50 font-raleway">
+                    <div className="bg-white p-8 rounded-lg shadow-xl max-w-md w-full border border-gray-300 overflow-hidden">
+                        <h2 className="text-3xl font-bold mb-8 text-primary border-b border-gray-200 pb-2">Details</h2>
+                        <div className="flex flex-col gap-6">
+                            <div className="flex items-start overflow-x-auto">
+                                <div className="flex-shrink-0">
+                                    <img className="w-[120px] h-[120px] object-cover rounded-full" src={selectedItem.image} alt="Profile" />
+                                </div>
+                                <div className="flex flex-col ml-6">
+                                    <div className="grid grid-cols-2 gap-x-4 text-gray-800 text-medium">
+                                        <div className="font-medium"><strong>ID:</strong></div>
+                                        <div className="text-secondary font-semibold">{selectedItem.id}</div>
+
+                                        <div className="font-medium"><strong>Name:</strong></div>
+                                        <div className="text-secondary font-semibold">{selectedItem.name}</div>
+
+                                        <div className="font-medium"><strong>Role:</strong></div>
+                                        <div className="text-secondary font-semibold">{selectedItem.role}</div>
+
+                                        <div className="font-medium"><strong>Amount:</strong></div>
+                                        <div className={`font-semibold ${selectedItem.status === 'paid' ? 'text-green-600' : 'text-bgred'}`}>
+                                            {selectedItem.amount}
+                                        </div>
+
+                                        <div className="font-medium"><strong>Status:</strong></div>
+                                        <div className={`font-semibold ${selectedItem.status === 'paid' ? 'text-green-600' : 'text-bgred'}`}>
+                                            {selectedItem.status === 'paid' ? 'PAID' : 'UNPAID'}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="bg-white p-6 rounded-lg shadow-lg border border-gray-300 overflow-x-auto">
+                                <h3 className="text-2xl font-semibold mb-4 text-primary">Account Details</h3>
+                                <table className="w-full text-gray-800 border-collapse">
+                                    <tbody>
+                                        <tr className="border-b border-gray-200">
+                                            <td className="py-2 font-medium">Account Number:</td>
+                                            <td className="py-2 font-semibold text-secondary">{selectedItem.accountNumber}</td>
+                                        </tr>
+                                        <tr className="border-b border-gray-200">
+                                            <td className="py-2 font-medium">IFSC Code:</td>
+                                            <td className="py-2 font-semibold text-secondary">{selectedItem.ifsc}</td>
+                                        </tr>
+                                        <tr className="border-b border-gray-200">
+                                            <td className="py-2 font-medium">Branch:</td>
+                                            <td className="py-2 font-semibold text-secondary">{selectedItem.branch}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div className="flex justify-end mt-6">
+                            <button
+                                onClick={() => setDetailsPopupVisible(false)}
+                                className="bg-red-600 font-bold text-white rounded-md px-6 py-3 hover:bg-red-300 transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-50"
+                            >
+                                CLOSE
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+
+
+            )}
+
+
             {/* Edit Popup */}
             {editPopupVisible && (
                 <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50">
-                    <div className="bg-white p-8 rounded-lg">
-                        <h2 className="text-xl font-semibold mb-4">Edit Data</h2>
+                    <div className="bg-white p-8 rounded-lg shadow-lg border border-gray-300">
+                        <h2 className="text-2xl font-semibold mb-6 text-primary">Edit Data</h2>
                         <div className="mb-4">
-                            <label htmlFor="amount" className="block text-gray-700">Amount:</label>
+                            <label htmlFor="amount" className="block text-gray-800">Amount:</label>
                             <input
                                 type="text"
                                 id="amount"
                                 value={editData.amount}
                                 onChange={(e) => setEditData({ ...editData, amount: e.target.value })}
-                                className="border border-gray-300 rounded-md px-3 py-1 w-full"
+                                className="border border-gray-300 rounded-md px-3 py-2 font-semibold w-full"
                             />
                         </div>
                         <div className="mb-4">
-                            <label htmlFor="status" className="block text-gray-700">Status:</label>
+                            <label htmlFor="status" className="block text-gray-800">Status:</label>
                             <select
                                 id="status"
                                 value={editData.status}
                                 onChange={(e) => setEditData({ ...editData, status: e.target.value })}
-                                className="border border-gray-300 rounded-md px-3 py-1 w-full"
+                                className="border font-semibold border-gray-300 rounded-md px-3 py-2 w-full"
                             >
-                                <option value="paid">Paid</option>
-                                <option value="unpaid">Unpaid</option>
+                                <option value="paid" className="text-green-600 font-semibold">Paid</option>
+                                <option value="unpaid" className="text-bgred font-semibold">Unpaid</option>
                             </select>
                         </div>
-                        <div className="flex justify-end">
+                        <div className="flex justify-end gap-2">
                             <button
                                 onClick={() => setEditPopupVisible(false)}
-                                className="bg-gray-200 text-gray-700 rounded-md px-4 py-2 mr-2"
+                                className="bg-red-500 text-white font-bold rounded-md px-4 py-2 hover:bg-red-300 transition-colors"
                             >
-                                Cancel
+                                CANCEL
                             </button>
                             <button
                                 onClick={handleEdit}
-                                className="bg-blue-500 text-white rounded-md px-4 py-2"
+                                className="bg-supporting2 text-white font-bold rounded-md px-4 py-2 hover:bg-[#a8b38d] transition-colors"
                             >
-                                Save
+                                SAVE
                             </button>
                         </div>
                     </div>
                 </div>
             )}
 
-            {/* Details Popup */}
-            {detailsPopupVisible && selectedItem && (
-                <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50">
-                    <div className="bg-white p-8 rounded-lg shadow-lg w-96 max-w-sm">
-                        <h2 className="text-2xl font-semibold mb-6 text-primary">Details</h2>
-                        <div className="mb-6">
-                            <p className="text-gray-700"><strong>ID:</strong> <span className="text-secondary">{selectedItem.id}</span></p>
-                            <p className="text-gray-700"><strong>Name:</strong> <span className="text-secondary">{selectedItem.name}</span></p>
-                            <p className="text-gray-700"><strong>Role:</strong> <span className="text-secondary">{selectedItem.role}</span></p>
-                            <p className="text-gray-700"><strong>Amount:</strong> <span className={`font-semibold ${parseInt(selectedItem.amount, 10) > 0 ? 'text-supporting2' : 'text-bgred'}`}>{selectedItem.amount}</span></p>
-                            <p className="text-gray-700"><strong>Status:</strong> <span className={`font-semibold ${selectedItem.status === 'Paid' ? 'text-supporting2' : 'text-bgred'}`}>{selectedItem.status}</span></p>
-                            {/* Add more details if necessary */}
-                        </div>
-                        <div className="flex justify-end">
-                            <button
-                                onClick={() => setDetailsPopupVisible(false)}
-                                className="bg-primary text-white rounded-md px-4 py-2 hover:bg-primary-dark transition-colors"
-                            >
-                                Close
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
+
 
         </div>
     );

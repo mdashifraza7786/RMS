@@ -17,7 +17,7 @@ const config: Config = {
         primary:"#25476A",
         secondary:"#03A9F4",
         supporting1:"#AB47BC",
-        supporting2:"#9FCC2E",
+        supporting2:"#9FCC2E", //green
         supporting3:"#FA9F1B",
         bgred:"#FF0000"
       }

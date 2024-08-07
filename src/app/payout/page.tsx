@@ -233,7 +233,7 @@ const Page = () => {
                     <div className="bg-white p-8 rounded-lg shadow-lg border border-gray-300">
                         <h2 className="text-2xl font-semibold mb-6 text-primary">Edit Data</h2>
                         <div className="mb-4">
-                            <label htmlFor="amount" className="block text-gray-800">Amount:</label>
+                            <label htmlFor="amount" className="block font-medium text-gray-800">Amount:</label>
                             <input
                                 type="text"
                                 id="amount"
@@ -243,7 +243,7 @@ const Page = () => {
                             />
                         </div>
                         <div className="mb-4">
-                            <label htmlFor="status" className="block text-gray-800">Status:</label>
+                            <label htmlFor="status" className="block font-medium text-gray-800">Status:</label>
                             <select
                                 id="status"
                                 value={editData.status}

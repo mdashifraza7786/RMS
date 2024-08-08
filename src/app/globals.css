@@ -129,3 +129,17 @@ body {
   border-radius: 50%;
   cursor: pointer;
 }
+
+.popup-transition{
+  animation: popup-tran 0.3s ease-in-out;
+  transform-origin: center;
+}
+@keyframes popup-tran {
+  0%{
+    
+    height: 0;
+  }
+  100%{
+    height: 100%;
+  }
+}

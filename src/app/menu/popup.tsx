@@ -1,4 +1,5 @@
-import { useState, ChangeEvent, FocusEvent } from 'react';
+import axios from 'axios';
+import { useState, ChangeEvent, FocusEvent, FormEvent } from 'react';
 import { FaTimes } from 'react-icons/fa';
 
 interface AddMenuProps {
@@ -16,12 +17,23 @@ const AddMenu: React.FC<AddMenuProps> = ({ popuphandle }) => {
     const [isDropdownVisible, setIsDropdownVisible] = useState<boolean>(false);
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
+    const [formValues, setFormValues] = useState({
+        item_name: '',
+        item_description: '',
+        item_foodtype: 'veg',
+        item_price: '',
+        item_category: ''
+    });
 
     const handleCategoryChange = (event: ChangeEvent<HTMLInputElement>) => {
         const category = event.target.value;
         setSearchTerm(category);
         if (categories.includes(category)) {
             setDisplayCategory(category);
+            setFormValues(prevValues => ({
+                ...prevValues,
+                item_category: category
+            }));
         } else {
             setIsDropdownVisible(true);
             setDisplayCategory("");
@@ -32,6 +44,10 @@ const AddMenu: React.FC<AddMenuProps> = ({ popuphandle }) => {
         setDisplayCategory(category);
         setSearchTerm('');
         setIsDropdownVisible(false);
+        setFormValues(prevValues => ({
+            ...prevValues,
+            item_category: category
+        }));
     };
 
     const handleFocus = () => {
@@ -61,15 +77,53 @@ const AddMenu: React.FC<AddMenuProps> = ({ popuphandle }) => {
         setImagePreviewUrl(null);
     };
 
+    const handleInputChange = (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+        const { name, value } = event.target;
+        setFormValues(prevValues => ({
+            ...prevValues,
+            [name]: value
+        }));
+    };
+
+    const handleSubmit = async (event: FormEvent) => {
+        event.preventDefault();
+        
+        if (!selectedFile) {
+            alert('Please select an image');
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('item_name', formValues.item_name);
+        formData.append('item_description', formValues.item_description);
+        formData.append('item_foodtype', formValues.item_foodtype);
+        formData.append('item_price', formValues.item_price);
+        formData.append('item_category', formValues.item_category);
+        formData.append('item_thumbnail', selectedFile);
+
+        try {
+            const response = await axios.post('/api/upload', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            });
+            console.log(response.data);
+            // Handle success
+        } catch (error) {
+            console.error('Error uploading menu item:', error);
+            // Handle error
+        }
+    };
+
     const filteredCategories = categories.filter(category =>
         category.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     return (
-        <div className="h-screen w-screen bg-white fixed left-0 top-0 z-50 overflow-hidden">
-            <div className="flex flex-col gap-10">
+        <div className="h-screen w-screen bg-white fixed left-0 top-0 z-50 overflow-hidden popup-transition">
+            <form className="flex flex-col gap-10" onSubmit={handleSubmit}>
                 <div className="h-16 border-b-2 border-gray-300 flex items-center justify-between px-20 text-2xl">
-                    <button className="bg-supporting2 rounded-lg px-6 py-1 text-white">SAVE</button>
+                    <button type="submit" className="bg-supporting2 rounded-lg px-6 py-1 text-white">SAVE</button>
                     <FaTimes className="cursor-pointer" onClick={popuphandle} />
                 </div>
                 <div className="px-20 grid grid-cols-5 gap-14">
@@ -81,21 +135,26 @@ const AddMenu: React.FC<AddMenuProps> = ({ popuphandle }) => {
                                 type="text"
                                 name="item_name"
                                 placeholder="Enter item name"
+                                value={formValues.item_name}
+                                onChange={handleInputChange}
                                 required
                             />
                             <textarea
                                 className="outline-none border-2 border-gray-300 px-3 py-2 resize-none"
-                                name="description"
+                                name="item_description"
                                 placeholder="Enter description for item"
+                                value={formValues.item_description}
+                                onChange={handleInputChange}
                                 required
                             />
 
-                            <div className="flex  gap-7 relative">
-                                <div className='relative '>
+                            <div className="flex gap-7 relative">
+                                <div className='relative'>
                                     <input
                                         className="outline-none border-2 border-gray-300 px-3 py-2"
                                         type="text"
                                         placeholder="Search categories"
+                                        name='item_category'
                                         value={searchTerm || displayCategory}
                                         onChange={handleCategoryChange}
                                         onFocus={handleFocus}
@@ -117,13 +176,25 @@ const AddMenu: React.FC<AddMenuProps> = ({ popuphandle }) => {
                                     )}
                                 </div>
                                 <div>
-                                    <select className="outline-none border-2 border-gray-300 px-3 py-2" name="foodtype" >
+                                    <select
+                                        className="outline-none border-2 border-gray-300 px-3 py-2"
+                                        name="item_foodtype"
+                                        value={formValues.item_foodtype}
+                                        onChange={handleInputChange}
+                                    >
                                         <option value="veg">Veg</option>
-                                        <option value="veg">Non - Veg</option>
+                                        <option value="non-veg">Non - Veg</option>
                                     </select>
                                 </div>
                                 <div>
-                                    <input type="number" placeholder='Price' className="outline-none border-2 border-gray-300 px-3 py-2"/>
+                                    <input  
+                                        name='item_price'
+                                        type="number"
+                                        placeholder='Price'
+                                        className="outline-none border-2 border-gray-300 px-3 py-2"
+                                        value={formValues.item_price}
+                                        onChange={handleInputChange}
+                                    />
                                 </div>
                             </div>
                         </div>
@@ -142,12 +213,14 @@ const AddMenu: React.FC<AddMenuProps> = ({ popuphandle }) => {
                                     id="food_menu_thumbnail"
                                     className="custom-file-input"
                                     onChange={handleFileChange}
+                                    name='item_thumbnail'
+                                    style={{ display: 'none' }}
                                 />
                             </div>
                         )}
                     </div>
                 </div>
-            </div>
+            </form>
         </div>
     );
 };

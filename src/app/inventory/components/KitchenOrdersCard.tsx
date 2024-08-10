@@ -62,11 +62,14 @@ const KitchenOrdersCard: React.FC = () => {
             <div className='flex justify-end'>
                 <button
                     onClick={handleGenerateOrder}
-                    className="bg-supporting2 w-1/5 text-white font-bold rounded-md px-4 py-2 flex items-center justify-center gap-2 hover:bg-supporting2-dark transition-colors mt-4"
+                    disabled={selectedItems.length === 0}
+                    className={`bg-supporting2 w-1/5 text-white font-bold rounded-md px-4 py-2 flex items-center justify-center gap-2 hover:bg-supporting2-dark transition-colors mt-4 ${selectedItems.length === 0 ? 'opacity-50 cursor-not-allowed' : ''
+                        }`}
                 >
                     <MdBorderColor className="text-lg" />
                     <span>Generate Order</span>
                 </button>
+
             </div>
             <table className="w-full border-collapse">
                 <thead>

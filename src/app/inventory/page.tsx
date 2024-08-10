@@ -124,7 +124,8 @@ const Page: React.FC = () => {
                         className={`px-[10px] py-2 rounded-xl cursor-pointer ${selectedFilter === 'order' ? 'font-bold bg-[#FA9F1B70]  transition-colors duration-300 text-[#fc9802e3]' : ''}`}
                         onClick={() => setSelectedFilter('order')}
                     >
-                        Order
+                       
+                       Generate Order
                     </div>
                     <div
                         className={`px-[10px] py-2 rounded-xl cursor-pointer ${selectedFilter === 'kitchenOrders' ? 'font-bold bg-[#FA9F1B70]  transition-colors duration-300 text-[#fc9802e3]' : ''}`}

@@ -63,7 +63,7 @@ const Page: React.FC = () => {
                                 onChange={handleSearchChange}
                             />
                             <div className="flex">
-                                <button onClick={addMenuHandler} className='bg-primary px-5 py-1 text-white text-lg font-medium rounded-md'>Add Menu</button>
+                                <button onClick={addMenuHandler} className='bg-secondary px-5 py-1 text-white text-lg font-medium rounded-md'>Add Menu</button>
                             </div>
                         </section>
 

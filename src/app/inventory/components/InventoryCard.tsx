@@ -14,9 +14,8 @@ const sampleData = [
 const InventoryCard: React.FC = () => {
     const [inventory, setInventory] = useState(sampleData);
     const [searchQuery, setSearchQuery] = useState('');
-    const [selectedItem, setSelectedItem] = useState({ name: '', quantity: 0, unit: '', lowlimit: 0, id: '', price: '' });
-    const [editData, setEditData] = useState({ name: '', quantity: 0, unit: '', lowlimit: 0, id: '', price: '' });
-    const [orderPopupVisible, setOrderPopupVisible] = useState(false);
+    const [selectedItem, setSelectedItem] = useState<any>(null);
+    const [editData, setEditData] = useState<any>(null);
     const [editPopupVisible, setEditPopupVisible] = useState(false);
 
     // Filtered inventory based on search query
@@ -24,15 +23,23 @@ const InventoryCard: React.FC = () => {
         item.id.toLowerCase().includes(searchQuery.toLowerCase()) || item.name.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
-
     const handleEditClick = (data: any) => {
         setEditData(data);
         setEditPopupVisible(true);
     };
 
-    const handleEyeClick = (data: any) => {
-        setSelectedItem(data);
-        setOrderPopupVisible(true); // Show details popup
+    const handleSave = () => {
+        if (editData) {
+            setInventory(inventory.map(item => item.id === editData.id ? editData : item));
+            setEditPopupVisible(false);
+        }
+    };
+
+    const handleSaveOrder = () => {
+        if (selectedItem) {
+            // Update inventory with new quantity and remarks
+            setInventory(inventory.map(item => item.id === selectedItem.id ? { ...item, quantity: selectedItem.quantity, remarks: selectedItem.remarks } : item));
+        }
     };
 
     return (
@@ -68,9 +75,6 @@ const InventoryCard: React.FC = () => {
                             <td className="border px-4 py-2 transition-colors duration-300">{item.lowlimit} {item.unit}</td>
                             <td className="border px-4 py-4 transition-colors duration-300">
                                 <div className='flex gap-4 justify-center'>
-                                    <button className="bg-primary text-white px-4 py-2 rounded text-[12px] flex items-center gap-10" onClick={() => handleEyeClick(item)}>
-                                        <div>Order</div> <MdBorderColor />
-                                    </button>
                                     <button className="bg-primary text-white px-4 py-2 rounded text-[12px] flex items-center gap-10" onClick={() => handleEditClick(item)}>
                                         <div>Edit</div> <FaPenToSquare />
                                     </button>
@@ -81,46 +85,81 @@ const InventoryCard: React.FC = () => {
                 </tbody>
             </table>
 
-            {/* Order Popup */}
-            {orderPopupVisible && selectedItem && (
-                <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50">
-                    <div className="bg-white p-8 rounded-lg w-96">
-                        hi
-                        <div className="flex justify-end">
-                            <button
-                                onClick={() => setOrderPopupVisible(false)}
-                                className="bg-blue-500 text-white rounded-md px-4 py-2"
-                            >
-                                Close
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
+
 
             {/* Edit Popup */}
-            {editPopupVisible && (
-                <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50">
-                    <div className="bg-white p-8 rounded-lg">
+            {editPopupVisible && editData && (
+                <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50 font-raleway">
+                    <div className="bg-white p-8 rounded-lg shadow-lg border border-gray-300 max-w-md w-full">
+                        <h2 className="text-2xl font-semibold mb-6 text-primary">Edit Item</h2>
+                        <div className="mb-4">
+                            <label htmlFor="id" className="block font-medium text-gray-800">ID:</label>
+                            <input
+                                type="text"
+                                id="id"
+                                value={editData.id}
+                                className="border border-gray-300 rounded-md px-3 py-2 font-semibold w-full"
+                                readOnly
+                            />
+                        </div>
+                        <div className="mb-4">
+                            <label htmlFor="name" className="block font-medium text-gray-800">Name:</label>
+                            <input
+                                type="text"
+                                id="name"
+                                value={editData.name}
+                                onChange={(e) => setEditData({ ...editData, name: e.target.value })}
+                                className="border border-gray-300 rounded-md px-3 py-2 font-semibold w-full"
+                            />
+                        </div>
+                        <div className="mb-4">
+                            <label htmlFor="quantity" className="block font-medium text-gray-800">Quantity:</label>
+                            <input
+                                type="number"
+                                id="quantity"
+                                value={editData.quantity}
+                                onChange={(e) => setEditData({ ...editData, quantity: parseInt(e.target.value, 10) })}
+                                className="border border-gray-300 rounded-md px-3 py-2 font-semibold w-full"
+                            />
+                        </div>
+                        <div className="mb-4">
+                            <label htmlFor="unit" className="block font-medium text-gray-800">Unit:</label>
+                            <input
+                                type="text"
+                                id="unit"
+                                value={editData.unit}
+                                onChange={(e) => setEditData({ ...editData, unit: e.target.value })}
+                                className="border border-gray-300 rounded-md px-3 py-2 font-semibold w-full"
+                            />
+                        </div>
+                        <div className="mb-4">
+                            <label htmlFor="lowlimit" className="block font-medium text-gray-800">Low Limit:</label>
+                            <input
+                                type="number"
+                                id="lowlimit"
+                                value={editData.lowlimit}
+                                onChange={(e) => setEditData({ ...editData, lowlimit: parseInt(e.target.value, 10) })}
+                                className="border border-gray-300 rounded-md px-3 py-2 font-semibold w-full"
+                            />
+                        </div>
                         
-                        <div className="flex justify-end">
+                        <div className="flex justify-end gap-2">
                             <button
                                 onClick={() => setEditPopupVisible(false)}
-                                className="bg-gray-200 text-gray-700 rounded-md px-4 py-2 mr-2"
+                                className="bg-red-600  text-white font-bold rounded-md px-4 py-2 hover:bg-red-300 transition-colors"
                             >
-                                Cancel
+                                CANCEL
                             </button>
                             <button
-                                // onClick={handleEdit}
-                                className="bg-blue-500 text-white rounded-md px-4 py-2"
+                                onClick={handleSave}
+                                className="bg-supporting2 text-white font-bold rounded-md px-4 py-2 hover:bg-[#a5bd69] transition-colors"
                             >
-                                Save
+                                SAVE
                             </button>
                         </div>
                     </div>
                 </div>
             )}
-
         </div>
     );
 };

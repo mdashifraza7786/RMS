@@ -1,13 +1,18 @@
-"use client"
+"use client";
 
-import { FormEvent } from "react";
+import { useState, FormEvent } from "react";
 import { toast, ToastContainer } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
 import axios from "axios";
+import { Bars } from 'react-loader-spinner';
 
 function Login() {
+  const [loading, setLoading] = useState<boolean>(false);
+
   const handleLogin = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    setLoading(true); // Set loading to true when login starts
+
     try {
       const formData = new FormData(event.currentTarget);
       const userid = formData.get('userid') as string;
@@ -22,15 +27,16 @@ function Login() {
       if(data.success){
         localStorage.setItem('user', data.userdata);
         toast.success(data.message);
-        
+        window.location.href = "/";
       }else{
         toast.error(data.message || 'Login Failed');
       }
       
-      window.location.href = "/";
     } catch (error: any) {
       console.error('Error logging in:', error);
       toast.error(error.response?.data?.error || error.message || 'Failed to login');
+    } finally {
+      setLoading(false); 
     }
   };
 
@@ -56,8 +62,24 @@ function Login() {
                 placeholder="Enter Password"
                 required
               />
-              <button className="bg-primary py-3 px-5 text-center text-white font-semibold border-none">
-                Login
+              <button 
+                className="bg-primary py-3 px-5 text-center text-white font-semibold border-none flex items-center justify-center"
+                disabled={loading}
+              >
+                {loading ? (
+                  <>
+                    <Bars
+                      height="22"
+                      width="20"
+                      color="#ffffff"
+                      ariaLabel="bars-loading"
+                      visible={true}
+                    />
+                    
+                  </>
+                ) : (
+                  'Login'
+                )}
               </button>
             </div>
           </form>

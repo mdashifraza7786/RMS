@@ -2,6 +2,8 @@ import { signIn } from '@/auth';
 import { CredentialsSignin } from 'next-auth';
 import { NextResponse } from 'next/server';
 import { getUserByUserid } from '@/database/database';
+import { compare } from 'bcrypt';
+import bcrypt from 'bcrypt'
 
 
 export async function POST(request:Request) {
@@ -23,11 +25,11 @@ export async function POST(request:Request) {
     if (!user.password) {
         return NextResponse.json({ success:false, message: 'Incorrect Password' });
       }
-    // const passwordMatch = await compare(password, user.password);
+    const passwordMatch = await compare(password, user.password);
 
-    // if (!passwordMatch) {
-    //   return NextResponse.json({ success:"false", message: 'Incorrect password' });
-    // }
+    if (!passwordMatch) {
+      return NextResponse.json({ success:false, message: 'Incorrect password' });
+    }
 
     try {
       await signIn('credentials', {

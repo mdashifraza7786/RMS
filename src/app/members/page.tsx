@@ -35,13 +35,13 @@ const Page: React.FC = () => {
             if (data.length < 10) {
                 setHasMore(false);
             }
-
-            // Filter out duplicate data
+            if(data.length > 0){
             setMemberData(prevData => {
                 const existingIds = new Set(prevData.map(item => item.id));
                 const newItems = data.filter((item: RowDataPacket) => !existingIds.has(item.id));
                 return [...prevData, ...newItems];
             });
+        }
         } catch (error) {
             console.error('Error fetching data:', error);
         } finally {
@@ -103,8 +103,8 @@ const Page: React.FC = () => {
                             </button>
                         </div>
                     </section>
-
-                    <table className="table-auto w-full">
+                    {filteredData && filteredData.length > 0 ?(
+                        <table className="table-auto w-full">
                         <thead>
                             <tr className='bg-primary text-white font-light'>
                                 <th className="px-4 py-2 text-left w-[200px]">ID</th>
@@ -117,7 +117,7 @@ const Page: React.FC = () => {
                         <tbody>
                             {filteredData.map((item, index) => (
                                 <tr key={index} className='text-[14px] font-medium font-montserrat'>
-                                    <td className="border px-4 py-4 transition-colors duration-300">{item.id}</td>
+                                    <td className="border px-4 py-4 transition-colors duration-300">{item.userid}</td>
                                     <td className="border px-4 py-4 transition-colors duration-300">{item.name}</td>
                                     <td className="border px-4 py-4 transition-colors duration-300">{item.role}</td>
                                     <td className="border px-4 py-4 transition-colors duration-300">{item.mobile}</td>
@@ -135,8 +135,14 @@ const Page: React.FC = () => {
                             ))}
                         </tbody>
                     </table>
+                    ):(
+                        <div className='flex justify-center items-center py-4'>
+                            <p>No Data Found</p>
+                        </div>
+                    )}
+                    
 
-                    {hasMore && !loading && (
+                    {filteredData && filteredData.length > 0 && hasMore && !loading && (
                         <button
                             onClick={handleLoadMore}
                             className="mt-4 bg-primary text-white px-4 py-2 rounded"
@@ -144,7 +150,6 @@ const Page: React.FC = () => {
                             Load More
                         </button>
                     )}
-                    {loading && <div>Loading...</div>}
                 </section>
 
 

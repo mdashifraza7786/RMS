@@ -29,7 +29,7 @@ export async function GET() {
         }
 
         // Retrieve and return all attendance records
-        const [rows1] = await connection.query<RowDataPacket[]>('SELECT userid, name, role, status, date, time FROM attendance');
+        const [rows1] = await connection.query<RowDataPacket[]>('SELECT userid, name, role, status, date, time FROM attendance WHERE date = ?',[date]);
         return NextResponse.json({ message: 'Attendance Generated Successfully', data: rows1 });
     } catch (error) {
         console.error('Error inserting attendance records:', error);

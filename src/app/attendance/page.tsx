@@ -8,7 +8,6 @@ import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { Bars } from 'react-loader-spinner'
 
-
 interface AttendanceItem {
     userid: string;
     name: string;
@@ -16,6 +15,10 @@ interface AttendanceItem {
     status: string;
     date: string;
     time: string | null;
+}
+interface AvailableDate {
+    minDate: string;
+    maxDate: string;
 }
 
 const Page: React.FC = () => {
@@ -26,8 +29,14 @@ const Page: React.FC = () => {
     const [attendanceData, setAttendanceData] = useState<AttendanceItem[]>([]);
     const [filteredData, setFilteredData] = useState<AttendanceItem[]>([]);
     const [today, setToday] = useState<string>('');
+    const [getdate, setGetdate] = useState<string>('');
+    const [availableDate, setAvaiableDate] = useState<AvailableDate>({
+        minDate: '',
+        maxDate: ''
+    });
 
-    const giveAttendance = async (id: string, status: string, type:string) => {
+
+    const giveAttendance = async (id: string, status: string, type: string) => {
         setAttendanceData(prevData => {
             return prevData.map(item => {
                 if (item.userid === id) {
@@ -39,16 +48,14 @@ const Page: React.FC = () => {
                 return item;
             });
         });
-        if(type === "update"){
-        await axios.post("/api/attendance/updateAttendence",{
-            userid: id,
-            status: status,
-            date:today
-        });
+        if (type === "update") {
+            await axios.post("/api/attendance/updateAttendence", {
+                userid: id,
+                status: status,
+                date: today
+            });
         }
-        
     };
-
 
     const handleGenerateAttendance = async () => {
         setLoading(true);
@@ -70,6 +77,33 @@ const Page: React.FC = () => {
     };
 
     useEffect(() => {
+        const getAttendanceByDate = async () => {
+            setAttendanceloading(true);
+            
+            try {
+                const response = await axios.post("/api/attendance/byDate", {
+                    byDate: getdate
+                });
+
+                if (response.status === 500 || response.status === 209) {
+                    toast.error(response.data.message);
+                } else {
+                    const data = response.data.data || [];
+                    setAttendanceData(data);
+                }
+            } catch (error) {
+                toast.error('Failed to fetch attendance.');
+            } finally {
+                setAttendanceloading(false);
+            }
+        };
+
+        if (getdate) {
+            getAttendanceByDate();
+        }
+    }, [getdate]);
+
+    useEffect(() => {
         const filtered = attendanceData.filter(item =>
             (selectedRole === 'All' || item.role === selectedRole) &&
             (item.userid.toLowerCase().includes(searchQuery.toLowerCase()) || item.name.toLowerCase().includes(searchQuery.toLowerCase()))
@@ -81,8 +115,9 @@ const Page: React.FC = () => {
         const currentDate = new Date();
         const formattedDate = currentDate.toISOString().split('T')[0];
         setToday(formattedDate);
+        setGetdate(formattedDate);
 
-        const todayattendance = async () => {
+        const fetchTodayAttendance = async () => {
             setAttendanceloading(true);
             try {
                 const response = await axios.get("/api/attendance");
@@ -92,16 +127,25 @@ const Page: React.FC = () => {
                 } else {
                     const data = response.data.data || [];
                     setAttendanceData(data);
+
+                    const dates: AvailableDate = {
+                        minDate: response.data.minDate || formattedDate,
+                        maxDate: response.data.maxDate || formattedDate
+                    };
+                    setAvaiableDate(dates);
                 }
             } catch (error) {
-                toast.error('Failed to generate attendance.');
+                toast.error('Failed to fetch attendance.');
             } finally {
                 setAttendanceloading(false);
             }
         };
-        todayattendance();
+
+        fetchTodayAttendance();
 
     }, []);
+
+
     return (
         <div className='bg-[#e6e6e6] py-[5vh] px-[8vw] font-raleway flex flex-col gap-[6vh]'>
             <h1 className="font-bold">Attendance</h1>
@@ -112,7 +156,16 @@ const Page: React.FC = () => {
                             <div className="flex gap-2">
                                 <div>Date: </div>
                                 <div className="flex gap-2 underline">
-                                    <input type="date" name="attend_date" value={today} onChange={(e) => setToday(e.target.value)} />
+                                    <input
+                                        type="date"
+                                        name="attend_date"
+                                        value={getdate}
+                                        min={availableDate.minDate}
+                                        max={availableDate.maxDate}
+                                        onChange={(e) => setGetdate(e.target.value)}
+                                    />
+
+
                                 </div>
                             </div>
 
@@ -168,19 +221,19 @@ const Page: React.FC = () => {
                                     <td className="border px-4 py-4 transition-colors duration-300">{item.role.toUpperCase()}</td>
                                     <td className="border px-4 py-4 transition-colors duration-300">
                                         {item.status === 'present' ? (
-                                            <button onClick={() => giveAttendance(item.userid, 'present',"reset")} className="bg-supporting2 text-white px-4 py-2 rounded text-[12px] w-[18rem]  flex items-center justify-between">
+                                            <button onClick={() => giveAttendance(item.userid, 'present', "reset")} className="bg-supporting2 text-white px-4 py-2 rounded text-[12px] w-[18rem]  flex items-center justify-between">
                                                 <div>PRESENT</div> <FaCheck />
                                             </button>
                                         ) : item.status === 'absent' ? (
-                                            <button onClick={() => giveAttendance(item.userid, 'absent',"reset")} className="bg-bgred text-white px-4 py-2 rounded text-[12px] w-[18rem] flex items-center justify-between">
+                                            <button onClick={() => giveAttendance(item.userid, 'absent', "reset")} className="bg-bgred text-white px-4 py-2 rounded text-[12px] w-[18rem] flex items-center justify-between">
                                                 <div>ABSENT</div> <RxCross2 />
                                             </button>
                                         ) : (
                                             <div className='flex gap-4 w-full'>
-                                                <button onClick={() => giveAttendance(item.userid, 'absent',"update")} className="bg-bgred text-white px-4 py-2 rounded text-[12px] flex items-center gap-10">
+                                                <button onClick={() => giveAttendance(item.userid, 'absent', "update")} className="bg-bgred text-white px-4 py-2 rounded text-[12px] flex items-center gap-10">
                                                     <div>ABSENT</div> <RxCross2 />
                                                 </button>
-                                                <button onClick={() => giveAttendance(item.userid, 'present',"update")} className="bg-supporting2 text-white px-4 py-2 rounded mr-2 text-[12px] flex items-center gap-10">
+                                                <button onClick={() => giveAttendance(item.userid, 'present', "update")} className="bg-supporting2 text-white px-4 py-2 rounded mr-2 text-[12px] flex items-center gap-10">
                                                     <div>PRESENT</div> <FaCheck />
                                                 </button>
                                             </div>
@@ -203,11 +256,7 @@ const Page: React.FC = () => {
                             visible={true}
                         />
                     </div>
-                ) : filteredData && filteredData.length < 1 ? (
-                    <div className='flex items-center justify-center h-[30vh]'>
-                         <p className='text-[18px] font-bold font-montserrat'>No Record Found </p>
-                    </div>
-                ):(
+                ) : (
                     <div className='flex flex-col gap-5 items-center justify-center h-[30vh]'>
                         <p className='text-[18px] font-bold font-montserrat'>Please Generate Attendance for today.</p>
                         <button

@@ -1,14 +1,13 @@
 "use client";
 import React, { useState } from 'react';
-import { MdBorderColor } from "react-icons/md";
 import { FaPenToSquare } from "react-icons/fa6";
 
 const sampleData = [
-    { name: 'Apples', quantity: 10, unit: 'kg', lowlimit: 5, id: '#CFG758', price: '₹10' },
-    { name: 'Bananas form banaras, mangoe', quantity: 20, unit: 'kg', lowlimit: 10, id: '#CFG478', price: '₹10' },
-    { name: 'Oranges', quantity: 15, unit: 'kg', lowlimit: 5, id: '#CFG788', price: '₹10' },
-    { name: 'Mangoes', quantity: 25, unit: 'kg', lowlimit: 10, id: '#CFG786', price: '₹10' },
-    { name: 'Grapes', quantity: 30, unit: 'kg', lowlimit: 15, id: '#CFG787', price: '₹10' },
+    { name: 'Apples', quantity: 10, unit: 'kg', lowlimit: 5, id: '#CFG758' },
+    { name: 'Bananas form banaras, mangoe', quantity: 20, unit: 'kg', lowlimit: 10, id: '#CFG478' },
+    { name: 'Oranges', quantity: 15, unit: 'kg', lowlimit: 5, id: '#CFG788' },
+    { name: 'Mangoes', quantity: 25, unit: 'kg', lowlimit: 10, id: '#CFG786' },
+    { name: 'Grapes', quantity: 30, unit: 'kg', lowlimit: 15, id: '#CFG787' },
 ];
 
 const InventoryCard: React.FC = () => {
@@ -35,13 +34,6 @@ const InventoryCard: React.FC = () => {
         }
     };
 
-    const handleSaveOrder = () => {
-        if (selectedItem) {
-            // Update inventory with new quantity and remarks
-            setInventory(inventory.map(item => item.id === selectedItem.id ? { ...item, quantity: selectedItem.quantity, remarks: selectedItem.remarks } : item));
-        }
-    };
-
     return (
         <div className='flex flex-col gap-4'>
             {/* search */}
@@ -59,7 +51,6 @@ const InventoryCard: React.FC = () => {
                     <tr className='bg-primary text-white'>
                         <th className="px-4 py-2 text-left w-[200px]">ID</th>
                         <th className="px-4 py-2 text-left">Item</th>
-                        <th className="px-4 py-2 text-left">Price</th>
                         <th className="px-4 py-2 text-left">Current Quantity</th>
                         <th className="px-4 py-2 text-left">Low Limit</th>
                         <th className="px-4 py-2 text-left w-[100px]">Action</th>
@@ -70,7 +61,6 @@ const InventoryCard: React.FC = () => {
                         <tr key={index} className='text-[14px] font-medium font-montserrat'>
                             <td className="border px-4 py-2 transition-colors duration-300">{item.id}</td>
                             <td className="border px-4 py-2 transition-colors duration-300">{item.name}</td>
-                            <td className="border px-4 py-2 transition-colors duration-300">{item.price}</td>
                             <td className="border px-4 py-2 transition-colors duration-300">{item.quantity} {item.unit}</td>
                             <td className="border px-4 py-2 transition-colors duration-300">{item.lowlimit} {item.unit}</td>
                             <td className="border px-4 py-4 transition-colors duration-300">
@@ -84,8 +74,6 @@ const InventoryCard: React.FC = () => {
                     ))}
                 </tbody>
             </table>
-
-
 
             {/* Edit Popup */}
             {editPopupVisible && editData && (

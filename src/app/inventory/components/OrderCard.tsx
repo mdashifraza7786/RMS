@@ -34,7 +34,6 @@ const OrderCard: React.FC = () => {
     };
 
     const handleSaveOrder = () => {
-        // Perform save logic here
         console.log('Order saved:', inventory);
     };
 
@@ -54,7 +53,7 @@ const OrderCard: React.FC = () => {
                         {/* Cross button */}
                         <button
                             onClick={() => handleRemoveOrder(index)}
-                            className="absolute top-2 right-2 text-red-500 hover:text-red-700"
+                            className="absolute top-0 right-2 text-red-500 hover:text-red-700"
                         >
                             <IoMdClose size={20} />
                         </button>

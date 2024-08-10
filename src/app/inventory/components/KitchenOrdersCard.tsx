@@ -164,7 +164,7 @@ const KitchenOrdersCard: React.FC = () => {
                                 <input
                                     type="number"
                                     value={editData.quantity}
-                                    onChange={(e) => setEditData({ ...editData, quantity: parseInt(e.target.value) })}
+                                    onChange={(e) => setEditData({ ...editData, quantity: parseInt(e.target.value, 10) })}
                                     className="border border-gray-300 rounded-md px-3 py-2 font-semibold w-full"
                                 />
                             </div>

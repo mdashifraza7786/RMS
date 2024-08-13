@@ -5,7 +5,7 @@ import bcrypt from 'bcrypt'
 export async function POST(request: Request) {
     const data = await request.json();
     const { basicInfoFields, addressFields, payoutFields } = data;
-    
+
     let userType: string;
     switch (basicInfoFields.role) {
         case "chef":
@@ -20,45 +20,45 @@ export async function POST(request: Request) {
         default:
             return NextResponse.json({ message: "Contact Developer" });
     }
-    
+
     function generateFourDigitRandomNumber(): number {
         return Math.floor(1000 + Math.random() * 9000);
     }
-    
+
     async function generateUniqueUserId(): Promise<string> {
         let uniqueID: string;
         let userExists: boolean;
-    
+
         do {
             uniqueID = `${userType}${generateFourDigitRandomNumber()}`;
             const user = await getUserByUserid(uniqueID);
             userExists = !!user;
         } while (userExists);
-    
+
         return uniqueID;
     }
-    
+
     const uniqueID = await generateUniqueUserId();
-    
+
     function generatePassword(length: number): string {
         const upperCaseChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
         const lowerCaseChars = 'abcdefghijklmnopqrstuvwxyz';
         const numbers = '0123456789';
         const specialChars = '!@#$%^&*()_+[]{}|;:,.<>?';
-    
+
         const allChars = upperCaseChars + lowerCaseChars + numbers + specialChars;
         let password = '';
-    
+
         for (let i = 0; i < length; i++) {
             const randomIndex = Math.floor(Math.random() * allChars.length);
             password += allChars[randomIndex];
         }
-    
+
         return password;
     }
-    
+
     const password = generatePassword(6);
-    
+
     // Hash the password
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
@@ -73,7 +73,7 @@ export async function POST(request: Request) {
             VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         `, [uniqueID, basicInfoFields.name, basicInfoFields.role, basicInfoFields.phone_number, basicInfoFields.email, hashedPassword, basicInfoFields.aadhar_no, basicInfoFields.pan_no]);
 
-    
+
 
         // Insert into user_address table
         await connection.query(`
@@ -88,7 +88,7 @@ export async function POST(request: Request) {
 
         await connection.commit();
 
-        return NextResponse.json({ message: "Data inserted successfully",cred:{uniqueID,password}});
+        return NextResponse.json({ message: "Data inserted successfully", cred: { uniqueID, password } });
     } catch (err: any) {
         await connection.rollback();
         return NextResponse.json({ error: err.message });

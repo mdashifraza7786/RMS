@@ -70,7 +70,7 @@ const Page: React.FC = () => {
                         {/* Lower section */}
                         <table className="table-auto w-full">
                             <thead>
-                                <tr className='bg-primary text-white font-light'>
+                                <tr className='bg-secondary text-white font-light'>
                                     <th className="px-4 py-2 text-left w-[200px]">Item ID</th>
                                     <th className="px-4 py-2 text-left w-[400px]">Item Name</th>
                                     <th className="px-4 py-2 text-left w-[200px]">Price</th>

@@ -21,7 +21,7 @@ export async function dbConnect() {
 export async function getUserByUserid(userID: string) {
     const connection = await dbConnect();
     try {
-        const [rows] = await connection.execute<RowDataPacket[]>('SELECT * FROM user WHERE userid = ?', [userID]);
+        const [rows] = await connection.execute<RowDataPacket[]>('SELECT userid,name,role,mobile,email,photo,aadhaar,pancard FROM user WHERE userid = ?', [userID]);
 
         if (rows.length > 0) {
             return  rows[0];
@@ -40,7 +40,26 @@ export async function getUserByUserid(userID: string) {
 export async function getMembers() {
     const connection = await dbConnect();
     try {
-        const [rows] = await connection.execute<RowDataPacket[]>('SELECT * FROM user');
+        const [rows] = await connection.execute<RowDataPacket[]>('SELECT userid,name,role,mobile,email,photo,aadhaar,pancard FROM user');
+
+        if (rows.length > 0) {
+            return  rows;
+        }else{
+            return false;
+        }
+
+        
+    } catch (error: any) {
+        throw error;
+    } finally {
+        await connection.end();
+    }
+}
+
+export async function getAccount(userid:string) {
+    const connection = await dbConnect();
+    try {
+        const [rows] = await connection.execute<RowDataPacket[]>('SELECT account_name,account_number,ifsc_code,branch_name,upiid FROM payout_details WHERE userid = ?',[userid]);
 
         if (rows.length > 0) {
             return  rows;

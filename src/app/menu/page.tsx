@@ -70,7 +70,7 @@ const Page: React.FC = () => {
                         {/* Lower section */}
                         <table className="table-auto w-full">
                             <thead>
-                                <tr className='bg-secondary text-white font-light'>
+                                <tr className='bg-[#3798c5] text-white font-light'>
                                     <th className="px-4 py-2 text-left w-[200px]">Item ID</th>
                                     <th className="px-4 py-2 text-left w-[400px]">Item Name</th>
                                     <th className="px-4 py-2 text-left w-[200px]">Price</th>
@@ -92,7 +92,7 @@ const Page: React.FC = () => {
                                                 {/* <button className="bg-primary text-white px-4 py-2 rounded text-[12px] flex items-center gap-10">
                                                     <div>View</div> <FaEye />
                                                 </button> */}
-                                                <button className="bg-primary text-white px-4 py-2 rounded text-[12px] flex items-center gap-10"  onClick={() => handleEditClick(item)}>
+                                                <button className="bg-secondary text-white px-4 py-2 rounded text-[12px] flex items-center gap-10"  onClick={() => handleEditClick(item)}>
                                                     <div>Edit</div> <FaPenToSquare />
                                                 </button>
                                             </div>

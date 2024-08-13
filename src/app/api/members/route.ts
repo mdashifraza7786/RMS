@@ -1,4 +1,4 @@
-import { getMembers } from "@/database/database";
+import { getAccount, getMembers } from "@/database/database";
 import { NextResponse } from "next/server";
 
 export async function GET(){

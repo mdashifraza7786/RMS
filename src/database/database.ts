@@ -21,7 +21,7 @@ export async function dbConnect() {
 export async function getUserByUserid(userID: string) {
     const connection = await dbConnect();
     try {
-        const [rows] = await connection.execute<RowDataPacket[]>('SELECT userid,name,role,mobile,email,photo,aadhaar,pancard FROM user WHERE userid = ?', [userID]);
+        const [rows] = await connection.execute<RowDataPacket[]>('SELECT userid,name,password,role,mobile,email,photo,aadhaar,pancard FROM user WHERE userid = ?', [userID]);
 
         if (rows.length > 0) {
             return  rows[0];

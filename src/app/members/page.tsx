@@ -14,9 +14,9 @@ const Page: React.FC = () => {
     const [hasMore, setHasMore] = useState(true);
     const [editPopupVisible, setEditPopupVisible] = useState(false);
     const [detailsPopupVisible, setDetailsPopupVisible] = useState(false);
-    const [selectedItem, setSelectedItem] = useState({});
-    const [editData, setEditData] = useState({ amount: '', status: 'paid', id: '' });
-    const [addMemberPopupVisible, setAddMemberPopupVisible] = useState<false | true>(false);
+    const [selectedItem, setSelectedItem] = useState<any>({});
+    const [editData, setEditData] = useState({ amount: '', status: 'paid', id: '' ,name:''});
+    const [addMemberPopupVisible, setAddMemberPopupVisible] = useState<boolean>(false);
 
     useEffect(() => {
         document.title = "Members";
@@ -25,6 +25,7 @@ const Page: React.FC = () => {
 
     const fetchMemberData = async () => {
         if (loading) return;
+
         setLoading(true);
         try {
             const response = await axios.get(`/api/members`, {
@@ -41,7 +42,6 @@ const Page: React.FC = () => {
                     const newItems = data.filter((item: RowDataPacket) => !existingIds.has(item.id));
                     return [...prevData, ...newItems];
                 });
-                console.warn(memberData);
             }
         } catch (error) {
             console.error('Error fetching data:', error);
@@ -57,7 +57,6 @@ const Page: React.FC = () => {
 
     const handleEyeClick = (data: any) => {
         setSelectedItem(data);
-        console.log(data);
         setDetailsPopupVisible(true);
     };
 
@@ -85,7 +84,7 @@ const Page: React.FC = () => {
                 {addMemberPopupVisible && (
                     <AddMemberPopup onHandle={handleAddMemberPopup} />
                 )}
-                <section className='bg-white rounded-[10px] p-[4vh] font-semibold flex flex-col gap-3 relative'>
+                <section className='bg-white rounded-[10px] p-[3vh] font-semibold flex flex-col gap-3 relative'>
                     <section className='flex justify-between items-center py-4'>
                         <input
                             type='search'
@@ -95,12 +94,12 @@ const Page: React.FC = () => {
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
                         <div className='flex justify-between items-center py-4'>
-                            <button onClick={handleAddMemberPopup} className="bg-primary text-white px-4 py-2 rounded flex items-center gap-2">
+                            <button onClick={handleAddMemberPopup} className="bg-supporting2 shadow-md font-bold text-white px-4 py-2 rounded flex items-center gap-2">
                                 <FaUserPlus /> <span>Add Member</span>
                             </button>
                         </div>
                     </section>
-                    {filteredData && filteredData.length > 0 ? (
+                    {filteredData.length > 0 ? (
                         <table className="table-auto w-full">
                             <thead>
                                 <tr className='bg-primary text-white font-light'>
@@ -137,7 +136,7 @@ const Page: React.FC = () => {
                             <p>No Data Found</p>
                         </div>
                     )}
-                    {filteredData && filteredData.length > 0 && hasMore && !loading && (
+                    {filteredData.length > 0 && hasMore && !loading && (
                         <button
                             onClick={handleLoadMore}
                             className="mt-4 bg-primary text-white px-4 py-2 rounded"
@@ -147,23 +146,31 @@ const Page: React.FC = () => {
                     )}
                 </section>
 
-                {/* Details Popup */}
+                {/* View Popup */}
                 {detailsPopupVisible && selectedItem && (
                     <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50">
                         <div className="bg-white p-8 rounded-lg w-96">
                             <h2 className="text-xl font-semibold mb-4">Member Details</h2>
                             <div className="mb-4">
                                 <p><strong>Name:</strong> {selectedItem.name}</p>
-                                <p><strong>ID:</strong> {selectedItem.id}</p>
                                 <p><strong>Mobile:</strong> {selectedItem.mobile}</p>
                                 <p><strong>Role:</strong> {selectedItem.role}</p>
-                                <p><strong>Account Holder:</strong> {selectedItem.accountHolder}</p>
-                                <p><strong>Account Number:</strong> {selectedItem.accountNumber}</p>
-                                <p><strong>IFSC:</strong> {selectedItem.ifsc}</p>
-                                <p><strong>Branch:</strong> {selectedItem.branch}</p>
-                                <p><strong>Amount:</strong> {selectedItem.amount}</p>
-                                <p><strong>Status:</strong> {selectedItem.status}</p>
-                                <p><strong>Date of Payment:</strong> {selectedItem.dateofpayment}</p>
+                                <div>
+                                    <p><strong>Account Holder:</strong> {selectedItem.accountHolder}</p>
+                                    <p><strong>Account Number:</strong> {selectedItem.accountNumber}</p>
+                                    <p><strong>IFSC:</strong> {selectedItem.ifsc}</p>
+                                    <p><strong>Branch:</strong> {selectedItem.branch}</p>
+                                    <p><strong>Amount:</strong> {selectedItem.amount}</p>
+                                    <p><strong>Status:</strong> {selectedItem.status}</p>
+                                    <p><strong>Date of Payment:</strong> {selectedItem.dateofpayment}</p>
+                                </div>
+                                <div>
+                                    <p><strong>Street/House No:</strong> {selectedItem.street_or_house_no}</p>
+                                    <p><strong>Address One:</strong> {selectedItem.address_one}</p>
+                                    <p><strong>City:</strong> {selectedItem.city}</p>
+                                    <p><strong>State:</strong> {selectedItem.state}</p>
+                                    <p><strong>PIN:</strong> {selectedItem.pin}</p>
+                                </div>
                             </div>
                             <div className="flex justify-end">
                                 <button
@@ -185,38 +192,23 @@ const Page: React.FC = () => {
                             <div className="mb-4">
                                 <p><strong>Name:</strong> {editData.name}</p>
                                 <p><strong>ID:</strong> {editData.id}</p>
-                                <p><strong>Mobile:</strong> {editData.mobile}</p>
-                                <p><strong>Role:</strong> {editData.role}</p>
-                                <p><strong>Amount:</strong> <input type="text" value={editData.amount} onChange={(e) => setEditData({ ...editData, amount: e.target.value })} /></p>
-                                <p><strong>Status:</strong> 
-                                    <select value={editData.status} onChange={(e) => setEditData({ ...editData, status: e.target.value })}>
-                                        <option value="paid">Paid</option>
-                                        <option value="unpaid">Unpaid</option>
-                                    </select>
-                                </p>
-                                <p><strong>Date of Payment:</strong> {/* Add input for date if needed */}</p>
+                                <p><strong>Amount:</strong> {editData.amount}</p>
+                                <p><strong>Status:</strong> {editData.status}</p>
                             </div>
                             <div className="flex justify-end">
                                 <button
                                     onClick={() => setEditPopupVisible(false)}
-                                    className="bg-gray-200 text-gray-700 rounded-md px-4 py-2 mr-2"
-                                >
-                                    CLOSE
-                                </button>
-                                <button
-                                    // onClick={handleEdit}
                                     className="bg-blue-500 text-white rounded-md px-4 py-2"
                                 >
-                                    Save
+                                    Close
                                 </button>
                             </div>
                         </div>
                     </div>
                 )}
-
             </div>
         </>
     );
-}
+};
 
 export default Page;

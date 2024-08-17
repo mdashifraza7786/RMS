@@ -5,6 +5,4 @@ export async function GET(){
     const member = await getMembers();
 
     return NextResponse.json(member);
-    
-
 }

@@ -10,7 +10,6 @@ import { MdOutlineInventory } from 'react-icons/md';
 import { PiChefHatThin } from 'react-icons/pi';
 import { TbReportAnalytics } from 'react-icons/tb';
 import { AiOutlineLogout } from "react-icons/ai";
-
 import { MdOutlineRestaurantMenu } from "react-icons/md";
 import { usePathname } from 'next/navigation';
 import { signOut } from 'next-auth/react';

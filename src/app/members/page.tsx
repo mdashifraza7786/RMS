@@ -8,7 +8,7 @@ import { IoFastFoodOutline } from "react-icons/io5";
 import AddMemberPopup from './AddMemberPopup';
 
 const Page: React.FC = () => {
-    const [memberData, setMemberData] = useState<RowDataPacket[]>([]);
+    const [memberData, setMemberData] = useState<any[]>([]);
     const [page, setPage] = useState(1);
     const [loading, setLoading] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
@@ -16,7 +16,7 @@ const Page: React.FC = () => {
     const [editPopupVisible, setEditPopupVisible] = useState(false);
     const [detailsPopupVisible, setDetailsPopupVisible] = useState(false);
     const [selectedItem, setSelectedItem] = useState<any>({});
-    const [editData, setEditData] = useState({ amount: '', status: 'paid', id: '' ,name:''});
+    const [editData, setEditData] = useState({ amount: '', status: 'paid', id: '', name: '' });
     const [addMemberPopupVisible, setAddMemberPopupVisible] = useState<boolean>(false);
 
     useEffect(() => {
@@ -32,15 +32,22 @@ const Page: React.FC = () => {
             const response = await axios.get(`/api/members`, {
                 params: { page, search: searchQuery }
             });
-            const data = response.data;
+            const { users, payouts, addresses } = response.data;
 
-            if (data.length < 10) {
+            if (users.length < 10) {
                 setHasMore(false);
             }
-            if (data.length > 0) {
+
+            if (users.length > 0) {
+                const combinedData = users.map((user: RowDataPacket, index: number) => ({
+                    ...user,
+                    ...payouts[index],
+                    ...addresses[index]
+                }));
+
                 setMemberData(prevData => {
-                    const existingIds = new Set(prevData.map(item => item.id));
-                    const newItems = data.filter((item: RowDataPacket) => !existingIds.has(item.id));
+                    const existingIds = new Set(prevData.map(item => item.userid));
+                    const newItems = combinedData.filter((item: any) => !existingIds.has(item.userid));
                     return [...prevData, ...newItems];
                 });
             }
@@ -68,7 +75,7 @@ const Page: React.FC = () => {
     };
 
     const filteredData = memberData.filter(item =>
-        String(item.id).toLowerCase().includes(searchQuery.toLowerCase()) ||
+        String(item.userid).toLowerCase().includes(searchQuery.toLowerCase()) ||
         String(item.name).toLowerCase().includes(searchQuery.toLowerCase()) ||
         String(item.role).toLowerCase().includes(searchQuery.toLowerCase()) ||
         String(item.mobile).toLowerCase().includes(searchQuery.toLowerCase())
@@ -157,10 +164,10 @@ const Page: React.FC = () => {
                                 <p><strong>Mobile:</strong> {selectedItem.mobile}</p>
                                 <p><strong>Role:</strong> {selectedItem.role}</p>
                                 <div>
-                                    <p><strong>Account Holder:</strong> {selectedItem.accountHolder}</p>
-                                    <p><strong>Account Number:</strong> {selectedItem.accountNumber}</p>
-                                    <p><strong>IFSC:</strong> {selectedItem.ifsc}</p>
-                                    <p><strong>Branch:</strong> {selectedItem.branch}</p>
+                                    <p><strong>Account Holder:</strong> {selectedItem.account_name}</p>
+                                    <p><strong>Account Number:</strong> {selectedItem.account_number}</p>
+                                    <p><strong>IFSC:</strong> {selectedItem.ifsc_code}</p>
+                                    <p><strong>Branch:</strong> {selectedItem.branch_name}</p>
                                     <p><strong>Amount:</strong> {selectedItem.amount}</p>
                                     <p><strong>Status:</strong> {selectedItem.status}</p>
                                     <p><strong>Date of Payment:</strong> {selectedItem.dateofpayment}</p>

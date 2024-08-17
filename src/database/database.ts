@@ -41,17 +41,17 @@ export async function getMembers() {
     const connection = await dbConnect();
     try {
         // Fetch data from the 'user' table
-        const [userRows] = await connection.execute<RowDataPacket[]>(
+        const [userRows] = await connection.query<RowDataPacket[]>(
             'SELECT userid, name, role, mobile, email, photo, aadhaar, pancard FROM user'
         );
 
         // Fetch data from the 'payout_details' table
-        const [payoutRows] = await connection.execute<RowDataPacket[]>(
+        const [payoutRows] = await connection.query<RowDataPacket[]>(
             'SELECT account_name, account_number, ifsc_code, branch_name, upiid FROM payout_details'
         );
 
         //fetch data from the 'user_address' table
-        const [addressRows] = await connection.execute<RowDataPacket[]>(
+        const [addressRows] = await connection.query<RowDataPacket[]>(
             'SELECT street_or_house_no,landmark,address_one,address_two,city,state,pin FROM user_address'
         );
 

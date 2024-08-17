@@ -4,6 +4,7 @@ import { RowDataPacket } from 'mysql2';
 import React, { useState, useEffect } from 'react';
 import { FaEye, FaUserPlus } from "react-icons/fa";
 import { FaPenToSquare } from "react-icons/fa6";
+import { IoFastFoodOutline } from "react-icons/io5";
 import AddMemberPopup from './AddMemberPopup';
 
 const Page: React.FC = () => {
@@ -95,7 +96,7 @@ const Page: React.FC = () => {
                         />
                         <div className='flex justify-between items-center py-4'>
                             <button onClick={handleAddMemberPopup} className="bg-supporting2 shadow-md font-bold text-white px-4 py-2 rounded flex items-center gap-2">
-                                <FaUserPlus /> <span>Add Member</span>
+                            <IoFastFoodOutline /> <span>Add Member</span>
                             </button>
                         </div>
                     </section>

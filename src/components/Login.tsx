@@ -11,7 +11,7 @@ function Login() {
 
   const handleLogin = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    setLoading(true); // Set loading to true when login starts
+    setLoading(true);
 
     try {
       const formData = new FormData(event.currentTarget);

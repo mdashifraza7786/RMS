@@ -2,6 +2,7 @@
 import React, { useState, useEffect, ChangeEvent } from 'react';
 import { FaEye } from "react-icons/fa";
 import { FaPenToSquare } from "react-icons/fa6";
+import { IoFastFoodSharp } from "react-icons/io5";
 import AddMenu from './popup';
 
 const sampleData = [
@@ -21,7 +22,7 @@ const Page: React.FC = () => {
     const [popupopened, setPopupopened] = useState<true | false>(false);
     const [searchTerm, setSearchTerm] = useState<string>('');
     const [editPopupVisible, setEditPopupVisible] = useState(false);
-    const [editData, setEditData] = useState({ itemID: '', name: '', price: '',img:null });
+    const [editData, setEditData] = useState({ itemID: '', name: '', price: '', img: null });
 
     useEffect(() => {
         document.title = "Menu";
@@ -63,14 +64,18 @@ const Page: React.FC = () => {
                                 onChange={handleSearchChange}
                             />
                             <div className="flex">
-                                <button onClick={addMenuHandler} className='bg-secondary px-5 py-1 text-white text-lg font-medium rounded-md'>Add Menu</button>
+
+                                <button onClick={addMenuHandler} className='bg-[#9FCC2E] shadow-md px-5 py-1 text-white text-lg flex items-center justify-center gap-5 font-medium rounded-sm'>
+                                    <IoFastFoodSharp />
+                                    <div>Add Menu</div>
+                                </button>
                             </div>
                         </section>
 
                         {/* Lower section */}
                         <table className="table-auto w-full">
                             <thead>
-                                <tr className='bg-[#3798c5] text-white font-light'>
+                                <tr className='bg-primary text-white font-light'>
                                     <th className="px-4 py-2 text-left w-[200px]">Item ID</th>
                                     <th className="px-4 py-2 text-left w-[400px]">Item Name</th>
                                     <th className="px-4 py-2 text-left w-[200px]">Price</th>
@@ -92,7 +97,7 @@ const Page: React.FC = () => {
                                                 {/* <button className="bg-primary text-white px-4 py-2 rounded text-[12px] flex items-center gap-10">
                                                     <div>View</div> <FaEye />
                                                 </button> */}
-                                                <button className="bg-secondary text-white px-4 py-2 rounded text-[12px] flex items-center gap-10"  onClick={() => handleEditClick(item)}>
+                                                <button className="bg-primary text-white px-4 py-2 rounded text-[12px] flex items-center gap-10" onClick={() => handleEditClick(item)}>
                                                     <div>Edit</div> <FaPenToSquare />
                                                 </button>
                                             </div>
@@ -109,7 +114,7 @@ const Page: React.FC = () => {
             {editPopupVisible && (
                 <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50">
                     <div className="bg-white p-8 rounded-lg">
-                        
+
                         <div className="flex justify-end">
                             <button
                                 onClick={() => setEditPopupVisible(false)}

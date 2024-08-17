@@ -40,15 +40,31 @@ export async function getUserByUserid(userID: string) {
 export async function getMembers() {
     const connection = await dbConnect();
     try {
-        const [rows] = await connection.execute<RowDataPacket[]>('SELECT userid,name,role,mobile,email,photo,aadhaar,pancard FROM user');
+        // Fetch data from the 'user' table
+        const [userRows] = await connection.execute<RowDataPacket[]>(
+            'SELECT userid, name, role, mobile, email, photo, aadhaar, pancard FROM user'
+        );
 
-        if (rows.length > 0) {
-            return  rows;
-        }else{
+        // Fetch data from the 'payout_details' table
+        const [payoutRows] = await connection.execute<RowDataPacket[]>(
+            'SELECT account_name, account_number, ifsc_code, branch_name, upiid FROM payout_details'
+        );
+
+        //fetch data from the 'user_address' table
+        const [addressRows] = await connection.execute<RowDataPacket[]>(
+            'SELECT street_or_house_no,landmark,address_one,address_two,city,state,pin FROM user_address'
+        );
+
+        if (userRows.length > 0 || payoutRows.length > 0 || addressRows.length > 0) {
+            return {
+                users: userRows,
+                payouts: payoutRows,
+                addresses: addressRows
+            };
+        } else {
             return false;
         }
 
-        
     } catch (error: any) {
         throw error;
     } finally {

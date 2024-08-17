@@ -24,7 +24,7 @@ export async function getUserByUserid(userID: string) {
         const [rows] = await connection.execute<RowDataPacket[]>('SELECT userid,name,password,role,mobile,email,photo,aadhaar,pancard FROM user WHERE userid = ?', [userID]);
 
         if (rows.length > 0) {
-            return  rows[0];
+            return  rows[0]; 
         }else{
             return false;
         }

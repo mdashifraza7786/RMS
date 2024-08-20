@@ -274,21 +274,23 @@ const Page: React.FC = () => {
                                 {/* Personal Information */}
                                 <div className="flex flex-col gap-3 col-span-2">
                                     <div className="flex flex-row gap-3">
+                                        
+                                        <div className="flex-grow">
+                                            <label className="block text-sm font-medium text-gray-800">ID:</label>
+                                            <input
+                                                type="text"
+                                                value={editData.userid}
+                                                readOnly
+                                                onChange={(e) => setEditData({ ...editData, userid: e.target.value })}
+                                                className="bg-gray-100 border border-gray-300 rounded-md px-3 py-2 w-full text-sm"
+                                            />
+                                        </div>
                                         <div className="flex-grow">
                                             <label className="block text-sm font-medium text-gray-800">Name:</label>
                                             <input
                                                 type="text"
                                                 value={editData.name}
                                                 onChange={(e) => setEditData({ ...editData, name: e.target.value })}
-                                                className="border border-gray-300 rounded-md px-3 py-2 w-full text-sm"
-                                            />
-                                        </div>
-                                        <div className="flex-grow">
-                                            <label className="block text-sm font-medium text-gray-800">ID:</label>
-                                            <input
-                                                type="text"
-                                                value={editData.userid}
-                                                onChange={(e) => setEditData({ ...editData, userid: e.target.value })}
                                                 className="border border-gray-300 rounded-md px-3 py-2 w-full text-sm"
                                             />
                                         </div>

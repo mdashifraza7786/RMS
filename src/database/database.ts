@@ -92,6 +92,25 @@ export async function getAccount(userid:string) {
     }
 }
 
+export async function getMenu(item_id:string) {
+    const connection = await dbConnect();
+    try {
+        const [rows] = await connection.execute<RowDataPacket[]>('SELECT item_id,item_description,item_category,item_foodtype,item_price,item_thumbnail FROM menu WHERE item_id = ?',[item_id]);
+
+        if (rows.length > 0) {
+            return  rows;
+        }else{
+            return false;
+        }
+
+        
+    } catch (error: any) {
+        throw error;
+    } finally {
+        await connection.end();
+    }
+}
+
 export default async function updateMember(req: NextApiRequest, res: NextApiResponse) {
     if (req.method !== 'PUT') {
         return res.status(405).json({ message: 'Method not allowed' });

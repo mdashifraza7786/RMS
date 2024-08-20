@@ -4,7 +4,7 @@ import {updateMember} from "@/database/database";
 export async function PUT(request: NextRequest) {
     try {
         const data = await request.json();
-        
+        // console.log(data.photo);
         await updateMember(data);
 
         return NextResponse.json({ message: 'Member updated successfully' }, { status: 200 });

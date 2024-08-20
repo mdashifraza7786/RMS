@@ -6,6 +6,7 @@ import { FaEye, FaUserPlus } from "react-icons/fa";
 import { FaPenToSquare } from "react-icons/fa6";
 import { IoFastFoodOutline } from "react-icons/io5";
 import AddMemberPopup from './AddMemberPopup';
+import { Bars } from 'react-loader-spinner';
 
 const Page: React.FC = () => {
     const [memberData, setMemberData] = useState<any[]>([]);
@@ -18,6 +19,7 @@ const Page: React.FC = () => {
     const [selectedItem, setSelectedItem] = useState<any>({});
     const [editData, setEditData] = useState<any>({});
     const [addMemberPopupVisible, setAddMemberPopupVisible] = useState<boolean>(false);
+    const [editLoading, setEditLoading] = useState<true | false>(false);
 
     useEffect(() => {
         document.title = "Members";
@@ -105,6 +107,7 @@ const Page: React.FC = () => {
         pin: string;
     }) => {
         try {
+            setEditLoading(true);
             const response = await fetch('/api/members/updateMember', {
                 method: 'PUT',
                 headers: {
@@ -114,18 +117,34 @@ const Page: React.FC = () => {
             });
 
             if (!response.ok) {
-                throw new Error('Failed to update member');
-            }
+                setEditLoading(false);
 
-            const result = await response.json();
-            console.log('Member updated successfully:', result);
+                throw new Error('Failed to update member');
+            } else {
+
+                const result = await response.json();
+                fetchMemberData();
+                console.log('Member updated successfully:', result);
+                setEditLoading(false);
+
+            }
             // Optionally show a success message to the user
         } catch (error) {
             console.error('Error updating member:', error);
             // Optionally show an error message to the user
         }
     };
-
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setEditData({ ...editData, photo: reader.result as string });
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+    
 
     return (
         <>
@@ -199,7 +218,8 @@ const Page: React.FC = () => {
                 {/* View Popup */}
                 {detailsPopupVisible && selectedItem && (
                     <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50">
-                        <div className="bg-white p-6 rounded-lg w-auto max-w-[600px]">
+                        <div className="bg-white p-6 rounded-lg w-auto max-w-[600px] relative">
+
                             <h2 className="text-xl font-semibold mb-4">Member Details</h2>
 
                             <div className="space-y-4">
@@ -267,14 +287,29 @@ const Page: React.FC = () => {
 
                 {/* Edit Popup */}
                 {editPopupVisible && (
-                    <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50">
-                        <div className="bg-white p-5 px-8 w-[90%] max-w-[600px] max-h-[90vh] overflow-auto">
+                    <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50 ">
+                        <div className={`bg-white p-5 px-8 w-[90%] max-w-[600px] max-h-[90vh] relative ${editLoading ? 'overflow-hidden' : 'overflow-auto'}`}>
+                            {editLoading && (
+                                <div className='absolute w-[88%] min-h-full z-50 flex justify-center items-center'>
+                                    <div className=''>
+                                        <Bars
+                                            height="80"
+                                            width="80"
+                                            color="#25476A"
+                                            ariaLabel="bars-loading"
+                                            wrapperStyle={{}}
+                                            wrapperClass=""
+                                            visible={true}
+                                        />
+                                    </div>
+                                </div>
+                            )}
                             <h2 className="text-xl font-semibold mb-4">Edit Member</h2>
                             <div className="grid grid-cols-2 gap-x-4 gap-y-3">
                                 {/* Personal Information */}
                                 <div className="flex flex-col gap-3 col-span-2">
                                     <div className="flex flex-row gap-3">
-                                        
+
                                         <div className="flex-grow">
                                             <label className="block text-sm font-medium text-gray-800">ID:</label>
                                             <input
@@ -348,12 +383,13 @@ const Page: React.FC = () => {
                                         <div className="flex-grow">
                                             <label className="block text-sm font-medium text-gray-800">Profile Image:</label>
                                             <input
-                                                type="text"
-                                                value={editData.photo}
-                                                onChange={(e) => setEditData({ ...editData, photo: e.target.value })}
+                                                type="file"
+                                                accept="image/*"
+                                                onChange={(e) => handleFileChange(e)}
                                                 className="border border-gray-300 rounded-md px-3 py-2 w-full text-sm"
                                             />
                                         </div>
+
                                     </div>
                                 </div>
 
@@ -479,22 +515,40 @@ const Page: React.FC = () => {
                                     </div>
                                 </div>
                             </div>
+
                             <div className="flex justify-end mt-4">
-                                <button
-                                    onClick={() => setEditPopupVisible(false)}
-                                    className="bg-bgred text-white hover:bg-red-600 rounded-md px-4 py-2 mr-2"
-                                >
-                                    Close
-                                </button>
-                                <button
-                                    onClick={async () => {
-                                        await editMember(editData);
-                                        setEditPopupVisible(false);  // Close the popup after saving
-                                    }}
-                                    className="bg-supporting2 text-white hover:bg-[#8bbf3b] rounded-md px-4 py-2"
-                                >
-                                    Save
-                                </button>
+                                {!editLoading ? (
+                                    <>
+                                        <button
+                                            onClick={() => setEditPopupVisible(false)}
+                                            className="bg-bgred text-white hover:bg-red-600 rounded-md px-4 py-2 mr-2"
+                                        >
+                                            Close
+                                        </button>
+                                        <button
+                                            onClick={async () => {
+                                                await editMember(editData);
+                                                setEditPopupVisible(false);  // Close the popup after saving
+                                            }}
+                                            className="bg-supporting2 text-white hover:bg-[#8bbf3b] rounded-md px-4 py-2"
+                                        >
+                                            Save
+                                        </button>
+                                    </>
+                                ) : (
+                                    <div>
+                                        <Bars
+                                            height="50"
+                                            width="50"
+                                            color="#25476A"
+                                            ariaLabel="bars-loading"
+                                            wrapperStyle={{}}
+                                            wrapperClass=""
+                                            visible={true}
+                                        />
+                                    </div>
+                                )}
+
 
                             </div>
                         </div>

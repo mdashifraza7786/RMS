@@ -1,6 +1,6 @@
 import mysql, { RowDataPacket } from 'mysql2/promise';
-import { NextResponse } from 'next/server';
 import { NextApiRequest, NextApiResponse } from 'next';
+import { NextResponse } from 'next/server';
 
 const dbConfig = {
     host: 'localhost',
@@ -111,17 +111,16 @@ export async function getMenu(item_id:string) {
     }
 }
 
-export default async function updateMember(req: NextApiRequest, res: NextApiResponse) {
-    if (req.method !== 'PUT') {
-        return res.status(405).json({ message: 'Method not allowed' });
-    }
-
+export async function updateMember(data: any) {
     const connection = await dbConnect();
     const { userid, name, role, mobile, email, photo, aadhaar, pancard, 
             account_name, account_number, ifsc_code, branch_name, upiid, 
-            street_or_house_no, landmark, address_one, address_two, city, state, pin } = req.body;
+            street_or_house_no, landmark, address_one, address_two, city, state, pin } = data;
 
     try {
+        // Start transaction
+        await connection.beginTransaction();
+
         // Update user information
         await connection.query(
             `UPDATE user SET name = ?, role = ?, mobile = ?, email = ?, photo = ?, aadhaar = ?, pancard = ?
@@ -143,11 +142,17 @@ export default async function updateMember(req: NextApiRequest, res: NextApiResp
             [street_or_house_no, landmark, address_one, address_two, city, state, pin, userid]
         );
 
-        return res.status(200).json({ message: 'Member updated successfully' });
+        // Commit transaction
+        await connection.commit();
+
+        return NextResponse.json({ success:true, message: 'Member updated successfully' });
 
     } catch (error: any) {
+        // Rollback transaction in case of error
+        await connection.rollback();
         console.error('Error updating member:', error);
-        return res.status(500).json({ message: 'Error updating member' });
+        return NextResponse.json({ success:false, message: 'Error updating member' });
+
     } finally {
         await connection.end();
     }

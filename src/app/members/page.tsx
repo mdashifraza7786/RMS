@@ -16,7 +16,7 @@ const Page: React.FC = () => {
     const [editPopupVisible, setEditPopupVisible] = useState(false);
     const [detailsPopupVisible, setDetailsPopupVisible] = useState(false);
     const [selectedItem, setSelectedItem] = useState<any>({});
-    const [editData, setEditData] = useState({ amount: '', status: 'paid', id: '', name: '' });
+    const [editData, setEditData] = useState<any>({});
     const [addMemberPopupVisible, setAddMemberPopupVisible] = useState<boolean>(false);
 
     useEffect(() => {
@@ -85,6 +85,48 @@ const Page: React.FC = () => {
         setAddMemberPopupVisible(!addMemberPopupVisible);
     };
 
+    const editMember = async (editData: {
+        userid: string; name: string; role: string; mobile: number;
+        email: string;
+        photo: string;
+        aadhaar: string;
+        pancard: string;
+        account_name: string;
+        account_number: string;
+        ifsc_code: string;
+        branch_name: string;
+        upiid: string;
+        street_or_house_no: string;
+        landmark: string;
+        address_one: string;
+        address_two: string;
+        city: string;
+        state: string;
+        pin: string;
+    }) => {
+        try {
+            const response = await fetch('/api/members/updateMember', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(editData),
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to update member');
+            }
+
+            const result = await response.json();
+            console.log('Member updated successfully:', result);
+            // Optionally show a success message to the user
+        } catch (error) {
+            console.error('Error updating member:', error);
+            // Optionally show an error message to the user
+        }
+    };
+
+
     return (
         <>
             <div className='bg-[#e6e6e6] py-[5vh] px-[8vw] font-raleway flex flex-col gap-[6vh]'>
@@ -103,7 +145,7 @@ const Page: React.FC = () => {
                         />
                         <div className='flex justify-between items-center py-4'>
                             <button onClick={handleAddMemberPopup} className="bg-supporting2 shadow-md font-bold text-white px-4 py-2 rounded flex items-center gap-2">
-                            <IoFastFoodOutline /> <span>Add Member</span>
+                                <IoFastFoodOutline /> <span>Add Member</span>
                             </button>
                         </div>
                     </section>
@@ -157,33 +199,63 @@ const Page: React.FC = () => {
                 {/* View Popup */}
                 {detailsPopupVisible && selectedItem && (
                     <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50">
-                        <div className="bg-white p-8 rounded-lg w-96">
+                        <div className="bg-white p-6 rounded-lg w-auto max-w-[600px]">
                             <h2 className="text-xl font-semibold mb-4">Member Details</h2>
-                            <div className="mb-4">
-                                <p><strong>Name:</strong> {selectedItem.name}</p>
-                                <p><strong>Mobile:</strong> {selectedItem.mobile}</p>
-                                <p><strong>Role:</strong> {selectedItem.role}</p>
-                                <div>
-                                    <p><strong>Account Holder:</strong> {selectedItem.account_name}</p>
-                                    <p><strong>Account Number:</strong> {selectedItem.account_number}</p>
-                                    <p><strong>IFSC:</strong> {selectedItem.ifsc_code}</p>
-                                    <p><strong>Branch:</strong> {selectedItem.branch_name}</p>
-                                    <p><strong>Amount:</strong> {selectedItem.amount}</p>
-                                    <p><strong>Status:</strong> {selectedItem.status}</p>
-                                    <p><strong>Date of Payment:</strong> {selectedItem.dateofpayment}</p>
+
+                            <div className="space-y-4">
+                                {/* Photo and Personal Information */}
+                                <div className="flex flex-row items-start gap-4">
+                                    {/* Photo Section */}
+                                    <div className="flex-shrink-0">
+                                        <img
+                                            src={selectedItem.photo} // Replace with your photo URL
+                                            alt="Member Photo"
+                                            className="w-20 h-20 object-cover rounded-full border border-gray-300"
+                                        />
+                                    </div>
+
+                                    {/* Personal Information */}
+                                    <div className="flex-grow bg-gray-100 p-4 rounded-lg shadow-md">
+                                        <h3 className="text-lg font-semibold mb-2">Personal Information</h3>
+                                        <div className="space-y-2">
+                                            <p className="font-medium text-gray-800"><strong>Name:</strong> {selectedItem.name}</p>
+                                            <p className="font-medium text-gray-800"><strong>Mobile:</strong> {selectedItem.mobile}</p>
+                                            <p className="font-medium text-gray-800"><strong>Role:</strong> {selectedItem.role}</p>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div>
-                                    <p><strong>Street/House No:</strong> {selectedItem.street_or_house_no}</p>
-                                    <p><strong>Address One:</strong> {selectedItem.address_one}</p>
-                                    <p><strong>City:</strong> {selectedItem.city}</p>
-                                    <p><strong>State:</strong> {selectedItem.state}</p>
-                                    <p><strong>PIN:</strong> {selectedItem.pin}</p>
+
+                                {/* Bank Details and Address */}
+                                <div className="flex flex-row gap-4">
+                                    {/* Bank Details */}
+                                    <div className="flex-grow bg-gray-100 p-4 rounded-lg shadow-md">
+                                        <h3 className="text-lg font-semibold mb-2">Bank Details</h3>
+                                        <div className="space-y-2">
+                                            <p className="font-medium text-gray-800"><strong>Account Holder:</strong> {selectedItem.account_name}</p>
+                                            <p className="font-medium text-gray-800"><strong>Account Number:</strong> {selectedItem.account_number}</p>
+                                            <p className="font-medium text-gray-800"><strong>IFSC:</strong> {selectedItem.ifsc_code}</p>
+                                            <p className="font-medium text-gray-800"><strong>Branch:</strong> {selectedItem.branch_name}</p>
+                                        </div>
+                                    </div>
+
+                                    {/* Address */}
+                                    <div className="flex-grow bg-gray-100 p-4 rounded-lg shadow-md">
+                                        <h3 className="text-lg font-semibold mb-2">Address</h3>
+                                        <div className="space-y-2">
+                                            <p className="font-medium text-gray-800"><strong>Street/House No:</strong> {selectedItem.street_or_house_no}</p>
+                                            <p className="font-medium text-gray-800"><strong>Address One:</strong> {selectedItem.address_one}</p>
+                                            <p className="font-medium text-gray-800"><strong>City:</strong> {selectedItem.city}</p>
+                                            <p className="font-medium text-gray-800"><strong>State:</strong> {selectedItem.state}</p>
+                                            <p className="font-medium text-gray-800"><strong>PIN:</strong> {selectedItem.pin}</p>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                            <div className="flex justify-end">
+
+                            <div className="flex justify-end mt-4">
                                 <button
                                     onClick={() => setDetailsPopupVisible(false)}
-                                    className="bg-blue-500 text-white rounded-md px-4 py-2"
+                                    className="bg-bgred text-white hover:bg-red-600 rounded-md px-4 py-2"
                                 >
                                     Close
                                 </button>
@@ -192,28 +264,244 @@ const Page: React.FC = () => {
                     </div>
                 )}
 
+
                 {/* Edit Popup */}
                 {editPopupVisible && (
                     <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50">
-                        <div className="bg-white p-8 rounded-lg">
+                        <div className="bg-white p-5 px-8 w-[90%] max-w-[600px] max-h-[90vh] overflow-auto">
                             <h2 className="text-xl font-semibold mb-4">Edit Member</h2>
-                            <div className="mb-4">
-                                <p><strong>Name:</strong> {editData.name}</p>
-                                <p><strong>ID:</strong> {editData.id}</p>
-                                <p><strong>Amount:</strong> {editData.amount}</p>
-                                <p><strong>Status:</strong> {editData.status}</p>
+                            <div className="grid grid-cols-2 gap-x-4 gap-y-3">
+                                {/* Personal Information */}
+                                <div className="flex flex-col gap-3 col-span-2">
+                                    <div className="flex flex-row gap-3">
+                                        <div className="flex-grow">
+                                            <label className="block text-sm font-medium text-gray-800">Name:</label>
+                                            <input
+                                                type="text"
+                                                value={editData.name}
+                                                onChange={(e) => setEditData({ ...editData, name: e.target.value })}
+                                                className="border border-gray-300 rounded-md px-3 py-2 w-full text-sm"
+                                            />
+                                        </div>
+                                        <div className="flex-grow">
+                                            <label className="block text-sm font-medium text-gray-800">ID:</label>
+                                            <input
+                                                type="text"
+                                                value={editData.userid}
+                                                onChange={(e) => setEditData({ ...editData, userid: e.target.value })}
+                                                className="border border-gray-300 rounded-md px-3 py-2 w-full text-sm"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="flex flex-row gap-3">
+                                        <div className="flex-grow">
+                                            <label className="block text-sm font-medium text-gray-800">Mobile:</label>
+                                            <input
+                                                type="number"
+                                                value={editData.mobile}
+                                                onChange={(e) => setEditData({ ...editData, mobile: parseFloat(e.target.value) })}
+                                                className="border border-gray-300 rounded-md px-3 py-2 w-full text-sm"
+                                            />
+                                        </div>
+                                        <div className="flex-grow">
+                                            <label className="block text-sm font-medium text-gray-800">Email:</label>
+                                            <input
+                                                type="text"
+                                                value={editData.email}
+                                                onChange={(e) => setEditData({ ...editData, email: e.target.value })}
+                                                className="border border-gray-300 rounded-md px-3 py-2 w-full text-sm"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="flex flex-row gap-3">
+                                        <div className="flex-grow">
+                                            <label className="block text-sm font-medium text-gray-800">Aadhaar:</label>
+                                            <input
+                                                type="text"
+                                                value={editData.aadhaar}
+                                                onChange={(e) => setEditData({ ...editData, aadhaar: e.target.value })}
+                                                className="border border-gray-300 rounded-md px-3 py-2 w-full text-sm"
+                                            />
+                                        </div>
+                                        <div className="flex-grow">
+                                            <label className="block text-sm font-medium text-gray-800">Pan Card:</label>
+                                            <input
+                                                type="text"
+                                                value={editData.pancard}
+                                                onChange={(e) => setEditData({ ...editData, pancard: e.target.value })}
+                                                className="border border-gray-300 rounded-md px-3 py-2 w-full text-sm"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="flex flex-row gap-3">
+                                        <div className="flex-grow">
+                                            <label className="block text-sm font-medium text-gray-800">Role:</label>
+                                            <input
+                                                type="text"
+                                                value={editData.role}
+                                                onChange={(e) => setEditData({ ...editData, role: e.target.value })}
+                                                className="border border-gray-300 rounded-md px-3 py-2 w-full text-sm"
+                                            />
+                                        </div>
+                                        <div className="flex-grow">
+                                            <label className="block text-sm font-medium text-gray-800">Profile Image:</label>
+                                            <input
+                                                type="text"
+                                                value={editData.photo}
+                                                onChange={(e) => setEditData({ ...editData, photo: e.target.value })}
+                                                className="border border-gray-300 rounded-md px-3 py-2 w-full text-sm"
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Bank Details */}
+                                <div className="flex flex-col gap-3 col-span-2">
+                                    <h3 className="text-lg font-semibold mb-2">Bank Details</h3>
+                                    <div className="flex flex-row gap-3">
+                                        <div className="flex-grow">
+                                            <label className="block text-sm font-medium text-gray-800">Account Holder:</label>
+                                            <input
+                                                type="text"
+                                                value={editData.account_name}
+                                                onChange={(e) => setEditData({ ...editData, account_name: e.target.value })}
+                                                className="border border-gray-300 rounded-md px-3 py-2 w-full text-sm"
+                                            />
+                                        </div>
+                                        <div className="flex-grow">
+                                            <label className="block text-sm font-medium text-gray-800">Account Number:</label>
+                                            <input
+                                                type="text"
+                                                value={editData.account_number}
+                                                onChange={(e) => setEditData({ ...editData, account_number: e.target.value })}
+                                                className="border border-gray-300 rounded-md px-3 py-2 w-full text-sm"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="flex flex-row gap-3">
+                                        <div className="flex-grow">
+                                            <label className="block text-sm font-medium text-gray-800">IFSC:</label>
+                                            <input
+                                                type="text"
+                                                value={editData.ifsc_code}
+                                                onChange={(e) => setEditData({ ...editData, ifsc_code: e.target.value })}
+                                                className="border border-gray-300 rounded-md px-3 py-2 w-full text-sm"
+                                            />
+                                        </div>
+                                        <div className="flex-grow">
+                                            <label className="block text-sm font-medium text-gray-800">Branch:</label>
+                                            <input
+                                                type="text"
+                                                value={editData.branch_name}
+                                                onChange={(e) => setEditData({ ...editData, branch_name: e.target.value })}
+                                                className="border border-gray-300 rounded-md px-3 py-2 w-full text-sm"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="flex flex-row gap-3">
+                                        <div className="flex-grow">
+                                            <label className="block text-sm font-medium text-gray-800">UPI ID:</label>
+                                            <input
+                                                type="text"
+                                                value={editData.upiid}
+                                                onChange={(e) => setEditData({ ...editData, upiid: e.target.value })}
+                                                className="border border-gray-300 rounded-md px-3 py-2 w-full text-sm"
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Address Details */}
+                                <div className="flex flex-col gap-3 col-span-2">
+                                    <h3 className="text-lg font-semibold mb-2">Address Details</h3>
+                                    <div className="flex flex-row gap-3">
+                                        <div className="flex-grow">
+                                            <label className="block text-sm font-medium text-gray-800">Street/House No:</label>
+                                            <input
+                                                type="text"
+                                                value={editData.street_or_house_no}
+                                                onChange={(e) => setEditData({ ...editData, street_or_house_no: e.target.value })}
+                                                className="border border-gray-300 rounded-md px-3 py-2 w-full text-sm"
+                                            />
+                                        </div>
+                                        <div className="flex-grow">
+                                            <label className="block text-sm font-medium text-gray-800">Address One:</label>
+                                            <input
+                                                type="text"
+                                                value={editData.address_one}
+                                                onChange={(e) => setEditData({ ...editData, address_one: e.target.value })}
+                                                className="border border-gray-300 rounded-md px-3 py-2 w-full text-sm"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="flex flex-row gap-3">
+                                        <div className="flex-grow">
+                                            <label className="block text-sm font-medium text-gray-800">Landmark:</label>
+                                            <input
+                                                type="text"
+                                                value={editData.landmark}
+                                                onChange={(e) => setEditData({ ...editData, landmark: e.target.value })}
+                                                className="border border-gray-300 rounded-md px-3 py-2 w-full text-sm"
+                                            />
+                                        </div>
+                                        <div className="flex-grow">
+                                            <label className="block text-sm font-medium text-gray-800">City:</label>
+                                            <input
+                                                type="text"
+                                                value={editData.city}
+                                                onChange={(e) => setEditData({ ...editData, city: e.target.value })}
+                                                className="border border-gray-300 rounded-md px-3 py-2 w-full text-sm"
+                                            />
+                                        </div>
+
+                                    </div>
+                                    <div className="flex flex-row gap-3">
+                                        <div className="flex-grow">
+                                            <div className="flex-grow">
+                                                <label className="block text-sm font-medium text-gray-800">State:</label>
+                                                <input
+                                                    type="text"
+                                                    value={editData.state}
+                                                    onChange={(e) => setEditData({ ...editData, state: e.target.value })}
+                                                    className="border border-gray-300 rounded-md px-3 py-2 w-full text-sm"
+                                                />
+                                            </div>
+                                            <label className="block text-sm font-medium text-gray-800">PIN:</label>
+                                            <input
+                                                type="text"
+                                                value={editData.pin}
+                                                onChange={(e) => setEditData({ ...editData, pin: e.target.value })}
+                                                className="border border-gray-300 rounded-md px-3 py-2 w-full text-sm"
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                            <div className="flex justify-end">
+                            <div className="flex justify-end mt-4">
                                 <button
                                     onClick={() => setEditPopupVisible(false)}
-                                    className="bg-blue-500 text-white rounded-md px-4 py-2"
+                                    className="bg-bgred text-white hover:bg-red-600 rounded-md px-4 py-2 mr-2"
                                 >
                                     Close
                                 </button>
+                                <button
+                                    onClick={async () => {
+                                        await editMember(editData);
+                                        setEditPopupVisible(false);  // Close the popup after saving
+                                    }}
+                                    className="bg-supporting2 text-white hover:bg-[#8bbf3b] rounded-md px-4 py-2"
+                                >
+                                    Save
+                                </button>
+
                             </div>
                         </div>
                     </div>
                 )}
+
+
+
+
             </div>
         </>
     );

@@ -134,6 +134,7 @@ const Page: React.FC = () => {
             // Optionally show an error message to the user
         }
     };
+    
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
@@ -220,7 +221,7 @@ const Page: React.FC = () => {
                     <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50">
                         <div className="bg-white p-6 rounded-lg w-auto max-w-[600px] relative">
 
-                            <h2 className="text-xl font-semibold mb-4">Member Details</h2>
+                            <h2 className="text-xl font-semibold mb-4 text-primary">Member Details</h2>
 
                             <div className="space-y-4">
                                 {/* Photo and Personal Information */}
@@ -230,13 +231,13 @@ const Page: React.FC = () => {
                                         <img
                                             src={selectedItem.photo} // Replace with your photo URL
                                             alt="Member Photo"
-                                            className="w-20 h-20 object-cover rounded-full border border-gray-300"
+                                            className="w-40 h-38 object-cover rounded border border-gray-300"
                                         />
                                     </div>
 
                                     {/* Personal Information */}
                                     <div className="flex-grow bg-gray-100 p-4 rounded-lg shadow-md">
-                                        <h3 className="text-lg font-semibold mb-2">Personal Information</h3>
+                                        <h3 className="text-lg font-semibold mb-2 text-primary">Personal Information</h3>
                                         <div className="space-y-2">
                                             <p className="font-medium text-gray-800"><strong>Name:</strong> {selectedItem.name}</p>
                                             <p className="font-medium text-gray-800"><strong>Mobile:</strong> {selectedItem.mobile}</p>
@@ -249,7 +250,7 @@ const Page: React.FC = () => {
                                 <div className="flex flex-row gap-4">
                                     {/* Bank Details */}
                                     <div className="flex-grow bg-gray-100 p-4 rounded-lg shadow-md">
-                                        <h3 className="text-lg font-semibold mb-2">Bank Details</h3>
+                                        <h3 className="text-lg font-semibold mb-2 text-primary">Bank Details</h3>
                                         <div className="space-y-2">
                                             <p className="font-medium text-gray-800"><strong>Account Holder:</strong> {selectedItem.account_name}</p>
                                             <p className="font-medium text-gray-800"><strong>Account Number:</strong> {selectedItem.account_number}</p>
@@ -260,7 +261,7 @@ const Page: React.FC = () => {
 
                                     {/* Address */}
                                     <div className="flex-grow bg-gray-100 p-4 rounded-lg shadow-md">
-                                        <h3 className="text-lg font-semibold mb-2">Address</h3>
+                                        <h3 className="text-lg font-semibold mb-2 text-primary">Address</h3>
                                         <div className="space-y-2">
                                             <p className="font-medium text-gray-800"><strong>Street/House No:</strong> {selectedItem.street_or_house_no}</p>
                                             <p className="font-medium text-gray-800"><strong>Address One:</strong> {selectedItem.address_one}</p>
@@ -554,9 +555,6 @@ const Page: React.FC = () => {
                         </div>
                     </div>
                 )}
-
-
-
 
             </div>
         </>

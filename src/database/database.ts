@@ -73,18 +73,22 @@ export async function getMembers() {
     }
 }
 
-export async function getAccount(userid:string) {
+export async function getMenu() {
     const connection = await dbConnect();
     try {
-        const [rows] = await connection.execute<RowDataPacket[]>('SELECT account_name,account_number,ifsc_code,branch_name,upiid FROM payout_details WHERE userid = ?',[userid]);
+        // Fetch data from the 'menu' table
+        const [userRows] = await connection.query<RowDataPacket[]>(
+            'SELECT item_id,item_description,item_name,item_foodtype,item_price,item_thumbnail,item_type FROM menu'
+        );
 
-        if (rows.length > 0) {
-            return  rows;
-        }else{
+        if (userRows.length > 0) {
+            return {
+                users: userRows,
+            };
+        } else {
             return false;
         }
 
-        
     } catch (error: any) {
         throw error;
     } finally {
@@ -92,10 +96,10 @@ export async function getAccount(userid:string) {
     }
 }
 
-export async function getMenu(item_id:string) {
+export async function getAccount(userid:string) {
     const connection = await dbConnect();
     try {
-        const [rows] = await connection.execute<RowDataPacket[]>('SELECT item_id,item_description,item_category,item_foodtype,item_price,item_thumbnail FROM menu WHERE item_id = ?',[item_id]);
+        const [rows] = await connection.execute<RowDataPacket[]>('SELECT account_name,account_number,ifsc_code,branch_name,upiid FROM payout_details WHERE userid = ?',[userid]);
 
         if (rows.length > 0) {
             return  rows;
@@ -157,3 +161,35 @@ export async function updateMember(data: any) {
         await connection.end();
     }
 }
+
+export async function updateMenu(data: any) {
+    const connection = await dbConnect();
+    const { item_id, item_description, item_name, item_foodtype, item_price, item_thumbnail,item_type } = data;
+
+    try {
+        // Start transaction
+        await connection.beginTransaction();
+
+        // Update menu information
+        await connection.query(
+            `UPDATE menu SET item_description = ?, item_name = ?, item_foodtype = ?, item_price = ?, item_thumbnail = ?,item_type = ?
+             WHERE item_id = ?`,
+            [item_id,item_description, item_name, item_foodtype,item_type, item_price, item_thumbnail, item_type]
+        );
+
+        // Commit transaction
+        await connection.commit();
+
+        return NextResponse.json({ success: true, message: 'Menu updated successfully' });
+
+    } catch (error: any) {
+        // Rollback transaction in case of error
+        await connection.rollback();
+        console.error('Error updating menu:', error.message);
+        return NextResponse.json({ success: false, message: 'Error updating menu' });
+
+    } finally {
+        await connection.end();
+    }
+}
+

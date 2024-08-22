@@ -2,7 +2,7 @@ import { getMenu} from "@/database/database";
 import { NextResponse } from "next/server";
 
 export async function GET(){
-    const member = await getMenu();
+    const menu = await getMenu();
 
-    return NextResponse.json(member);
+    return NextResponse.json(menu);
 }

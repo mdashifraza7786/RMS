@@ -38,6 +38,25 @@ export async function getUserByUserid(userID: string) {
     }
 }
 
+export async function getMenuById(foodID: string) {
+    const connection = await dbConnect();
+    try {
+        const [rows] = await connection.execute<RowDataPacket[]>('SELECT * FROM menu WHERE item_id = ?', [foodID]);
+
+        if (rows.length > 0) {
+            return rows[0];
+        } else {
+            return false;
+        }
+
+
+    } catch (error: any) {
+        throw error;
+    } finally {
+        await connection.end();
+    }
+}
+
 export async function getMembers() {
     const connection = await dbConnect();
     try {

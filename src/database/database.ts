@@ -4,8 +4,8 @@ import { NextResponse } from 'next/server';
 
 const dbConfig = {
     host: 'localhost',
-    user: 'root', 
-    password: '', 
+    user: 'root',
+    password: '',
     database: 'rms',
 };
 
@@ -25,12 +25,12 @@ export async function getUserByUserid(userID: string) {
         const [rows] = await connection.execute<RowDataPacket[]>('SELECT userid,name,password,role,mobile,email,photo,aadhaar,pancard FROM user WHERE userid = ?', [userID]);
 
         if (rows.length > 0) {
-            return  rows[0]; 
-        }else{
+            return rows[0];
+        } else {
             return false;
         }
 
-        
+
     } catch (error: any) {
         throw error;
     } finally {
@@ -96,18 +96,18 @@ export async function getMenu() {
     }
 }
 
-export async function getAccount(userid:string) {
+export async function getAccount(userid: string) {
     const connection = await dbConnect();
     try {
-        const [rows] = await connection.execute<RowDataPacket[]>('SELECT account_name,account_number,ifsc_code,branch_name,upiid FROM payout_details WHERE userid = ?',[userid]);
+        const [rows] = await connection.execute<RowDataPacket[]>('SELECT account_name,account_number,ifsc_code,branch_name,upiid FROM payout_details WHERE userid = ?', [userid]);
 
         if (rows.length > 0) {
-            return  rows;
-        }else{
+            return rows;
+        } else {
             return false;
         }
 
-        
+
     } catch (error: any) {
         throw error;
     } finally {
@@ -117,9 +117,9 @@ export async function getAccount(userid:string) {
 
 export async function updateMember(data: any) {
     const connection = await dbConnect();
-    const { userid, name, role, mobile, email, photo, aadhaar, pancard, 
-            account_name, account_number, ifsc_code, branch_name, upiid, 
-            street_or_house_no, landmark, address_one, address_two, city, state, pin } = data;
+    const { userid, name, role, mobile, email, photo, aadhaar, pancard,
+        account_name, account_number, ifsc_code, branch_name, upiid,
+        street_or_house_no, landmark, address_one, address_two, city, state, pin } = data;
 
     try {
         // Start transaction
@@ -149,13 +149,13 @@ export async function updateMember(data: any) {
         // Commit transaction
         await connection.commit();
 
-        return NextResponse.json({ success:true, message: 'Member updated successfully' });
+        return NextResponse.json({ success: true, message: 'Member updated successfully' });
 
     } catch (error: any) {
         // Rollback transaction in case of error
         await connection.rollback();
         console.error('Error updating member:', error);
-        return NextResponse.json({ success:false, message: 'Error updating member' });
+        return NextResponse.json({ success: false, message: 'Error updating member' });
 
     } finally {
         await connection.end();
@@ -164,7 +164,7 @@ export async function updateMember(data: any) {
 
 export async function updateMenu(data: any) {
     const connection = await dbConnect();
-    const { item_id, item_description, item_name, item_foodtype, item_price, item_thumbnail,item_type } = data;
+    const { item_id, item_description, item_name, item_foodtype, item_price, item_thumbnail, item_type } = data;
 
     try {
         // Start transaction
@@ -174,7 +174,7 @@ export async function updateMenu(data: any) {
         await connection.query(
             `UPDATE menu SET item_description = ?, item_name = ?, item_foodtype = ?, item_price = ?, item_thumbnail = ?,item_type = ?
              WHERE item_id = ?`,
-            [item_id,item_description, item_name, item_foodtype,item_type, item_price, item_thumbnail, item_type]
+            [item_id, item_description, item_name, item_foodtype, item_type, item_price, item_thumbnail, item_type]
         );
 
         // Commit transaction

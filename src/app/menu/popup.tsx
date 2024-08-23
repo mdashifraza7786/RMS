@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { useState, ChangeEvent, FocusEvent, FormEvent } from 'react';
+import { useState, ChangeEvent, FormEvent } from 'react';
 import { FaTimes } from 'react-icons/fa';
 
 interface AddMenuProps {
@@ -11,69 +11,41 @@ const categoriesData: string[] = [
 ];
 
 const AddMenu: React.FC<AddMenuProps> = ({ popuphandle }) => {
-    const [categories, setCategories] = useState<string[]>(categoriesData);
     const [searchTerm, setSearchTerm] = useState<string>('');
-    const [displayCategory, setDisplayCategory] = useState<string>('');
+    const [selectedCategory, setSelectedCategory] = useState<string>('');
     const [isDropdownVisible, setIsDropdownVisible] = useState<boolean>(false);
-    const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
     const [formValues, setFormValues] = useState({
         item_name: '',
         item_description: '',
         item_foodtype: 'veg',
         item_price: '',
-        item_category: ''
     });
 
     const handleCategoryChange = (event: ChangeEvent<HTMLInputElement>) => {
         const category = event.target.value;
         setSearchTerm(category);
-        if (categories.includes(category)) {
-            setDisplayCategory(category);
-            setFormValues(prevValues => ({
-                ...prevValues,
-                item_category: category
-            }));
-        } else {
-            setIsDropdownVisible(true);
-            setDisplayCategory("");
-        }
-    };
-
-    const handleCategorySelect = (category: string) => {
-        setDisplayCategory(category);
-        setSearchTerm('');
-        setIsDropdownVisible(false);
-        setFormValues(prevValues => ({
-            ...prevValues,
-            item_category: category
-        }));
-    };
-
-    const handleFocus = () => {
         setIsDropdownVisible(true);
     };
 
-    const handleBlur = (event: FocusEvent<HTMLInputElement>) => {
-        setTimeout(() => {
-            setIsDropdownVisible(false);
-        }, 200);
+    const handleCategorySelect = (category: string) => {
+        setSelectedCategory(category);
+        setSearchTerm('');
+        setIsDropdownVisible(false);
     };
 
     const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
         if (event.target.files && event.target.files.length > 0) {
             const file = event.target.files[0];
-            setSelectedFile(file);
             const reader = new FileReader();
             reader.onloadend = () => {
-                setImagePreviewUrl(reader.result as string);
+                setImagePreviewUrl(reader.result as string); // Store Base64 image
             };
             reader.readAsDataURL(file);
         }
     };
 
     const handleRemoveImage = () => {
-        setSelectedFile(null);
         setImagePreviewUrl(null);
     };
 
@@ -87,35 +59,36 @@ const AddMenu: React.FC<AddMenuProps> = ({ popuphandle }) => {
 
     const handleSubmit = async (event: FormEvent) => {
         event.preventDefault();
-        
-        if (!selectedFile) {
+
+        if (!imagePreviewUrl) {
             alert('Please select an image');
             return;
         }
 
-        const formData = new FormData();
-        formData.append('item_name', formValues.item_name);
-        formData.append('item_description', formValues.item_description);
-        formData.append('item_foodtype', formValues.item_foodtype);
-        formData.append('item_price', formValues.item_price);
-        formData.append('item_category', formValues.item_category);
-        formData.append('item_thumbnail', selectedFile);
+        if (!selectedCategory) {
+            alert('Please select a category');
+            return;
+        }
+
+        const formData = {
+            item_name: formValues.item_name,
+            item_description: formValues.item_description,
+            item_foodtype: formValues.item_foodtype,
+            item_price: formValues.item_price,
+            item_type: selectedCategory,
+            item_thumbnail: imagePreviewUrl, // Sending Base64 image
+        };
 
         try {
-            const response = await axios.post('/api/upload', formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data'
-                }
-            });
+            const response = await axios.post('/api/menu/register', formData);
             console.log(response.data);
-            // Handle success
+            popuphandle(); // Closing the popup on success
         } catch (error) {
             console.error('Error uploading menu item:', error);
-            // Handle error
         }
     };
 
-    const filteredCategories = categories.filter(category =>
+    const filteredCategories = categoriesData.filter(category =>
         category.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
@@ -155,10 +128,8 @@ const AddMenu: React.FC<AddMenuProps> = ({ popuphandle }) => {
                                         type="text"
                                         placeholder="Search categories"
                                         name='item_category'
-                                        value={searchTerm || displayCategory}
+                                        value={searchTerm || selectedCategory}
                                         onChange={handleCategoryChange}
-                                        onFocus={handleFocus}
-                                        onBlur={handleBlur}
                                     />
                                     {isDropdownVisible && filteredCategories.length > 0 && (
                                         <ul className="absolute top-full left-0 w-full border-2 border-gray-300 bg-white z-10">
@@ -166,7 +137,6 @@ const AddMenu: React.FC<AddMenuProps> = ({ popuphandle }) => {
                                                 <li
                                                     key={index}
                                                     className="px-3 py-2 cursor-pointer hover:bg-gray-200"
-                                                    onMouseDown={(e) => e.preventDefault()} // Prevent input blur
                                                     onClick={() => handleCategorySelect(category)}
                                                 >
                                                     {category}
@@ -194,6 +164,7 @@ const AddMenu: React.FC<AddMenuProps> = ({ popuphandle }) => {
                                         className="outline-none border-2 border-gray-300 px-3 py-2"
                                         value={formValues.item_price}
                                         onChange={handleInputChange}
+                                        required
                                     />
                                 </div>
                             </div>
@@ -201,12 +172,12 @@ const AddMenu: React.FC<AddMenuProps> = ({ popuphandle }) => {
                     </div>
                     <div className="flex flex-col items-center gap-4 col-span-2">
                         {imagePreviewUrl ? (
-                            <div className="image-preview">
-                                <img src={imagePreviewUrl} alt="Selected Thumbnail" />
-                                <FaTimes className="remove-icon" onClick={handleRemoveImage} />
+                            <div className="image-preview relative">
+                                <img src={imagePreviewUrl} alt="Selected Thumbnail" className="max-w-full max-h-full object-cover" />
+                                <FaTimes className="remove-icon cursor-pointer absolute top-2 right-2" onClick={handleRemoveImage} />
                             </div>
                         ) : (
-                            <div className="custom-file-input-wrapper" onClick={() => document.getElementById('food_menu_thumbnail')?.click()}>
+                            <div className="custom-file-input-wrapper flex justify-center items-center border-2 border-dashed border-gray-300 rounded-lg p-4 cursor-pointer">
                                 <span>Select Thumbnail</span>
                                 <input
                                     type="file"

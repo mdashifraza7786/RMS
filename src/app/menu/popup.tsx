@@ -76,13 +76,13 @@ const AddMenu: React.FC<AddMenuProps> = ({ popuphandle }) => {
             item_foodtype: formValues.item_foodtype,
             item_price: formValues.item_price,
             item_type: selectedCategory,
-            item_thumbnail: imagePreviewUrl, // Sending Base64 image
+            item_thumbnail: imagePreviewUrl, 
         };
 
         try {
             const response = await axios.post('/api/menu/register', formData);
             console.log(response.data);
-            popuphandle(); // Closing the popup on success
+            popuphandle(); 
         } catch (error) {
             console.error('Error uploading menu item:', error);
         }
@@ -153,7 +153,7 @@ const AddMenu: React.FC<AddMenuProps> = ({ popuphandle }) => {
                                         onChange={handleInputChange}
                                     >
                                         <option value="veg">Veg</option>
-                                        <option value="non-veg">Non - Veg</option>
+                                        <option value="nveg">Non - Veg</option>
                                     </select>
                                 </div>
                                 <div>

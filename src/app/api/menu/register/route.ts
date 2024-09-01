@@ -1,16 +1,42 @@
-import { dbConnect } from '@/database/database';
+import { dbConnect, getMenuById } from '@/database/database';
 import { NextResponse } from 'next/server';
-import { v4 as uuidv4 } from 'uuid';
 
 export async function POST(request: Request) {
     const data = await request.json();
-    const { item_description, item_name, item_foodtype, item_price, item_thumbnail, item_type } = data;
+    const { item_name, item_description, item_foodtype, item_price, item_type , item_thumbnail } = data;
 
-    // Generate a unique ID using UUID
-    const uniqueID = uuidv4();
+    let foodType: string;
+    switch (item_foodtype) {
+        case "veg":
+            foodType = "VEG";
+            break;
+        case "nveg":
+            foodType = "NVEG";
+            break;
+        default:
+            return NextResponse.json({ message: "Contact Developer" });
+    }
+
+    function generateFourDigitRandomNumber(): number {
+        return Math.floor(1000 + Math.random() * 9000);
+    }
+
+    async function generateUniqueFoodId(): Promise<string> {
+        let uniqueID: string;
+        let foodExists: boolean;
+
+        do {
+            uniqueID = `${foodType}${generateFourDigitRandomNumber()}`;
+            const food = await getMenuById(uniqueID);
+            foodExists = !!food;
+        } while (foodExists);
+
+        return uniqueID;
+    }
 
     const connection = await dbConnect();
     try {
+        const uniqueID = await generateUniqueFoodId();
         await connection.beginTransaction();
 
         // Insert into menu table

@@ -243,35 +243,39 @@ export async function updateInventory(data: any) {
         // Start transaction
         await connection.beginTransaction();
 
-        // Update menu information
-        await connection.query(
-            `UPDATE inventory SET item_name = ?, current_stock = ?, low_limit = ?, unit = ?
-             WHERE item_id = ?`,
-            [item_id,item_name,current_stock,low_limit,unit]
-        );
+        // Update inventory information
+        const query = `
+            UPDATE inventory 
+            SET item_name = ?, current_stock = ?, low_limit = ?, unit = ?
+            WHERE item_id = ?`;
+        const values = [item_name, current_stock, low_limit, unit, item_id];
+
+        const [result] = await connection.query(query, values);
 
         // Commit transaction
         await connection.commit();
 
-        return NextResponse.json({ success: true, message: 'Inventory updated successfully' });
+        return NextResponse.json({ success: true, message: 'Kitchen Order updated successfully' });
 
     } catch (error: any) {
         // Rollback transaction in case of error
         await connection.rollback();
-        console.error('Error updating Inventory:', error.message);
-        return NextResponse.json({ success: false, message: 'Error updating Inventory' });
+        console.error('Error updating inventory:', error.message);
+        return false;
 
     } finally {
+        // Ensure the connection is closed
         await connection.end();
     }
 }
+
 
 export async function getKitchenOrders() {
     const connection = await dbConnect();
     try {
         // Fetch data from the 'kitchen_order' table
         const [userRows] = await connection.query<RowDataPacket[]>(
-            'SELECT userid,item_name,quantity,status,unit FROM kitchen_order'
+            'SELECT order_id,item_name,quantity,status,unit FROM kitchen_order'
         );
 
         if (userRows.length > 0) {
@@ -289,34 +293,33 @@ export async function getKitchenOrders() {
     }
 }
 
-
 export async function updateKitchenOrders(data: any) {
     const connection = await dbConnect();
-    const { userid,item_name,quantity,status,unit } = data;
+    const { order_id, item_name, quantity, status, unit } = data;
 
     try {
         // Start transaction
         await connection.beginTransaction();
 
-        // Update menu information
+        // Update kitchen order information
         const query = `
             UPDATE kitchen_order 
-            SET userid = ?, item_name = ?, quantity = ?, status = ?, status=?, unit = ?
+            SET item_name = ?, quantity = ?, status = ?, unit = ?
             WHERE order_id = ?`;
-        const values = [userid,item_name,quantity,status,unit];
+        const values = [item_name, quantity, status, unit, order_id];
 
-        await connection.query(query, values);
+        const [result] = await connection.query(query, values);
 
         // Commit transaction
         await connection.commit();
 
-        return NextResponse.json({ success: true, message: 'Kitchen Orders updated successfully' });
-
+        // Check if any rows were affected
+        return NextResponse.json({ success: true, message: 'Kitchen Order updated successfully' });
     } catch (error: any) {
         // Rollback transaction in case of error
         await connection.rollback();
-        console.error('Error updating Kitchen Orders:', error.message);
-        return NextResponse.json({ success: false, message: 'Error updating Kitchen Orders' });
+        console.error('Error updating kitchen orders:', error.message);
+        return false;
     } finally {
         // Ensure the connection is closed
         await connection.end();

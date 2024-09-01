@@ -1,23 +1,23 @@
 "use client";
+
 import React, { useState, useEffect } from 'react';
 import { FaPenToSquare } from "react-icons/fa6";
 import { MdBorderColor } from "react-icons/md";
-import axios from 'axios';
 
-// Define the type for inventory items
+// Define the type for kitchen orders
 interface InventoryItem {
-    userid: string;
+    order_id: string;
     item_name: string;
     quantity: number;
     unit: string;
 }
 
 const KitchenOrdersCard: React.FC = () => {
-    const [inventory, setInventory] = useState<InventoryItem[]>([]);
+    const [kitchenOrders, setKitchenOrders] = useState<InventoryItem[]>([]);
     const [selectedItems, setSelectedItems] = useState<string[]>([]);
     const [orderPopupVisible, setOrderPopupVisible] = useState(false);
     const [editPopupVisible, setEditPopupVisible] = useState(false);
-    const [editData, setEditData] = useState<InventoryItem>({ userid: '', item_name: '', quantity: 0, unit: '' });
+    const [editData, setEditData] = useState<InventoryItem>({ order_id: '', item_name: '', quantity: 0, unit: '' });
 
     useEffect(() => {
         fetchKitchenOrders();
@@ -25,15 +25,16 @@ const KitchenOrdersCard: React.FC = () => {
 
     const fetchKitchenOrders = async () => {
         try {
-            const response = await axios.get('/api/kitchenOrder');
-            const data = response.data;
+            const response = await fetch('/api/kitchenOrder');
+            const data = await response.json();
+
             if (data && Array.isArray(data.users)) {
-                setInventory(data.users);
+                setKitchenOrders(data.users);
             } else {
                 console.error("Fetched data does not contain an array of users:", data);
             }
         } catch (error) {
-            console.error("Error fetching inventory data:", error);
+            console.error("Error fetching kitchen orders:", error);
         }
     };
 
@@ -42,19 +43,41 @@ const KitchenOrdersCard: React.FC = () => {
         setEditPopupVisible(true);
     };
 
-    const handleCheckboxChange = (userid: string) => {
+    const handleEditSave = async () => {
+        try {
+            const response = await fetch('/api/kitchenOrder/updateKitchenOrder', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(editData),
+            });
+    
+            if (response.ok) {
+                fetchKitchenOrders();
+                setEditPopupVisible(false);
+            } else {
+                console.error('Failed to update the kitchen order');
+            }
+        } catch (error) {
+            console.error("Error updating kitchen order:", error);
+        }
+    };
+    
+
+    const handleCheckboxChange = (order_id: string) => {
         setSelectedItems(prevSelected =>
-            prevSelected.includes(userid)
-                ? prevSelected.filter(itemId => itemId !== userid)
-                : [...prevSelected, userid]
+            prevSelected.includes(order_id)
+                ? prevSelected.filter(id => id !== order_id)
+                : [...prevSelected, order_id]
         );
     };
 
     const handleSelectAllChange = () => {
-        if (selectedItems.length === inventory.length) {
+        if (selectedItems.length === kitchenOrders.length) {
             setSelectedItems([]);
         } else {
-            const allIds = inventory.map(item => item.userid);
+            const allIds = kitchenOrders.map(item => item.order_id);
             setSelectedItems(allIds);
         }
     };
@@ -63,21 +86,7 @@ const KitchenOrdersCard: React.FC = () => {
         setOrderPopupVisible(true);
     };
 
-    const handleEditSave = async () => {
-        try {
-            const response = await axios.put('/api/kitchenOrder/updateKitchenOrder', editData);
-            if (response.status === 200) {
-                fetchKitchenOrders();
-                setEditPopupVisible(false);
-            } else {
-                console.error('Failed to update the kitchen order:', response);
-            }
-        } catch (error) {
-            console.error("Error updating kitchen order:", error);
-        }
-    };
-
-    const selectedData = inventory.filter(item => selectedItems.includes(item.userid));
+    const selectedData = kitchenOrders.filter(item => selectedItems.includes(item.order_id));
 
     return (
         <div className='flex flex-col gap-5'>
@@ -97,7 +106,7 @@ const KitchenOrdersCard: React.FC = () => {
                         <th className="px-4 py-2 text-left w-[50px]">
                             <input
                                 type="checkbox"
-                                checked={selectedItems.length === inventory.length}
+                                checked={selectedItems.length === kitchenOrders.length}
                                 onChange={handleSelectAllChange}
                                 className="form-checkbox h-4 w-4 text-primary border-gray-300 rounded focus:ring-primary focus:ring-opacity-50"
                             />
@@ -109,17 +118,17 @@ const KitchenOrdersCard: React.FC = () => {
                     </tr>
                 </thead>
                 <tbody>
-                    {inventory.map((item, index) => (
+                    {kitchenOrders.map((item, index) => (
                         <tr key={index} className='text-[14px] font-medium font-montserrat'>
                             <td className="border px-4 py-2 transition-colors duration-300">
                                 <input
                                     type="checkbox"
-                                    checked={selectedItems.includes(item.userid)}
-                                    onChange={() => handleCheckboxChange(item.userid)}
+                                    checked={selectedItems.includes(item.order_id)}
+                                    onChange={() => handleCheckboxChange(item.order_id)}
                                     className="form-checkbox h-4 w-4 text-primary border-gray-300 rounded focus:ring-primary focus:ring-opacity-50"
                                 />
                             </td>
-                            <td className="border px-4 py-2 transition-colors duration-300">{item.userid}</td>
+                            <td className="border px-4 py-2 transition-colors duration-300">{item.order_id}</td>
                             <td className="border px-4 py-2 transition-colors duration-300">{item.item_name}</td>
                             <td className="border px-4 py-2 transition-colors duration-300">{item.quantity} {item.unit}</td>
                             <td className="border px-4 py-4 transition-colors duration-300">
@@ -143,7 +152,7 @@ const KitchenOrdersCard: React.FC = () => {
                         <h3 className="text-xl font-semibold mb-4 text-primary">Selected Orders</h3>
                         <ul>
                             {selectedData.map(item => (
-                                <li key={item.userid} className="mb-2 border-b pb-2">
+                                <li key={item.order_id} className="mb-2 border-b pb-2">
                                     <div><strong>Item:</strong> {item.item_name}</div>
                                     <div><strong>Quantity:</strong> {item.quantity} {item.unit}</div>
                                 </li>

@@ -193,3 +193,169 @@ export async function updateMenu(data: any) {
     }
 }
 
+export async function getInventory() {
+    const connection = await dbConnect();
+    try {
+        // Fetch data from the 'inventory' table
+        const [userRows] = await connection.query<RowDataPacket[]>(
+            'SELECT item_id,item_name,current_stock,low_limit,unit FROM inventory'
+        );
+
+        if (userRows.length > 0) {
+            return {
+                users: userRows,
+            };
+        } else {
+            return false;
+        }
+
+    } catch (error: any) {
+        throw error;
+    } finally {
+        await connection.end();
+    }
+}
+
+export async function updateInventory(data: any) {
+    const connection = await dbConnect();
+    const { item_id, item_name, current_stock, low_limit, unit } = data;
+
+    try {
+        // Start transaction
+        await connection.beginTransaction();
+
+        // Update menu information
+        await connection.query(
+            `UPDATE inventory SET item_name = ?, current_stock = ?, low_limit = ?, unit = ?
+             WHERE item_id = ?`,
+            [item_id,item_name,current_stock,low_limit,unit]
+        );
+
+        // Commit transaction
+        await connection.commit();
+
+        return NextResponse.json({ success: true, message: 'Inventory updated successfully' });
+
+    } catch (error: any) {
+        // Rollback transaction in case of error
+        await connection.rollback();
+        console.error('Error updating Inventory:', error.message);
+        return NextResponse.json({ success: false, message: 'Error updating Inventory' });
+
+    } finally {
+        await connection.end();
+    }
+}
+
+export async function getKitchenOrders() {
+    const connection = await dbConnect();
+    try {
+        // Fetch data from the 'kitchen_order' table
+        const [userRows] = await connection.query<RowDataPacket[]>(
+            'SELECT userid,item_name,quantity,status,unit FROM kitchen_order'
+        );
+
+        if (userRows.length > 0) {
+            return {
+                users: userRows,
+            };
+        } else {
+            return false;
+        }
+
+    } catch (error: any) {
+        throw error;
+    } finally {
+        await connection.end();
+    }
+}
+
+
+export async function updateKitchenOrders(data: any) {
+    const connection = await dbConnect();
+    const { userid,item_name,quantity,status,unit } = data;
+
+    try {
+        // Start transaction
+        await connection.beginTransaction();
+
+        // Update menu information
+        const query = `
+            UPDATE kitchen_order 
+            SET userid = ?, item_name = ?, quantity = ?, status = ?, status=?, unit = ?
+            WHERE order_id = ?`;
+        const values = [userid,item_name,quantity,status,unit];
+
+        await connection.query(query, values);
+
+        // Commit transaction
+        await connection.commit();
+
+        return NextResponse.json({ success: true, message: 'Kitchen Orders updated successfully' });
+
+    } catch (error: any) {
+        // Rollback transaction in case of error
+        await connection.rollback();
+        console.error('Error updating Kitchen Orders:', error.message);
+        return NextResponse.json({ success: false, message: 'Error updating Kitchen Orders' });
+    } finally {
+        // Ensure the connection is closed
+        await connection.end();
+    }
+}
+
+export async function getRecentOrders() {
+    const connection = await dbConnect();
+    try {
+        // Fetch data from the 'recent_inventory_order' table
+        const [userRows] = await connection.query<RowDataPacket[]>(
+            'SELECT order_id,order_name,price,quantity,date,total_amount,unit FROM recent_inventory_order'
+        );
+
+        if (userRows.length > 0) {
+            return {
+                users: userRows,
+            };
+        } else {
+            return false;
+        }
+
+    } catch (error: any) {
+        throw error;
+    } finally {
+        await connection.end();
+    }
+}
+
+export async function updateRecentOrders(data: any) {
+    const connection = await dbConnect();
+    const { order_id, order_name, price, quantity, date, total_amount, unit } = data;
+
+    try {
+        // Start transaction
+        await connection.beginTransaction();
+
+        // Update menu information
+        const query = `
+            UPDATE recent_inventory_order 
+            SET order_name = ?, price = ?, quantity = ?, date = ?, total_amount = ?, unit = ?
+            WHERE order_id = ?`;
+        const values = [order_name, price, quantity, date, total_amount, unit, order_id];
+
+        await connection.query(query, values);
+
+        // Commit transaction
+        await connection.commit();
+
+        return NextResponse.json({ success: true, message: 'Recent Orders updated successfully' });
+
+    } catch (error: any) {
+        // Rollback transaction in case of error
+        await connection.rollback();
+        console.error('Error updating Recent Orders:', error.message);
+        return NextResponse.json({ success: false, message: 'Error updating Recent Orders' });
+    } finally {
+        // Ensure the connection is closed
+        await connection.end();
+    }
+}

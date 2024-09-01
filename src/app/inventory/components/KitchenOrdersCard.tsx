@@ -1,33 +1,52 @@
 "use client";
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FaPenToSquare } from "react-icons/fa6";
 import { MdBorderColor } from "react-icons/md";
+import axios from 'axios';
 
-const sampleData = [
-    { name: 'Apples', quantity: 10, unit: 'kg', amount: 5, id: '#CFG758' },
-    { name: 'Bananas form banaras, mangoe', quantity: 20, unit: 'kg', amount: 10, id: '#CFG478' },
-    { name: 'Oranges', quantity: 15, unit: 'kg', amount: 5, id: '#CFG788' },
-    { name: 'Mangoes', quantity: 25, unit: 'kg', amount: 10, id: '#CFG786' },
-    { name: 'Grapes', quantity: 30, unit: 'kg', amount: 15, id: '#CFG787' },
-];
+// Define the type for inventory items
+interface InventoryItem {
+    userid: string;
+    item_name: string;
+    quantity: number;
+    unit: string;
+}
 
 const KitchenOrdersCard: React.FC = () => {
-    const [inventory, setInventory] = useState(sampleData);
+    const [inventory, setInventory] = useState<InventoryItem[]>([]);
     const [selectedItems, setSelectedItems] = useState<string[]>([]);
     const [orderPopupVisible, setOrderPopupVisible] = useState(false);
     const [editPopupVisible, setEditPopupVisible] = useState(false);
-    const [editData, setEditData] = useState({ name: '', quantity: 0, unit: '', amount: 0, id: '' });
+    const [editData, setEditData] = useState<InventoryItem>({ userid: '', item_name: '', quantity: 0, unit: '' });
 
-    const handleEditClick = (data: any) => {
+    useEffect(() => {
+        fetchKitchenOrders();
+    }, []);
+
+    const fetchKitchenOrders = async () => {
+        try {
+            const response = await axios.get('/api/kitchenOrder');
+            const data = response.data;
+            if (data && Array.isArray(data.users)) {
+                setInventory(data.users);
+            } else {
+                console.error("Fetched data does not contain an array of users:", data);
+            }
+        } catch (error) {
+            console.error("Error fetching inventory data:", error);
+        }
+    };
+
+    const handleEditClick = (data: InventoryItem) => {
         setEditData(data);
         setEditPopupVisible(true);
     };
 
-    const handleCheckboxChange = (id: string) => {
+    const handleCheckboxChange = (userid: string) => {
         setSelectedItems(prevSelected =>
-            prevSelected.includes(id)
-                ? prevSelected.filter(itemId => itemId !== id)
-                : [...prevSelected, id]
+            prevSelected.includes(userid)
+                ? prevSelected.filter(itemId => itemId !== userid)
+                : [...prevSelected, userid]
         );
     };
 
@@ -35,7 +54,7 @@ const KitchenOrdersCard: React.FC = () => {
         if (selectedItems.length === inventory.length) {
             setSelectedItems([]);
         } else {
-            const allIds = inventory.map(item => item.id);
+            const allIds = inventory.map(item => item.userid);
             setSelectedItems(allIds);
         }
     };
@@ -44,18 +63,21 @@ const KitchenOrdersCard: React.FC = () => {
         setOrderPopupVisible(true);
     };
 
-    const handleEditSave = () => {
-        setInventory(prevInventory =>
-            prevInventory.map(item =>
-                item.id === editData.id
-                    ? { ...editData, amount: editData.quantity }
-                    : item
-            )
-        );
-        setEditPopupVisible(false);
+    const handleEditSave = async () => {
+        try {
+            const response = await axios.put('/api/kitchenOrder/updateKitchenOrder', editData);
+            if (response.status === 200) {
+                fetchKitchenOrders();
+                setEditPopupVisible(false);
+            } else {
+                console.error('Failed to update the kitchen order:', response);
+            }
+        } catch (error) {
+            console.error("Error updating kitchen order:", error);
+        }
     };
 
-    const selectedData = inventory.filter(item => selectedItems.includes(item.id));
+    const selectedData = inventory.filter(item => selectedItems.includes(item.userid));
 
     return (
         <div className='flex flex-col gap-5'>
@@ -63,13 +85,11 @@ const KitchenOrdersCard: React.FC = () => {
                 <button
                     onClick={handleGenerateOrder}
                     disabled={selectedItems.length === 0}
-                    className={`bg-supporting2 w-1/5 text-white font-bold rounded-md px-4 py-2 flex items-center justify-center gap-2 hover:bg-supporting2-dark transition-colors mt-4 ${selectedItems.length === 0 ? 'opacity-50 cursor-not-allowed' : ''
-                        }`}
+                    className={`bg-supporting2 w-1/5 text-white font-bold rounded-md px-4 py-2 flex items-center justify-center gap-2 hover:bg-supporting2-dark transition-colors mt-4 ${selectedItems.length === 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
                 >
                     <MdBorderColor className="text-lg" />
                     <span>Generate Order</span>
                 </button>
-
             </div>
             <table className="w-full border-collapse">
                 <thead>
@@ -94,14 +114,14 @@ const KitchenOrdersCard: React.FC = () => {
                             <td className="border px-4 py-2 transition-colors duration-300">
                                 <input
                                     type="checkbox"
-                                    checked={selectedItems.includes(item.id)}
-                                    onChange={() => handleCheckboxChange(item.id)}
+                                    checked={selectedItems.includes(item.userid)}
+                                    onChange={() => handleCheckboxChange(item.userid)}
                                     className="form-checkbox h-4 w-4 text-primary border-gray-300 rounded focus:ring-primary focus:ring-opacity-50"
                                 />
                             </td>
-                            <td className="border px-4 py-2 transition-colors duration-300">{item.id}</td>
-                            <td className="border px-4 py-2 transition-colors duration-300">{item.name}</td>
-                            <td className="border px-4 py-2 transition-colors duration-300">{item.amount} {item.unit}</td>
+                            <td className="border px-4 py-2 transition-colors duration-300">{item.userid}</td>
+                            <td className="border px-4 py-2 transition-colors duration-300">{item.item_name}</td>
+                            <td className="border px-4 py-2 transition-colors duration-300">{item.quantity} {item.unit}</td>
                             <td className="border px-4 py-4 transition-colors duration-300">
                                 <div className='flex gap-4 justify-center'>
                                     <button className="bg-primary text-white px-4 py-2 rounded text-[12px] flex items-center gap-10"
@@ -123,9 +143,9 @@ const KitchenOrdersCard: React.FC = () => {
                         <h3 className="text-xl font-semibold mb-4 text-primary">Selected Orders</h3>
                         <ul>
                             {selectedData.map(item => (
-                                <li key={item.id} className="mb-2 border-b pb-2">
-                                    <div><strong>Item:</strong> {item.name}</div>
-                                    <div><strong>Quantity:</strong> {item.amount} {item.unit}</div>
+                                <li key={item.userid} className="mb-2 border-b pb-2">
+                                    <div><strong>Item:</strong> {item.item_name}</div>
+                                    <div><strong>Quantity:</strong> {item.quantity} {item.unit}</div>
                                 </li>
                             ))}
                         </ul>
@@ -157,8 +177,8 @@ const KitchenOrdersCard: React.FC = () => {
                                 <label className="block font-medium text-gray-800">Name:</label>
                                 <input
                                     type="text"
-                                    value={editData.name}
-                                    onChange={(e) => setEditData({ ...editData, name: e.target.value })}
+                                    value={editData.item_name}
+                                    onChange={(e) => setEditData({ ...editData, item_name: e.target.value })}
                                     className="border border-gray-300 rounded-md px-3 py-2 font-semibold w-full"
                                 />
                             </div>

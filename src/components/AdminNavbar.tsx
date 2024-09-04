@@ -13,6 +13,8 @@ import { AiOutlineLogout } from "react-icons/ai";
 import { MdOutlineRestaurantMenu } from "react-icons/md";
 import { usePathname } from 'next/navigation';
 import { signOut } from 'next-auth/react';
+import { IoBarChartSharp } from "react-icons/io5";
+
 const raleway = Raleway({
     weight: ['400', '700'],
     subsets: ['latin'],
@@ -90,7 +92,7 @@ const AdminNavbar: React.FC = () => {
                 </Link>
                 <Link href='/chart' passHref>
                     <div className={`flex items-center gap-2 cursor-pointer ${pathName?.includes( '/chart') ? 'text-green-500' : ''}`}>
-                        <div><MdOutlineRestaurantMenu /></div>
+                        <div><IoBarChartSharp /></div>
                         <div>Charts</div>
                     </div>
                 </Link>

@@ -88,6 +88,12 @@ const AdminNavbar: React.FC = () => {
                         <div>Menu</div>
                     </div>
                 </Link>
+                <Link href='/chart' passHref>
+                    <div className={`flex items-center gap-2 cursor-pointer ${pathName?.includes( '/chart') ? 'text-green-500' : ''}`}>
+                        <div><MdOutlineRestaurantMenu /></div>
+                        <div>Charts</div>
+                    </div>
+                </Link>
             </div>
         </div>
     );

@@ -177,7 +177,10 @@ const AddMenu: React.FC<AddMenuProps> = ({ popuphandle }) => {
                                 <FaTimes className="remove-icon cursor-pointer absolute top-2 right-2" onClick={handleRemoveImage} />
                             </div>
                         ) : (
-                            <div className="custom-file-input-wrapper flex justify-center items-center border-2 border-dashed border-gray-300 rounded-lg p-4 cursor-pointer">
+                            <div 
+                                className="custom-file-input-wrapper flex justify-center items-center border-2 border-dashed border-gray-300 rounded-lg p-4 cursor-pointer"
+                                onClick={() => document.getElementById('food_menu_thumbnail')?.click()} // Trigger the file input click
+                            >
                                 <span>Select Thumbnail</span>
                                 <input
                                     type="file"

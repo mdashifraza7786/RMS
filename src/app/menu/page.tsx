@@ -7,7 +7,6 @@ import { RiBillLine } from "react-icons/ri";
 import AddMenu from './popup';
 import { Bars } from 'react-loader-spinner';
 
-// Define EditData interface outside the component
 interface EditData {
     item_id: string;
     item_description: string;
@@ -34,6 +33,7 @@ const Page: React.FC = () => {
 
     const [menuData, setMenuData] = useState<EditData[]>([]);
     const [editLoading, setEditLoading] = useState<boolean>(false);
+    const [newThumbnail, setNewThumbnail] = useState<string | null>(null); // Track if new thumbnail is uploaded
 
     useEffect(() => {
         document.title = "Menu";
@@ -64,6 +64,7 @@ const Page: React.FC = () => {
 
     const handleEditClick = (data: EditData) => {
         setEditData(data);
+        setNewThumbnail(null); // Reset newThumbnail on each edit
         setEditPopupVisible(true);
     };
 
@@ -77,7 +78,7 @@ const Page: React.FC = () => {
         if (file) {
             const reader = new FileReader();
             reader.onloadend = () => {
-                setEditData(prev => ({ ...prev, item_thumbnail: reader.result as string }));
+                setNewThumbnail(reader.result as string); // Set the new thumbnail
             };
             reader.readAsDataURL(file);
         }
@@ -86,18 +87,26 @@ const Page: React.FC = () => {
     const editMember = async (data: EditData) => {
         try {
             setEditLoading(true);
+
+            // Use the new thumbnail if uploaded, otherwise keep the old one
+            const updatedData = {
+                ...data,
+                item_thumbnail: newThumbnail || data.item_thumbnail,
+            };
+
             await fetch('/api/menu/updateMenu', {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(data),
+                body: JSON.stringify(updatedData),
             });
-            fetchMenuData(); // Refresh data
+            fetchMenuData();
         } catch (error) {
             console.error("Error updating menu item:", error);
         } finally {
             setEditLoading(false);
+            setEditPopupVisible(false); // Close the popup after saving
         }
     };
 
@@ -202,22 +211,23 @@ const Page: React.FC = () => {
                                         />
                                     </div>
                                     <div className="flex-grow">
-                                        <label className="block text-sm font-medium text-gray-800">Description:</label>
-                                        <input
-                                            type="text"
-                                            value={editData?.item_description || ''}
-                                            onChange={(e) => setEditData(prev => ({ ...prev, item_description: e.target.value }))}
-                                            className="border border-gray-300 rounded-md p-2 w-full"
-                                        />
-                                    </div>
-                                </div>
-                                <div className="flex flex-row gap-3">
-                                    <div className="flex-grow">
                                         <label className="block text-sm font-medium text-gray-800">Category:</label>
                                         <input
                                             type="text"
                                             value={editData?.item_foodtype || ''}
                                             onChange={(e) => setEditData(prev => ({ ...prev, item_foodtype: e.target.value }))}
+                                            className="border border-gray-300 rounded-md p-2 w-full"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="flex flex-row gap-3">
+                                    <div className="flex-grow">
+                                        <label className="block text-sm font-medium text-gray-800">Price:</label>
+                                        <input
+                                            type="number"
+                                            value={editData?.item_price || 0}
+                                            onChange={(e) => setEditData(prev => ({ ...prev, item_price: parseFloat(e.target.value) }))}
                                             className="border border-gray-300 rounded-md p-2 w-full"
                                         />
                                     </div>
@@ -231,50 +241,54 @@ const Page: React.FC = () => {
                                         />
                                     </div>
                                 </div>
-                                <div className="flex flex-row gap-3">
-                                    <div className="flex-grow">
-                                        <label className="block text-sm font-medium text-gray-800">Price:</label>
-                                        <input
-                                            type="number"
-                                            value={editData?.item_price || 0}
-                                            onChange={(e) => setEditData(prev => ({ ...prev, item_price: Number(e.target.value) }))}
-                                            className="border border-gray-300 rounded-md p-2 w-full"
-                                        />
-                                    </div>
-                                    <div className="flex-grow">
-                                        <label className="block text-sm font-medium text-gray-800">Thumbnail:</label>
-                                        <input
-                                            type="file"
-                                            accept="image/*"
-                                            onChange={handleFileChange}
-                                            className="border border-gray-300 rounded-md p-2 w-full"
-                                        />
-                                    </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-800">Description:</label>
+                                    <textarea
+                                        value={editData?.item_description || ''}
+                                        onChange={(e) => setEditData(prev => ({ ...prev, item_description: e.target.value }))}
+                                        className="border border-gray-300 rounded-md p-2 w-full h-[100px]"
+                                    />
                                 </div>
-                                {editData?.item_thumbnail && (
-                                    <div className="flex justify-center mt-4">
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-800">Thumbnail:</label>
+                                    <input
+                                        type="file"
+                                        onChange={handleFileChange}
+                                        className="border border-gray-300 rounded-md p-2 w-full"
+                                    />
+                                    {editData?.item_thumbnail && !newThumbnail && (
                                         <img
                                             src={editData.item_thumbnail}
-                                            alt="Thumbnail Preview"
-                                            className='w-[150px] h-[100px] object-cover'
+                                            alt="Current Thumbnail"
+                                            className="mt-4 w-[150px] h-[100px] object-cover"
                                         />
-                                    </div>
-                                )}
+                                    )}
+                                    {newThumbnail && (
+                                        <img
+                                            src={newThumbnail}
+                                            alt="New Thumbnail Preview"
+                                            className="mt-4 w-[150px] h-[100px] object-cover"
+                                        />
+                                    )}
+                                </div>
+
+                                <div className="flex justify-between mt-6">
+                                    <button
+                                        onClick={() => setEditPopupVisible(false)}
+                                        className="bg-red-500 text-white px-4 py-2 rounded"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        onClick={() => editMember(editData)}
+                                        className="bg-primary text-white px-4 py-2 rounded"
+                                    >
+                                        Save
+                                    </button>
+                                </div>
                             </div>
-                        </div>
-                        <div className="flex justify-end gap-3 mt-6">
-                            <button
-                                onClick={() => setEditPopupVisible(false)}
-                                className="bg-bgred text-white hover:bg-red-600 font-semibold px-4 py-2 rounded"
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                onClick={() => editMember(editData)}
-                                className="bg-supporting2 text-white hover:bg-[#8bbf3b] font-semibold px-4 py-2 rounded"
-                            >
-                                Save
-                            </button>
                         </div>
                     </div>
                 </div>

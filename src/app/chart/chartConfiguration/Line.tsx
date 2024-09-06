@@ -1,27 +1,27 @@
-// components/BarChart.tsx
 import { FC } from 'react';
-import { Bar } from 'react-chartjs-2';
+import { Line } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
   CategoryScale,
   LinearScale,
-  BarElement,
+  LineElement,
   Title,
   Tooltip,
   Legend,
   ChartOptions,
   ChartData,
+  PointElement,
 } from 'chart.js';
 
-ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
+ChartJS.register(CategoryScale, LinearScale, LineElement, Title, Tooltip, Legend, PointElement);
 
-interface BarChartProps {
-  data: ChartData<'bar'>;
-  options?: ChartOptions<'bar'>; // Made options prop optional
+interface LineChartProps {
+  data: ChartData<'line'>;
+  options?: ChartOptions<'line'>; // Made options prop optional
 }
 
-const BarChart: FC<BarChartProps> = ({ data, options }) => {
-  const defaultOptions: ChartOptions<'bar'> = {
+const LineChart: FC<LineChartProps> = ({ data, options }) => {
+  const defaultOptions: ChartOptions<'line'> = {
     responsive: true,
     plugins: {
       legend: {
@@ -29,7 +29,7 @@ const BarChart: FC<BarChartProps> = ({ data, options }) => {
       },
       title: {
         display: true,
-        text: 'Sales by Menu Item',
+        text: 'Sales Trend (Line Chart)',
       },
     },
     scales: {
@@ -48,7 +48,7 @@ const BarChart: FC<BarChartProps> = ({ data, options }) => {
     },
   };
 
-  return <Bar data={data} options={options || defaultOptions} />;
+  return <Line data={data} options={options || defaultOptions} />;
 };
 
-export default BarChart;
+export default LineChart;

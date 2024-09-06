@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import Sales from './components/Sales';
-// import ProfitLoss from './components/profitLoss';
+import ProfitLoss from './components/ProfitLoss';
 // import Demand from './components/demand'
 
 const Page: React.FC = () => {
@@ -36,8 +36,8 @@ const Page: React.FC = () => {
                     </div>
 
                     {selectedFilter === 'sales' && (<Sales/>)}
-                    {/* {selectedFilter === 'profitLoss' && ()}
-                    {selectedFilter === 'demand' && ()} */}
+                    {selectedFilter === 'profitLoss' && (<ProfitLoss/>)}
+                    {/* {selectedFilter === 'demand' && ()} */}
 
                 </div>
             </section>

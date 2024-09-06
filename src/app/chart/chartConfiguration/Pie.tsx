@@ -1,4 +1,3 @@
-// components/PieChart.tsx
 import { FC } from 'react';
 import { Pie } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend, ChartOptions, ChartData } from 'chart.js';
@@ -10,7 +9,7 @@ interface PieChartProps {
 }
 
 const PieChart: FC<PieChartProps> = ({ data }) => {
-  const options: ChartOptions<'pie'> = {
+  const defaultOptions: ChartOptions<'pie'> = {
     responsive: true,
     plugins: {
       legend: {
@@ -23,7 +22,7 @@ const PieChart: FC<PieChartProps> = ({ data }) => {
     },
   };
 
-  return <Pie data={data} options={options} />;
+  return <Pie data={data} options={defaultOptions} />;
 };
 
 export default PieChart;

@@ -173,7 +173,7 @@ const Sales: React.FC = () => {
 
     const chartOptions: ChartOptions<'bar'> | ChartOptions<'line'> = useMemo(() => {
         const xAxisLabels: Record<ChartKey, string> = {
-            'week day vs sales': timeFrame === 'weekly' ? 'Week Days' : (timeFrame === 'monthly' ? 'Weeks' : ''),
+            'week day vs sales': timeFrame === 'weekly' ? 'Week Days' : (timeFrame === 'monthly' ? 'Weeks' : 'Months'),
             'menu item vs sales': 'Menu Items',
             'time slot vs orders': 'Time Slots',
             'week day vs customer': timeFrame === 'weekly' ? 'Week Days' : (timeFrame === 'monthly' ? 'Weeks' : 'Quarters'),

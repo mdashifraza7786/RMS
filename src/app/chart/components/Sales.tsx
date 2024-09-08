@@ -4,7 +4,6 @@ import React, { useState, useEffect, useMemo } from 'react';
 import BarChart from '../chartConfiguration/Bar';
 import PieChart from '../chartConfiguration/Pie';
 import LineChart from '../chartConfiguration/Line';
-import AreaChart from '../chartConfiguration/Area';
 import { ChartOptions } from 'chart.js';
 
 type ChartKey =
@@ -19,8 +18,9 @@ type ChartKey =
 
 const Sales: React.FC = () => {
     const [chartXY, setChartXY] = useState<ChartKey>('week day vs sales');
-    const [chartType, setChartType] = useState<'bar' | 'pie' | 'line' | 'area'>('bar');
+    const [chartType, setChartType] = useState<'bar' | 'pie' | 'line'>('bar');
     const [timeFrame, setTimeFrame] = useState<'weekly' | 'monthly' | 'yearly'>('weekly');
+    const [comparisonMode, setComparisonMode] = useState(false);
 
     useEffect(() => {
         document.title = "Sales";
@@ -32,127 +32,149 @@ const Sales: React.FC = () => {
         '#90BE6D', '#43AA8B', '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0'
     ], []);
 
-    const chartData = useMemo(() => {
-        const dataMap: Record<ChartKey, {
-            labels: string[];
-            datasets: {
-                label: string;
-                data: number[];
-                backgroundColor: string[];
-                borderColor: string[];
-                borderWidth: number;
-                hoverOffset: number;
-            }[];
-        }> = {
-            'week day vs sales': {
+    const generateData = (label: string) => {
+        if (chartXY === 'week day vs sales') {
+            return {
                 labels: timeFrame === 'weekly' ? ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'] :
                     timeFrame === 'monthly' ? ['Week 1', 'Week 2', 'Week 3', 'Week 4'] :
-                        ['Q1', 'Q2', 'Q3', 'Q4'],
+                        ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'June', 'July', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
                 datasets: [{
-                    label: 'Sales (₹)',
+                    label,
                     data: timeFrame === 'weekly' ? [500, 800, 1200, 700, 1100, 950, 1000] :
                         timeFrame === 'monthly' ? [4000, 6000, 5500, 7000] :
                             [15000, 20000, 18000, 22000],
-                    backgroundColor: colors.slice(0, timeFrame === 'weekly' ? 7 : (timeFrame === 'monthly' ? 4 : 4)),
-                    borderColor: colors.slice(0, timeFrame === 'weekly' ? 7 : (timeFrame === 'monthly' ? 4 : 4)),
+                    backgroundColor: colors.slice(0, timeFrame === 'weekly' ? 7 : (timeFrame === 'monthly' ? 4 : 12)),
+                    borderColor: colors.slice(0, timeFrame === 'weekly' ? 7 : (timeFrame === 'monthly' ? 4 : 12)),
                     borderWidth: 1,
                     hoverOffset: 10,
-                }],
-            },
-            'menu item vs sales': {
-                labels: timeFrame === 'weekly' ? ['Pizza', 'Burger', 'Pasta', 'Salad', 'Sushi', 'Tacos', 'Noodles'] :
-                    timeFrame === 'monthly' ? ['Week 1', 'Week 2', 'Week 3', 'Week 4'] :
-                        ['Q1', 'Q2', 'Q3', 'Q4'],
-                datasets: [{
-                    label: 'Sales (₹)',
-                    data: timeFrame === 'weekly' ? [2200, 900, 600, 500, 700, 800, 600] :
-                        timeFrame === 'monthly' ? [5000, 6000, 7000, 8000] :
-                            [25000, 30000, 35000, 40000],
-                    backgroundColor: colors.slice(0, timeFrame === 'weekly' ? 7 : (timeFrame === 'monthly' ? 4 : 4)),
-                    borderColor: colors.slice(0, timeFrame === 'weekly' ? 7 : (timeFrame === 'monthly' ? 4 : 4)),
-                    borderWidth: 1,
-                    hoverOffset: 10,
-                }],
-            },
-            'time slot vs orders': {
-                labels: ['Breakfast', 'Lunch', 'Evening', 'Dinner', 'Late Night'],
-                datasets: [{
-                    label: 'Orders',
-                    data: [300, 1200, 800, 1000, 500],
-                    backgroundColor: colors.slice(0, 5),
-                    borderColor: colors.slice(0, 5),
-                    borderWidth: 1,
-                    hoverOffset: 10,
-                }],
-            },
-            'week day vs customer': {
-                labels: timeFrame === 'weekly' ? ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'] :
-                    timeFrame === 'monthly' ? ['Week 1', 'Week 2', 'Week 3', 'Week 4'] :
-                        ['Q1', 'Q2', 'Q3', 'Q4'],
-                datasets: [{
-                    label: 'Customer Visits',
-                    data: timeFrame === 'weekly' ? [200, 500, 800, 600, 900, 700, 1100] :
-                        timeFrame === 'monthly' ? [1500, 2000, 1800, 2200] :
-                            [7000, 8000, 8500, 9000],
-                    backgroundColor: colors.slice(0, timeFrame === 'weekly' ? 7 : (timeFrame === 'monthly' ? 4 : 4)),
-                    borderColor: colors.slice(0, timeFrame === 'weekly' ? 7 : (timeFrame === 'monthly' ? 4 : 4)),
-                    borderWidth: 1,
-                    hoverOffset: 10,
-                }],
-            },
-            'Dish category vs sales': {
-                labels: ['Main Course', 'Appetizers', 'Desserts', 'Beverages', 'Sides'],
-                datasets: [{
-                    label: 'Sales (₹)',
-                    data: [3000, 1500, 800, 600, 400],
-                    backgroundColor: colors.slice(0, 5),
-                    borderColor: colors.slice(0, 5),
-                    borderWidth: 1,
-                    hoverOffset: 10,
-                }],
-            },
-            'payment method vs sales': {
-                labels: ['Cash', 'Credit Card', 'UPI', 'Wallet', 'Gift Card'],
-                datasets: [{
-                    label: 'Sales (₹)',
-                    data: [1500, 2500, 1800, 1200, 900],
-                    backgroundColor: colors.slice(0, 5),
-                    borderColor: colors.slice(0, 5),
-                    borderWidth: 1,
-                    hoverOffset: 10,
-                }],
-            },
-            'age group vs sales': {
-                labels: ['Under 18', '18-25', '26-35', '36-50', '50-65', '65+'],
-                datasets: [{
-                    label: 'Sales (₹)',
-                    data: [400, 1200, 2000, 1500, 700, 300],
-                    backgroundColor: colors.slice(0, 6),
-                    borderColor: colors.slice(0, 6),
-                    borderWidth: 1,
-                    hoverOffset: 10,
-                }],
-            },
-            'gender group vs sales': {
-                labels: ['Male', 'Female', 'Non-binary', 'Other'],
-                datasets: [{
-                    label: 'Sales (₹)',
-                    data: [2000, 1800, 400, 300],
-                    backgroundColor: colors.slice(0, 4),
-                    borderColor: colors.slice(0, 4),
-                    borderWidth: 1,
-                    hoverOffset: 10,
-                }],
-            },
-        };
+                }]
+            };
+        }
 
-        return dataMap[chartXY];
-    }, [chartXY, colors, timeFrame]);
+        if (chartXY === 'menu item vs sales') {
+            return {
+                labels: ['Pasta', 'Biryani', 'Chilli chicken', 'Mutton Biryani', 'Paneer paratha', 'Mandi', 'Burger', 'Litti chokha'],
+                datasets: [{
+                    label,
+                    data: timeFrame === 'weekly' ? [500, 800, 1200, 700, 1100, 950, 1000, 600] :
+                        timeFrame === 'monthly' ? [5000, 800, 1200, 700, 1100, 950, 1000, 600] : [500, 8000, 1200, 700, 11000, 950, 1000, 600],
+                    backgroundColor: colors.slice(0, 8),
+                    borderColor: colors.slice(0, 8),
+                    borderWidth: 1,
+                    hoverOffset: 10,
+                }]
+            };
+        }
+
+        if (chartXY === 'time slot vs orders') {
+            return {
+                labels: ['Breakfast', 'Lunch', 'Evening', 'Dinner'],
+                datasets: [{
+                    label,
+                    data: timeFrame === 'weekly' ? [500, 800, 1200, 700] :
+                        timeFrame === 'monthly' ? [5000, 800, 1200, 700] : [500, 8000, 1200, 700],
+                    backgroundColor: colors.slice(0, 8),
+                    borderColor: colors.slice(0, 8),
+                    borderWidth: 1,
+                    hoverOffset: 10,
+                }]
+            };
+        }
+
+        if (chartXY === 'week day vs customer') {
+            return {
+                labels: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
+                datasets: [{
+                    label,
+                    data: timeFrame === 'weekly' ? [500, 800, 1200, 700, 452, 652, 865] :
+                        timeFrame === 'monthly' ? [500, 800, 1200, 700, 452, 652, 865] : [500, 800, 1200, 700, 452, 652, 865],
+                    backgroundColor: colors.slice(0, 8),
+                    borderColor: colors.slice(0, 8),
+                    borderWidth: 1,
+                    hoverOffset: 10,
+                }]
+            };
+        }
+
+        if (chartXY === 'Dish category vs sales') {
+            return {
+                labels: ['Breakfast', 'Lunch', 'Evening', 'Dinner'],
+                datasets: [{
+                    label,
+                    data: timeFrame === 'weekly' ? [500, 800, 1200, 700] :
+                        timeFrame === 'monthly' ? [5000, 800, 1200, 700] : [500, 8000, 1200, 700],
+                    backgroundColor: colors.slice(0, 8),
+                    borderColor: colors.slice(0, 8),
+                    borderWidth: 1,
+                    hoverOffset: 10,
+                }]
+            };
+        }
+
+        if (chartXY === 'payment method vs sales') {
+            return {
+                labels: ['UPI', 'Credit Card', 'Debit Card', 'Cash'],
+                datasets: [{
+                    label,
+                    data: timeFrame === 'weekly' ? [500, 800, 1200, 700] :
+                        timeFrame === 'monthly' ? [5000, 800, 1200, 700] : [500, 8000, 1200, 700],
+                    backgroundColor: colors.slice(0, 8),
+                    borderColor: colors.slice(0, 8),
+                    borderWidth: 1,
+                    hoverOffset: 10,
+                }]
+            };
+        }
+
+        if (chartXY === 'age group vs sales') {
+            return {
+                labels: ['<10', '10-18', '18-25', '25-40', '40-60', '60+'],
+                datasets: [{
+                    label,
+                    data: timeFrame === 'weekly' ? [500, 800, 1200, 700, 524, 652] :
+                        timeFrame === 'monthly' ? [5000, 800, 1200, 700, 458, 235] : [500, 8000, 1200, 700, 897, 123],
+                    backgroundColor: colors.slice(0, 8),
+                    borderColor: colors.slice(0, 8),
+                    borderWidth: 1,
+                    hoverOffset: 10,
+                }]
+            };
+        }
+
+        else {
+            return {
+                labels: ['Female', 'Male', 'Others'],
+                datasets: [{
+                    label,
+                    data: timeFrame === 'weekly' ? [700, 524, 652] :
+                        timeFrame === 'monthly' ? [700, 458, 235] : [700, 897, 123],
+                    backgroundColor: colors.slice(0, 8),
+                    borderColor: colors.slice(0, 8),
+                    borderWidth: 1,
+                    hoverOffset: 10,
+                }]
+            };
+        }
+    };
+
+
+    const chartData = useMemo(() => {
+        if (comparisonMode) {
+            return {
+                labels: generateData('Current Data').labels,
+                datasets: [
+                    ...generateData('Current Period').datasets,
+                    ...generateData('Previous Period').datasets,
+                ]
+            };
+        }
+        return generateData('Sales (₹)');
+    }, [chartXY, colors, timeFrame, comparisonMode]);
 
     const chartOptions: ChartOptions<'bar'> | ChartOptions<'line'> = useMemo(() => {
         const xAxisLabels: Record<ChartKey, string> = {
-            'week day vs sales': timeFrame === 'weekly' ? 'Week Days' : (timeFrame === 'monthly' ? 'Weeks' : 'Quarters'),
-            'menu item vs sales': timeFrame === 'weekly' ? 'Menu Items' : (timeFrame === 'monthly' ? 'Weeks' : 'Quarters'),
+            'week day vs sales': timeFrame === 'weekly' ? 'Week Days' : (timeFrame === 'monthly' ? 'Weeks' : ''),
+            'menu item vs sales': 'Menu Items',
             'time slot vs orders': 'Time Slots',
             'week day vs customer': timeFrame === 'weekly' ? 'Week Days' : (timeFrame === 'monthly' ? 'Weeks' : 'Quarters'),
             'Dish category vs sales': 'Dish Category',
@@ -160,7 +182,7 @@ const Sales: React.FC = () => {
             'age group vs sales': 'Age Group',
             'gender group vs sales': 'Gender Group',
         };
-
+    
         const yAxisLabels: Record<ChartKey, string> = {
             'week day vs sales': 'Sales (₹)',
             'menu item vs sales': 'Sales (₹)',
@@ -171,22 +193,18 @@ const Sales: React.FC = () => {
             'age group vs sales': 'Sales (₹)',
             'gender group vs sales': 'Sales (₹)',
         };
-
-        if (chartType === 'pie') {
-            return {
-                responsive: true,
-                plugins: {
-                    legend: {
-                        position: 'top' as const, // Ensure position is a valid Chart.js option
-                    },
-                    title: {
-                        display: true,
-                        text: 'Sales Distribution by Category',
-                    },
-                },
-            };
-        }
-
+    
+        const tooltipLabels: Record<ChartKey, string> = {
+            'week day vs sales': 'Sales (₹)',
+            'menu item vs sales': 'Sales (₹)',
+            'time slot vs orders': 'Orders',
+            'week day vs customer': 'Customer Visits',
+            'Dish category vs sales': 'Sales (₹)',
+            'payment method vs sales': 'Sales (₹)',
+            'age group vs sales': 'Sales (₹)',
+            'gender group vs sales': 'Sales (₹)',
+        };
+    
         return {
             responsive: true,
             scales: {
@@ -211,19 +229,33 @@ const Sales: React.FC = () => {
                     },
                 },
             },
-        } as ChartOptions<'bar'>;
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function (context) {
+                            // Get the correct tooltip label based on chart type
+                            const value = context.raw;
+                            const label = tooltipLabels[chartXY] || '';  // Fetch the appropriate label
+                            return `${value} ${label}`;  // Return only the value and correct label
+                        }
+                    }
+                },
+            },
+        };
     }, [chartType, chartXY, timeFrame]);
+    
+
 
     return (
         <div className="flex flex-col gap-4">
             {/* Drop-down filters */}
             <section className="flex justify-between">
                 <select
-                    className="p-2 border cursor-pointer"
+                    className="p-2 border cursor-pointer font-raleway font-bold text-[14px]"
                     value={chartXY}
                     onChange={(e) => setChartXY(e.target.value as ChartKey)}
                 >
-                    <option value="week day vs sales">Sales by days of the week</option>
+                    <option value="week day vs sales">Sales by timeline</option>
                     <option value="menu item vs sales">Sales by menu item</option>
                     <option value="time slot vs orders">Orders by time of day</option>
                     <option value="week day vs customer">Customer visits by days of the week</option>
@@ -234,18 +266,17 @@ const Sales: React.FC = () => {
                 </select>
 
                 <select
-                    className="p-2 border cursor-pointer"
+                    className="p-2 border cursor-pointer font-raleway font-bold text-[14px]"
                     value={chartType}
-                    onChange={(e) => setChartType(e.target.value as 'bar' | 'pie' | 'line' | 'area')}
+                    onChange={(e) => setChartType(e.target.value as 'bar' | 'pie' | 'line')}
                 >
                     <option value="bar">Bar Chart</option>
                     <option value="pie">Pie Chart</option>
                     <option value="line">Line Chart</option>
-                    <option value="area">Area Chart</option>
                 </select>
 
                 <select
-                    className="p-2 border cursor-pointer"
+                    className="p-2 border cursor-pointer font-raleway font-bold text-[14px]"
                     value={timeFrame}
                     onChange={(e) => setTimeFrame(e.target.value as 'weekly' | 'monthly' | 'yearly')}
                 >
@@ -253,6 +284,15 @@ const Sales: React.FC = () => {
                     <option value="monthly">Monthly</option>
                     <option value="yearly">Yearly</option>
                 </select>
+
+                <div className="flex items-center">
+                    <label className="mr-2">Comparison Mode</label>
+                    <input
+                        type="checkbox"
+                        checked={comparisonMode}
+                        onChange={() => setComparisonMode(!comparisonMode)}
+                    />
+                </div>
             </section>
 
             {/* Chart */}
@@ -260,7 +300,6 @@ const Sales: React.FC = () => {
                 {chartType === 'bar' && <BarChart data={chartData} options={chartOptions as ChartOptions<'bar'>} />}
                 {chartType === 'pie' && <PieChart data={chartData} />}
                 {chartType === 'line' && <LineChart data={chartData} options={chartOptions as ChartOptions<'line'>} />}
-                {chartType === 'area' && <AreaChart data={chartData} options={chartOptions as ChartOptions<'line'>} />}
             </section>
         </div>
     );

@@ -84,11 +84,11 @@ const ProfitLoss: React.FC = () => {
 
         if (chartXY === 'specific period of day vs profit of period') {
             return {
-                labels: ['Breakfast', 'Lunch', 'Evening', 'Dinner'],
+                labels: ['8 AM','9 AM','10 AM','11 AM','12 PM','1 PM','2 PM','3 PM','4 PM','5 PM','6 PM','7 PM','8 PM','9 PM','10 PM','11 PM'],
                 datasets: [{
                     label,
-                    data: timeFrame === 'weekly' ? [500, 800, 1200, 700, 452, 652, 865] :
-                        timeFrame === 'monthly' ? [500, 800, 1200, 700, 452, 652, 5] : [500, 800, 1200, 700, 452, 652, 865],
+                    data: timeFrame === 'weekly' ? [500, 800, 1200, 700, 452, 652, 865,500, 800, 1200, 700, 452, 652, 865,500, 800, 1200, 700, 452, 652, 865] :
+                        timeFrame === 'monthly' ? [500, 800, 1200, 700, 452, 652, 5,500, 800, 1200, 700, 452, 652, 5,500, 800, 1200, 700, 452, 652, 5] : [500, 800, 1200, 700, 452, 652, 5,500, 800, 1200, 700, 452, 652, 5,500, 800, 1200, 700, 452, 652, 865],
                     backgroundColor: colors.slice(0, 8),
                     borderColor: colors.slice(0, 8),
                     borderWidth: 1,
@@ -147,7 +147,7 @@ const ProfitLoss: React.FC = () => {
                            timeFrame === 'monthly' ? ['Week 1', 'Week 2', 'Week 3', 'Week 4'] :
                            ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'June', 'July', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
         
-            const profitValues = timeFrame === 'weekly' ? [500, 800, 1200, 700, 1100, 950, -1000] :
+            const profitValues = timeFrame === 'weekly' ? [7, 800, 1200, 700, 1100, 950, -1000] :
                                  timeFrame === 'monthly' ? [4000, 6000, 5500, 7000] :
                                  [15000, 20000, 18000, 22000];
         

@@ -17,6 +17,7 @@ export const {handlers, signIn, signOut, auth } = NextAuth({
           throw new Error("Please provide email and password.");
         }
         const user = await getUserByUserid(userid);
+        
         if(!user){
           throw new Error("User Not Found");
         }

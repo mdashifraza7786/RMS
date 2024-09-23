@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import Sales from './components/Sales';
 import ProfitLoss from './components/ProfitLoss';
-// import Demand from './components/demand'
+import Demand from './components/Demand'
 
 const Page: React.FC = () => {
     const [selectedFilter, setSelectedFilter] = useState<string>('sales');
@@ -37,7 +37,7 @@ const Page: React.FC = () => {
 
                     {selectedFilter === 'sales' && (<Sales/>)}
                     {selectedFilter === 'profitLoss' && (<ProfitLoss/>)}
-                    {/* {selectedFilter === 'demand' && ()} */}
+                    {selectedFilter === 'demand' && (<Demand/>)}
 
                 </div>
             </section>

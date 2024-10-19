@@ -1,12 +1,14 @@
 "use client";
 import React, { useState } from 'react';
-import axios from 'axios';
 import Sales from './components/Sales';
 import ProfitLoss from './components/ProfitLoss';
-import Demand from './components/Demand'
+import Demand from './components/Demand';
+import ChefChart from './components/ChefChart';
+// import WaiterChart from './components/WaiterChart';
 
 const Page: React.FC = () => {
-    const [selectedFilter, setSelectedFilter] = useState<string>('sales');
+    const [selectedFilter1, setSelectedFilter1] = useState<string>('sales');
+    const [selectedFilter2, setSelectedFilter2] = useState<string>('chefPerformance');
 
     return (
         <div className='bg-[#e6e6e6] py-[5vh] px-[8vw] font-raleway flex flex-col gap-[6vh] relative'>
@@ -16,28 +18,28 @@ const Page: React.FC = () => {
                 <div className='bg-white rounded-[10px] p-[4vh] font-semibold flex flex-col gap-6'>
                     <div className='flex text-md gap-4'>
                         <div
-                            className={`px-[10px] py-2 rounded-xl cursor-pointer ${selectedFilter === 'sales' ? 'font-bold bg-[#FA9F1B70] transition-colors duration-300 text-[#fc9802e3]' : ''}`}
-                            onClick={() => setSelectedFilter('sales')}
+                            className={`px-[10px] py-2 rounded-xl cursor-pointer ${selectedFilter1 === 'sales' ? 'font-bold bg-[#FA9F1B70] transition-colors duration-300 text-[#fc9802e3]' : ''}`}
+                            onClick={() => setSelectedFilter1('sales')}
                         >
                             Sales
                         </div>
                         <div
-                            className={`px-[10px] py-2 rounded-xl cursor-pointer ${selectedFilter === 'profitLoss' ? 'font-bold bg-[#FA9F1B70] transition-colors duration-300 text-[#fc9802e3]' : ''}`}
-                            onClick={() => setSelectedFilter('profitLoss')}
+                            className={`px-[10px] py-2 rounded-xl cursor-pointer ${selectedFilter1 === 'profitLoss' ? 'font-bold bg-[#FA9F1B70] transition-colors duration-300 text-[#fc9802e3]' : ''}`}
+                            onClick={() => setSelectedFilter1('profitLoss')}
                         >
                             Profit/Loss
                         </div>
                         <div
-                            className={`px-[10px] py-2 rounded-xl cursor-pointer ${selectedFilter === 'demand' ? 'font-bold bg-[#FA9F1B70] transition-colors duration-300 text-[#fc9802e3]' : ''}`}
-                            onClick={() => setSelectedFilter('demand')}
+                            className={`px-[10px] py-2 rounded-xl cursor-pointer ${selectedFilter1 === 'demand' ? 'font-bold bg-[#FA9F1B70] transition-colors duration-300 text-[#fc9802e3]' : ''}`}
+                            onClick={() => setSelectedFilter1('demand')}
                         >
                             Demand
                         </div>
                     </div>
 
-                    {selectedFilter === 'sales' && (<Sales/>)}
-                    {selectedFilter === 'profitLoss' && (<ProfitLoss/>)}
-                    {selectedFilter === 'demand' && (<Demand/>)}
+                    {selectedFilter1 === 'sales' && (<Sales/>)}
+                    {selectedFilter1 === 'profitLoss' && (<ProfitLoss/>)}
+                    {selectedFilter1 === 'demand' && (<Demand/>)}
 
                 </div>
             </section>
@@ -46,24 +48,26 @@ const Page: React.FC = () => {
                 <div className='bg-white rounded-[10px] p-[4vh] font-semibold flex flex-col gap-6'>
                     <div className='flex text-md gap-4'>
                         <div
-                            className={`px-[10px] py-2 rounded-xl cursor-pointer ${selectedFilter === 'chefPerformance' ? 'font-bold bg-[#FA9F1B70] transition-colors duration-300 text-[#fc9802e3]' : ''}`}
-                            onClick={() => setSelectedFilter('chefPerformance')}
+                            className={`px-[10px] py-2 rounded-xl cursor-pointer ${selectedFilter2 === 'chefPerformance' ? 'font-bold bg-[#FA9F1B70] transition-colors duration-300 text-[#fc9802e3]' : ''}`}
+                            onClick={() => setSelectedFilter2('chefPerformance')}
                         >
                             Chef Performance
                         </div>
                         <div
-                            className={`px-[10px] py-2 rounded-xl cursor-pointer ${selectedFilter === 'waiterPerformance' ? 'font-bold bg-[#FA9F1B70] transition-colors duration-300 text-[#fc9802e3]' : ''}`}
-                            onClick={() => setSelectedFilter('waiterPerformance')}
+                            className={`px-[10px] py-2 rounded-xl cursor-pointer ${selectedFilter2 === 'waiterPerformance' ? 'font-bold bg-[#FA9F1B70] transition-colors duration-300 text-[#fc9802e3]' : ''}`}
+                            onClick={() => setSelectedFilter2('waiterPerformance')}
                         >
                             Waiter Performance
                         </div>
                         <div
-                            className={`px-[10px] py-2 rounded-xl cursor-pointer ${selectedFilter === 'popularDishes' ? 'font-bold bg-[#FA9F1B70] transition-colors duration-300 text-[#fc9802e3]' : ''}`}
-                            onClick={() => setSelectedFilter('popularDishes')}
+                            className={`px-[10px] py-2 rounded-xl cursor-pointer ${selectedFilter2 === 'popularDishes' ? 'font-bold bg-[#FA9F1B70] transition-colors duration-300 text-[#fc9802e3]' : ''}`}
+                            onClick={() => setSelectedFilter2('popularDishes')}
                         >
                             Popular Dishes
                         </div>
                     </div>
+                    {selectedFilter2 === 'chefPerformance' && (<ChefChart/>)}
+                    {/* {selectedFilter2 === 'waiterPerformance' && (<WaiterChart/>)} */}
                 </div>
             </section>
         </div>

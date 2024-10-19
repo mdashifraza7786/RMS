@@ -22,7 +22,7 @@ const PieChart: FC<PieChartProps> = ({ data }) => {
     },
   };
 
-  return <Pie data={data} options={defaultOptions} />;
+  return <Pie className='absolute' data={data} options={defaultOptions} />;
 };
 
 export default PieChart;

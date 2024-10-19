@@ -11,7 +11,7 @@ type ChartKey =
     'Dish Category vs Demand' |
     'Period of Day vs Demand' |
     'Orders vs Timeline' |
-    'Orders vs Age Group' ;
+    'Orders vs Age Group';
 
 const Demand: React.FC = () => {
     const [chartXY, setChartXY] = useState<ChartKey>('Menu Item vs Demand');
@@ -50,7 +50,7 @@ const Demand: React.FC = () => {
 
         if (chartXY === 'Dish Category vs Demand') {
             return {
-                labels: ['Pasta', 'Biryani', 'Chilli chicken', 'Mutton Biryani', 'Paneer paratha', 'Mandi', 'Burger', 'Litti chokha'],
+                labels: ['Pasta', 'Biryani', 'Murga Bhaat', 'Mutton Biryani', 'Paneer paratha', 'Mandi', 'Burger', 'Litti chokha'],
                 datasets: [{
                     label,
                     data: timeFrame === 'weekly' ? [500, 800, 1200, 700, 1100, 950, 1000, 600] :
@@ -80,13 +80,14 @@ const Demand: React.FC = () => {
 
         if (chartXY === 'Orders vs Timeline') {
             return {
-                labels: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
+                labels: timeFrame === 'weekly' ?  ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']:
+                timeFrame === 'monthly' ? ['Week 1', 'Week 2', 'Week 3', 'Week 4'] : ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'June', 'July', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
                 datasets: [{
                     label,
                     data: timeFrame === 'weekly' ? [500, 800, 1200, 700, 452, 652, 865] :
-                        timeFrame === 'monthly' ? [500, 800, 1200, 700, 452, 652, 865] : [500, 800, 1200, 700, 452, 652, 865],
-                    backgroundColor: colors.slice(0, 8),
-                    borderColor: colors.slice(0, 8),
+                    timeFrame === 'monthly' ? [500, 800, 1200, 700, 452, 652, 865] : [500, 800, 1200, 700, 452, 652, 865],
+                    backgroundColor: colors.slice(0, timeFrame === 'weekly' ? 7 : (timeFrame === 'monthly' ? 4 : 12)),
+                    borderColor: colors.slice(0, timeFrame === 'weekly' ? 7 : (timeFrame === 'monthly' ? 4 : 12)),
                     borderWidth: 1,
                     hoverOffset: 10,
                 }]
@@ -95,7 +96,7 @@ const Demand: React.FC = () => {
 
         else {
             return {
-                labels: ['Breakfast', 'Lunch', 'Evening', 'Dinner'],
+                labels: ['<10', '10-18', '18-25', '25-40', '40-60', '60+'],
                 datasets: [{
                     label,
                     data: timeFrame === 'weekly' ? [500, 800, 1200, 700] :
@@ -108,11 +109,13 @@ const Demand: React.FC = () => {
             };
         }
 
-       
+
     };
 
 
     const chartData = useMemo(() => {
+        const label = chartXY === 'Orders vs Timeline' || chartXY.includes('Demand') ? 'Orders' : 'Orders';
+        
         if (comparisonMode) {
             return {
                 labels: generateData('Current Data').labels,
@@ -122,8 +125,9 @@ const Demand: React.FC = () => {
                 ]
             };
         }
-        return generateData('Sales (₹)');
+        return generateData(label);
     }, [chartXY, colors, timeFrame, comparisonMode]);
+    
 
     const chartOptions: ChartOptions<'bar'> | ChartOptions<'line'> = useMemo(() => {
         const xAxisLabels: Record<ChartKey, string> = {
@@ -131,28 +135,28 @@ const Demand: React.FC = () => {
             'Dish Category vs Demand': 'Menu Items',
             'Period of Day vs Demand': 'Time Slots',
             'Orders vs Timeline': timeFrame === 'weekly' ? 'Week Days' : (timeFrame === 'monthly' ? 'Weeks' : 'Quarters'),
-            'Orders vs Age Group': 'Dish Category',
-            
+            'Orders vs Age Group': 'Age Group',
+
         };
-    
+
         const yAxisLabels: Record<ChartKey, string> = {
-            'Menu Item vs Demand': 'Sales (₹)',
-            'Dish Category vs Demand': 'Sales (₹)',
+            'Menu Item vs Demand': 'Orders',
+            'Dish Category vs Demand': 'Orders',
             'Period of Day vs Demand': 'Orders',
-            'Orders vs Timeline': 'Customer Visits',
-            'Orders vs Age Group': 'Sales (₹)',
-            
+            'Orders vs Timeline': 'Orders',
+            'Orders vs Age Group': 'Orders',
+
         };
-    
+
         const tooltipLabels: Record<ChartKey, string> = {
-            'Menu Item vs Demand': 'Sales (₹)',
-            'Dish Category vs Demand': 'Sales (₹)',
+            'Menu Item vs Demand': 'Orders',
+            'Dish Category vs Demand': 'Orders',
             'Period of Day vs Demand': 'Orders',
-            'Orders vs Timeline': 'Customer Visits',
-            'Orders vs Age Group': 'Sales (₹)',
-            
+            'Orders vs Timeline': 'Orders',
+            'Orders vs Age Group': 'Orders',
+
         };
-    
+
         return {
             responsive: true,
             scales: {
@@ -180,7 +184,7 @@ const Demand: React.FC = () => {
             plugins: {
                 tooltip: {
                     callbacks: {
-                        label: function (context) {
+                        label: function (context : any) {
                             // Get the correct tooltip label based on chart type
                             const value = context.raw;
                             const label = tooltipLabels[chartXY] || '';  // Fetch the appropriate label
@@ -191,7 +195,7 @@ const Demand: React.FC = () => {
             },
         };
     }, [chartType, chartXY, timeFrame]);
-    
+
 
 
     return (
@@ -241,7 +245,7 @@ const Demand: React.FC = () => {
             </section>
 
             {/* Chart */}
-            <section className="flex justify-center items-center" style={{ width: '100%', height: '450px' }}>
+            <section className="flex justify-center items-center pb-20" style={{ width: '100%', height: '550px' }}>
                 {chartType === 'bar' && <BarChart data={chartData} options={chartOptions as ChartOptions<'bar'>} />}
                 {chartType === 'pie' && <PieChart data={chartData} />}
                 {chartType === 'line' && <LineChart data={chartData} options={chartOptions as ChartOptions<'line'>} />}

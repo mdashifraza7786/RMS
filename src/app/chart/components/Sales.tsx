@@ -182,7 +182,7 @@ const Sales: React.FC = () => {
             'age group vs sales': 'Age Group',
             'gender group vs sales': 'Gender Group',
         };
-    
+
         const yAxisLabels: Record<ChartKey, string> = {
             'week day vs sales': 'Sales (₹)',
             'menu item vs sales': 'Sales (₹)',
@@ -193,7 +193,7 @@ const Sales: React.FC = () => {
             'age group vs sales': 'Sales (₹)',
             'gender group vs sales': 'Sales (₹)',
         };
-    
+
         const tooltipLabels: Record<ChartKey, string> = {
             'week day vs sales': 'Sales (₹)',
             'menu item vs sales': 'Sales (₹)',
@@ -204,7 +204,7 @@ const Sales: React.FC = () => {
             'age group vs sales': 'Sales (₹)',
             'gender group vs sales': 'Sales (₹)',
         };
-    
+
         return {
             responsive: true,
             scales: {
@@ -232,7 +232,7 @@ const Sales: React.FC = () => {
             plugins: {
                 tooltip: {
                     callbacks: {
-                        label: function (context) {
+                        label: function (context:any) {
                             // Get the correct tooltip label based on chart type
                             const value = context.raw;
                             const label = tooltipLabels[chartXY] || '';  // Fetch the appropriate label
@@ -243,7 +243,7 @@ const Sales: React.FC = () => {
             },
         };
     }, [chartType, chartXY, timeFrame]);
-    
+
 
 
     return (
@@ -306,3 +306,4 @@ const Sales: React.FC = () => {
 };
 
 export default Sales;
+

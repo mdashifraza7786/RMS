@@ -4,7 +4,8 @@ import Sales from './components/Sales';
 import ProfitLoss from './components/ProfitLoss';
 import Demand from './components/Demand';
 import ChefChart from './components/ChefChart';
-// import WaiterChart from './components/WaiterChart';
+import WaiterChart from './components/WaiterChart';
+import PopularDishes from './components/PopularDishes';
 
 const Page: React.FC = () => {
     const [selectedFilter1, setSelectedFilter1] = useState<string>('sales');
@@ -67,7 +68,8 @@ const Page: React.FC = () => {
                         </div>
                     </div>
                     {selectedFilter2 === 'chefPerformance' && (<ChefChart/>)}
-                    {/* {selectedFilter2 === 'waiterPerformance' && (<WaiterChart/>)} */}
+                    {selectedFilter2 === 'waiterPerformance' && (<WaiterChart/>)}
+                    {selectedFilter2 === 'popularDishes' && (<PopularDishes/>)}
                 </div>
             </section>
         </div>

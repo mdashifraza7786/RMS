@@ -27,37 +27,19 @@ const ChefChart: React.FC = () => {
     ], []);
 
     const generateData = (label: string) => {
-        if (chartXY === 'Chef vs Ratings') {
-            return {
-                labels: ['Chef A', 'Chef B', 'Chef C', 'Chef D', 'Chef E', 'Chef F', 'Chef G'],
-                datasets: [{
-                    label,
-                    data: timeFrame === 'weekly' ? [0.5, 0.8, 1.2, 0.7, 1.1, 0.9, 1.0] :
+        return {
+            labels: ['Chef A', 'Chef B', 'Chef C', 'Chef D', 'Chef E', 'Chef F', 'Chef G'],
+            datasets: [{
+                label,
+                data: timeFrame === 'weekly' ? [0.5, 0.8, 1.2, 0.7, 1.1, 0.9, 1.0] :
                     timeFrame === 'monthly' ? [0.5, 0.8, 1.2, 0.7, 3.1, 0.8, 1.0] : [4.5, 2.8, 1.2, 0.7, 1.1, 0.9, 1.0],
-                    backgroundColor: colors.slice(0, 7),
-                    borderColor: colors.slice(0, 7),
-                    borderWidth: 1,
-                    hoverOffset: 10,
-                }]
-            };
-        }
-
-        else {
-            return {
-                labels: ['Chef A', 'Chef B', 'Chef C', 'Chef D', 'Chef E', 'Chef F', 'Chef G'],
-                datasets: [{
-                    label,
-                    data: timeFrame === 'weekly' ? [0.5, 0.8, 1.2, 0.7, 1.1, 0.9, 1.0] :
-                    timeFrame === 'monthly' ? [0.5, 0.8, 1.2, 0.7, 3.1, 0.8, 1.0] : [4.5, 2.8, 1.2, 0.7, 1.1, 0.9, 1.0],
-                    backgroundColor: colors.slice(0, 8),
-                    borderColor: colors.slice(0, 8),
-                    borderWidth: 1,
-                    hoverOffset: 10,
-                }]
-            };
-        }
+                backgroundColor: colors.slice(0, 7),
+                borderColor: colors.slice(0, 7),
+                borderWidth: 1,
+                hoverOffset: 10,
+            }]
+        };
     };
-
 
     const chartData = useMemo(() => {
         if (comparisonMode) {
@@ -69,7 +51,8 @@ const ChefChart: React.FC = () => {
                 ]
             };
         }
-        return generateData('ChefChart');
+        const label = chartXY === 'Chef vs Orders Served' ? 'Orders Served' : 'Ratings';
+        return generateData(label);
     }, [chartXY, colors, timeFrame, comparisonMode]);
 
     const chartOptions: ChartOptions<'bar'> | ChartOptions<'line'> = useMemo(() => {
@@ -84,8 +67,8 @@ const ChefChart: React.FC = () => {
         };
 
         const tooltipLabels: Record<ChartKey, string> = {
-            'Chef vs Ratings': 'Ratings',
-            'Chef vs Orders Served': 'Orders Served',
+            'Chef vs Ratings': 'Rating',
+            'Chef vs Orders Served': 'Order',
         };
 
         return {
@@ -94,7 +77,7 @@ const ChefChart: React.FC = () => {
                 x: {
                     title: {
                         display: true,
-                        text: xAxisLabels[chartXY] || 'X Axis',
+                        text: xAxisLabels[chartXY],
                         color: '#000',
                         font: {
                             size: 14,
@@ -104,7 +87,7 @@ const ChefChart: React.FC = () => {
                 y: {
                     title: {
                         display: true,
-                        text: yAxisLabels[chartXY] || 'Y Axis',
+                        text: yAxisLabels[chartXY],
                         color: '#000',
                         font: {
                             size: 14,
@@ -116,18 +99,15 @@ const ChefChart: React.FC = () => {
                 tooltip: {
                     callbacks: {
                         label: function (context: any) {
-                            // Get the correct tooltip label based on chart type
                             const value = context.raw;
-                            const label = tooltipLabels[chartXY] || '';  // Fetch the appropriate label
-                            return `${value} ${label}`;  // Return only the value and correct label
+                            const label = tooltipLabels[chartXY];  // Fetch the correct label
+                            return `${value} ${label}`;  // Return value and correct label
                         }
                     }
                 },
             },
         };
-    }, [chartType, chartXY, timeFrame]);
-
-
+    }, [chartXY]);
 
     return (
         <div className="flex flex-col gap-4">
@@ -183,4 +163,3 @@ const ChefChart: React.FC = () => {
 };
 
 export default ChefChart;
-

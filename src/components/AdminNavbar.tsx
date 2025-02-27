@@ -14,6 +14,8 @@ import { MdOutlineRestaurantMenu } from "react-icons/md";
 import { usePathname } from 'next/navigation';
 import { signOut } from 'next-auth/react';
 import { IoBarChartSharp } from "react-icons/io5";
+import { FaTableCells } from "react-icons/fa6";
+
 
 const raleway = Raleway({
     weight: ['400', '700'],
@@ -94,6 +96,12 @@ const AdminNavbar: React.FC = () => {
                     <div className={`flex items-center gap-2 cursor-pointer ${pathName?.includes( '/chart') ? 'text-green-500' : ''}`}>
                         <div><IoBarChartSharp /></div>
                         <div>Charts</div>
+                    </div>
+                </Link>
+                <Link href='/tables' passHref>
+                    <div className={`flex items-center gap-2 cursor-pointer ${pathName?.includes( '/tables') ? 'text-green-500' : ''}`}>
+                        <div><FaTableCells /></div>
+                        <div>Tables</div>
                     </div>
                 </Link>
             </div>

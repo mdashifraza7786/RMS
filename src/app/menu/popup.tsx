@@ -39,7 +39,7 @@ const AddMenu: React.FC<AddMenuProps> = ({ popuphandle }) => {
             const file = event.target.files[0];
             const reader = new FileReader();
             reader.onloadend = () => {
-                setImagePreviewUrl(reader.result as string); // Store Base64 image
+                setImagePreviewUrl(reader.result as string);
             };
             reader.readAsDataURL(file);
         }

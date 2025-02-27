@@ -4,36 +4,38 @@ import React, { useRef, useEffect, useState, Suspense, lazy } from 'react';
 import { MdKeyboardArrowLeft, MdKeyboardArrowRight } from "react-icons/md";
 import { PieChart } from '@mui/x-charts/PieChart';
 import Link from 'next/link';
+import OrderScreen from './OrderScreen';
+interface Table {
+    id: number;
+    tablenumber: string;
+    availability: number;
+}
 
-// Lazy load components
 const OrderQueueCard = lazy(() => import('./OrderQueueCard'));
 const TableStatusCard = lazy(() => import('./TableStatusCard'));
 const RecentPaymentCard = lazy(() => import('./RecentPaymentCard'));
 
 const AdminDashboard: React.FC = () => {
+    const [tableData, setTableData] = useState<Table[]>([]);
+
     const data = [
         { id: 0, value: 1000, label: 'Revenue', color: '#03A9F4' },
         { id: 1, value: 150, label: 'Orders', color: '#FA9F1B' }
     ];
-    const tableData = [
-        { tablenumber: 1, status: "notavailable" },
-        { tablenumber: 2, status: "available" },
-        { tablenumber: 3, status: "available" },
-        { tablenumber: 4, status: "notavailable" },
-        { tablenumber: 5, status: "available" },
-        { tablenumber: 6, status: "notavailable" },
-        { tablenumber: 7, status: "available" },
-        { tablenumber: 8, status: "notavailable" },
-        { tablenumber: 9, status: "available" },
-        { tablenumber: 10, status: "available" },
-        { tablenumber: 11, status: "notavailable" },
-        { tablenumber: 12, status: "available" },
-        { tablenumber: 13, status: "available" },
-        { tablenumber: 14, status: "notavailable" },
-    ];
+
     const sliderRef = useRef<HTMLDivElement>(null);
     const [showLeftArrow, setShowLeftArrow] = useState(false);
     const [showRightArrow, setShowRightArrow] = useState(true);
+    const [selectedTable, setSelectedTable] = useState<number | null>(null);
+    useEffect(() => {
+        fetchTables();
+    }, []);
+
+    const fetchTables = async () => {
+        const response = await fetch("/api/tables");
+        const data = await response.json();
+        setTableData(data.tables);
+    };
 
     useEffect(() => {
         const sliderElement = sliderRef.current;
@@ -49,6 +51,7 @@ const AdminDashboard: React.FC = () => {
                 sliderElement.removeEventListener('scroll', handleScroll);
             };
         }
+
     }, []);
 
     const scrollLeft = () => {
@@ -64,18 +67,24 @@ const AdminDashboard: React.FC = () => {
     };
 
     const handleOrder = (tablenumber: number) => {
-        alert(tablenumber);
+        setSelectedTable(tablenumber);
+    };
+    const closeOrderScreen = () => {
+        setSelectedTable(null);
     };
 
     return (
         <div className={`bg-[#e6e6e6] px-[8vw] py-[5vh] flex flex-col gap-[6vh]`}>
             <div className='font-semibold text-[18px]'>Dashboard</div>
 
-            {/* Orders in Queue Section */}
             <section className='bg-white rounded-[10px] p-[4vh] font-semibold flex flex-col gap-3 relative'>
-                <div className='font-extrabold text-[15px]'>Orders in Queue</div>
+                <div className='flex justify-between'>
+                    <div className='font-extrabold text-[15px]'>Orders in Queue</div>
+                    <Link href={""} className='text-[15px] font-extrabold'>
+                        <p>View All</p>
+                    </Link>
+                </div>
                 <div>
-                    {/* Left Scroll Button */}
                     {showLeftArrow && (
                         <button
                             onClick={scrollLeft}
@@ -85,7 +94,6 @@ const AdminDashboard: React.FC = () => {
                         </button>
                     )}
 
-                    {/* Slider Div */}
                     <div ref={sliderRef} className='flex gap-[20px] overflow-x-auto scroll-smooth py-3'>
                         <Suspense fallback={<div>Loading orders...</div>}>
                             <OrderQueueCard table="1" waiter="Shyal Lal" amount="989.32" orid="2" />
@@ -109,7 +117,9 @@ const AdminDashboard: React.FC = () => {
                     )}
                 </div>
             </section>
-
+            {selectedTable !== null && (
+                <OrderScreen tableNumber={selectedTable} closeOrderScreen={closeOrderScreen} />
+            )}
             {/* Table Booking Status Section */}
             <section className='bg-white rounded-[10px] p-[4vh] font-semibold flex flex-col gap-8 relative'>
                 <div className='flex justify-between'>
@@ -126,17 +136,22 @@ const AdminDashboard: React.FC = () => {
                         </div>
                     </div>
                 </div>
-
                 <div className='flex flex-wrap gap-[10px]'>
                     <Suspense fallback={<div>Loading tables...</div>}>
-                        {tableData.map((item, index) => (
-                            <TableStatusCard
-                                key={index}
-                                tablestatus={item.status}
-                                tableno={item.tablenumber}
-                                doOrder={handleOrder}
-                            />
-                        ))}
+                        {tableData && tableData.length > 0 ? (
+                            tableData.map((item, index) => (
+                                <TableStatusCard
+                                    key={index}
+                                    tablestatus={item.availability === 0 ? 'available' : 'notavailable'}
+                                    tableno={Number(item.tablenumber)}
+                                    doOrder={handleOrder}
+                                />
+                            ))
+                        ) : (
+                            <div className='flex justify-center items-center h-20 w-full'>No tables available, Please add a table</div>
+                        )}
+
+
                     </Suspense>
                 </div>
             </section>

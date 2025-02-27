@@ -102,7 +102,7 @@ export async function getMenu() {
 
         if (userRows.length > 0) {
             return {
-                users: userRows,
+                menu: userRows,
             };
         } else {
             return false;
@@ -115,6 +115,28 @@ export async function getMenu() {
     }
 }
 
+export async function getTables() {
+    const connection = await dbConnect();
+    try {
+        // Fetch data from the 'menu' table
+        const [tablesRow] = await connection.query<RowDataPacket[]>(
+            'SELECT * FROM tables'
+        );
+
+        if (tablesRow.length > 0) {
+            return {
+                tables: tablesRow,
+            };
+        } else {
+            return false;
+        }
+
+    } catch (error: any) {
+        throw error;
+    } finally {
+        await connection.end();
+    }
+}
 export async function getAccount(userid: string) {
     const connection = await dbConnect();
     try {

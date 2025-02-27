@@ -15,6 +15,7 @@ const config: Config = {
       },
       colors: {
         primary: "#25476A",  //dark blue -- primary color
+        primaryhover:"#193756",
         secondary: "#03A9F4",  //light blue
         supporting1: "#AB47BC",  //dark pink
         supporting2: "#9FCC2E", //green

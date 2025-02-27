@@ -2,10 +2,10 @@
 import React, { useState, useEffect, ChangeEvent } from 'react';
 import axios from 'axios';
 import { FaPenToSquare } from "react-icons/fa6";
-import { IoFastFoodSharp } from "react-icons/io5";
 import { RiBillLine } from "react-icons/ri";
 import AddMenu from './popup';
 import { Bars } from 'react-loader-spinner';
+import Image from 'next/image';
 
 interface EditData {
     item_id: string;
@@ -14,7 +14,7 @@ interface EditData {
     item_foodtype: string;
     item_price: number;
     item_type: string;
-    item_thumbnail?: string; // Make thumbnail optional for cases when it's not updated
+    item_thumbnail?: string;
 }
 
 const Page: React.FC = () => {
@@ -33,7 +33,7 @@ const Page: React.FC = () => {
 
     const [menuData, setMenuData] = useState<EditData[]>([]);
     const [editLoading, setEditLoading] = useState<boolean>(false);
-    const [newThumbnail, setNewThumbnail] = useState<string | null>(null); // Track if new thumbnail is uploaded
+    const [newThumbnail, setNewThumbnail] = useState<string | null>(null); 
 
     useEffect(() => {
         document.title = "Menu";
@@ -44,8 +44,8 @@ const Page: React.FC = () => {
         try {
             const response = await axios.get('/api/menu');
             const data = response.data;
-            if (data && Array.isArray(data.users)) {
-                setMenuData(data.users);
+            if (data && Array.isArray(data.menu)) {
+                setMenuData(data.menu);
             } else {
                 console.error("Fetched data does not contain an array of users:", data);
             }
@@ -151,15 +151,17 @@ const Page: React.FC = () => {
                                         <tr key={index} className='text-[14px] font-medium font-montserrat'>
                                             <td className="border px-4 py-4 transition-colors duration-300">{item.item_id}</td>
                                             <td className="border px-4 py-4 transition-colors duration-300">{item.item_name}</td>
-                                            <td className="border px-4 py-4 transition-colors duration-300">{item.item_foodtype}</td>
+                                            <td className="border px-4 py-4 transition-colors duration-300">{item.item_foodtype == "veg" ? "Veg" : "Non Veg"}</td>
                                             <td className="border px-4 py-4 transition-colors duration-300">{item.item_type}</td>
                                             <td className="border px-4 py-4 transition-colors duration-300">₹ {item.item_price}</td>
                                             <td className="border px-4 py-4 transition-colors duration-300">
                                                 {item.item_thumbnail && (
-                                                    <img
+                                                    <Image 
                                                         className='w-[150px] h-[100px] object-cover'
                                                         src={item.item_thumbnail}
                                                         alt={`${item.item_name} Thumbnail`}
+                                                        width={150}
+                                                        height={100}
                                                     />
                                                 )}
                                             </td>
@@ -259,17 +261,22 @@ const Page: React.FC = () => {
                                         className="border border-gray-300 rounded-md p-2 w-full"
                                     />
                                     {editData?.item_thumbnail && !newThumbnail && (
-                                        <img
+                                        <Image 
                                             src={editData.item_thumbnail}
                                             alt="Current Thumbnail"
                                             className="mt-4 w-[150px] h-[100px] object-cover"
+                                            width={150}
+                                            height={100}
                                         />
                                     )}
                                     {newThumbnail && (
-                                        <img
+                                        <Image 
                                             src={newThumbnail}
                                             alt="New Thumbnail Preview"
                                             className="mt-4 w-[150px] h-[100px] object-cover"
+                                            width={150}
+                                            height={100}
+
                                         />
                                     )}
                                 </div>

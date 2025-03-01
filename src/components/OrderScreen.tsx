@@ -1,9 +1,13 @@
 import axios from "axios";
-import { ChangeEvent, useEffect, useState } from "react";
-import { IoClose } from "react-icons/io5";
+import { ChangeEvent, useEffect, useMemo, useState } from "react";
+import { IoCheckmarkCircle, IoClose, IoCloseCircle } from "react-icons/io5";
+import { OrderedItems, Table } from "./AdminDashboard";
 
 interface OrderScreenProps {
     tableNumber: number;
+    tabledata: Table[];
+    orderedItem: { tablenumber: number; itemsordered: OrderedItems[] }[];
+    setorderitemsfun: (bookedItems: { tablenumber: number; itemsordered: OrderedItems[]; }) => void;
     closeOrderScreen: () => void;
 }
 
@@ -17,11 +21,13 @@ interface MenuData {
     item_type: string;
 }
 
-const OrderScreen: React.FC<OrderScreenProps> = ({ tableNumber, closeOrderScreen }) => {
+const OrderScreen: React.FC<OrderScreenProps> = ({ tableNumber, orderedItem, setorderitemsfun, tabledata, closeOrderScreen }) => {
     const [menuData, setMenuData] = useState<MenuData[]>([]);
     const [searchTerm, setSearchTerm] = useState<string>('');
     const [isDropdownVisible, setIsDropdownVisible] = useState<boolean>(false);
     const [selectedItems, setSelectedItems] = useState<{ item: MenuData; quantity: number }[]>([]);
+    const [modal, setModal] = useState<{ visible: boolean; message: string; success: boolean }>({ visible: false, message: "", success: false });
+    const [booked, setBooked] = useState<boolean>(false);
 
     useEffect(() => {
         document.body.style.overflow = "hidden";
@@ -30,64 +36,90 @@ const OrderScreen: React.FC<OrderScreenProps> = ({ tableNumber, closeOrderScreen
             document.body.style.overflow = "auto";
         };
     }, []);
+    useEffect(() => {
+        const table = tabledata.find((t) => t.availability === 1 && t.tablenumber === tableNumber);
+        if (table) setBooked(true);
+    }, [tabledata, tableNumber]);
+
 
     const fetchMenuData = async () => {
         try {
             const response = await axios.get('/api/menu');
-            const data = response.data;
-            if (data && Array.isArray(data.menu)) {
-                const formattedData = data.menu.map((item: any) => ({
+            if (Array.isArray(response.data.menu)) {
+                setMenuData(response.data.menu.map((item: any) => ({
                     ...item,
                     item_price: Number(item.item_price),
-                }));
-                setMenuData(formattedData);
-            } else {
-                console.error("Fetched data does not contain an array of menu items:", data);
+                })));
             }
         } catch (error) {
             console.error("Error fetching menu data:", error);
         }
     };
 
+
     const placeOrder = async () => {
         if (selectedItems.length === 0) {
             alert("Please add items to place an order!");
             return;
         }
-    
+
         const orderData = {
             tableNumber,
             items: selectedItems.map(({ item, quantity }) => ({
                 item_id: item.item_id,
+                item_name: item.item_name,
                 quantity,
                 price: item.item_price
             })),
             subtotal,
             gst,
-            serviceCharge,
             totalAmount
         };
-    
+
         try {
-            const response = await axios.post('/api/orders', orderData);
-            alert(`Order Placed Successfully! Order ID: ${response.data.orderId}`);
-            setSelectedItems([]); // Clear items after placing order
+            const response = await axios.post('/api/order/placeOrder', orderData);
+            if (response.data.success) {
+                const bookedItems = selectedItems.map(({ item, quantity }) => ({
+                    item_id: item.item_id,
+                    item_name: item.item_name,
+                    quantity,
+                    price: item.item_price,
+                }));
+
+                setorderitemsfun({ tablenumber: tableNumber, itemsordered: bookedItems });
+
+
+
+                setModal({ visible: true, message: `Order Placed Successfully! Order ID: ${response.data.orderId}`, success: true });
+                tabledata.map((table) => {
+                    if (table.tablenumber === tableNumber) {
+                        table.availability = 1;
+                    }
+                });
+                setSelectedItems([]);
+                setBooked(true);
+            } else {
+                setModal({ visible: true, message: response.data.error || "Order Failed", success: false });
+            }
         } catch (error) {
             console.error("Error placing order:", error);
             alert("Failed to place order, please try again!");
         }
     };
-    
+
     const handleSearchChange = (event: ChangeEvent<HTMLInputElement>) => {
         const value = event.target.value;
         setSearchTerm(value);
         setIsDropdownVisible(value.length > 0);
     };
 
-    const filteredData = menuData.filter(item =>
-        item.item_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.item_id.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const filteredData = useMemo(() => {
+        return menuData.filter(item =>
+            item.item_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            item.item_id.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+    }, [searchTerm, menuData]);
+
 
     const handleItemSelect = (selectedItem: MenuData) => {
         const existingItem = selectedItems.find(entry => entry.item.item_id === selectedItem.item_id);
@@ -103,11 +135,11 @@ const OrderScreen: React.FC<OrderScreenProps> = ({ tableNumber, closeOrderScreen
     };
 
     const handleQuantityChange = (itemId: string, newQuantity: string) => {
-        if (!/^\d*$/.test(newQuantity)) return; // Allow only numeric input
+        if (!/^\d*$/.test(newQuantity)) return;
 
         setSelectedItems(selectedItems.map(({ item, quantity }) =>
             item.item_id === itemId
-                ? { item, quantity: newQuantity === "" ? 0 : parseInt(newQuantity, 10) } // Ensure number
+                ? { item, quantity: newQuantity === "" ? 0 : parseInt(newQuantity, 10) }
                 : { item, quantity }
         ));
     };
@@ -123,8 +155,7 @@ const OrderScreen: React.FC<OrderScreenProps> = ({ tableNumber, closeOrderScreen
 
     const subtotal = selectedItems.reduce((total, entry) => total + (entry.item.item_price * entry.quantity), 0);
     const gst = subtotal * 0.18;
-    const serviceCharge = subtotal * 0.05;
-    const totalAmount = subtotal + gst + serviceCharge;
+    const totalAmount = subtotal + gst;
 
     return (
         <div className="fixed inset-0 bg-gray-900 bg-opacity-70 flex justify-center items-center z-50">
@@ -136,8 +167,8 @@ const OrderScreen: React.FC<OrderScreenProps> = ({ tableNumber, closeOrderScreen
                     </button>
                 </div>
 
-                <div className="grid grid-cols-3 gap-4 h-full">
-                    <div className="flex flex-col col-span-2 gap-3 ">
+                <div className="grid grid-cols-3 gap-4 h-full ">
+                    <div className="flex flex-col col-span-2 gap-3 relative">
                         <div className="relative">
                             <input
                                 type="text"
@@ -161,12 +192,12 @@ const OrderScreen: React.FC<OrderScreenProps> = ({ tableNumber, closeOrderScreen
                                 </ul>
                             )}
                         </div>
-                        <div className="bg-gray-100 p-3 rounded-lg shadow-md">
+                        <div className="bg-gray-100 p-3 rounded-lg shadow-md max-h-[40vh] ">
                             <h3 className="font-bold text-lg mb-2">Selected Items</h3>
                             {selectedItems.length === 0 ? (
                                 <p className="text-gray-500 text-sm">No items added yet.</p>
                             ) : (
-                                <ul className="space-y-2">
+                                <ul className="space-y-2 overflow-y-auto max-h-[33vh]">
                                     {selectedItems.map(({ item, quantity }) => (
                                         <li key={item.item_id} className="flex justify-between items-center bg-white p-2 rounded-md shadow-sm">
                                             <span>{item.item_name} - ₹{item.item_price} ×
@@ -188,6 +219,32 @@ const OrderScreen: React.FC<OrderScreenProps> = ({ tableNumber, closeOrderScreen
                                 </ul>
                             )}
                         </div>
+                        {booked && (
+                            <div className="absolute bottom-0 w-full left-0 bg-gray-100 p-3 rounded-lg shadow-md h-[30vh] overflow-y-auto">
+                                <h3 className="font-bold text-lg mb-2">Ordered Items</h3>
+                                <ul className="space-y-2 overflow-y-auto max-h-[33vh]">
+                                    {orderedItem
+                                        .filter(table => table.tablenumber === tableNumber)
+                                        .flatMap(table => table.itemsordered) 
+                                        .map((item) => (
+                                            <li key={item.item_id} className="flex justify-between items-center bg-white p-2 rounded-md shadow-sm">
+                                                <span>
+                                                    {item.item_name} - ₹{item.price} ×
+                                                    <input
+                                                        type="text"
+                                                        disabled
+                                                        value={item.quantity === 0 ? "" : item.quantity.toString()}
+                                                        onChange={(e) => handleQuantityChange(item.item_id, e.target.value)}
+                                                        onBlur={() => handleBlur(item.item_id, item.quantity)}
+                                                        className="w-10 border text-center"
+                                                    />
+                                                </span>
+                                            </li>
+                                        ))}
+
+                                </ul>
+                            </div>
+                        )}
                     </div>
 
                     <div className="border border-gray-300 p-5 rounded-lg shadow-md col-span-1 relative">
@@ -199,10 +256,6 @@ const OrderScreen: React.FC<OrderScreenProps> = ({ tableNumber, closeOrderScreen
                         <div className="flex justify-between">
                             <span>GST (18%):</span>
                             <span>₹{gst.toFixed(2)}</span>
-                        </div>
-                        <div className="flex justify-between">
-                            <span>Service Charge (5%):</span>
-                            <span>₹{serviceCharge.toFixed(2)}</span>
                         </div>
                         <hr className="my-2 border-t-2 border-gray-300" />
                         <div className="flex justify-between font-bold text-lg">
@@ -216,10 +269,24 @@ const OrderScreen: React.FC<OrderScreenProps> = ({ tableNumber, closeOrderScreen
                             >
                                 Place Order
                             </button>
-
                         </div>
                     </div>
                 </div>
+                {modal.visible && (
+                    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm">
+                        <div className="bg-white p-6 w-[40%] max-w-md rounded-xl shadow-2xl text-center animate-fadeIn scale-105">
+                            <div className={`flex items-center justify-center w-14 h-14 mx-auto mb-4 rounded-full ${modal.success ? "bg-green-100 text-green-600" : "bg-red-100 text-red-600"}`}>
+                                {modal.success ? <IoCheckmarkCircle size={32} /> : <IoCloseCircle size={32} />}
+                            </div>
+                            <h3 className="text-xl font-semibold text-gray-800">{modal.message}</h3>
+                            <button
+                                onClick={() => setModal({ ...modal, visible: false })}
+                                className="mt-6 w-full bg-primary text-white py-2 px-4 rounded-lg hover:bg-gray-700 transition-all">
+                                OK
+                            </button>
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );

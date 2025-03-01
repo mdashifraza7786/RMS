@@ -5,12 +5,17 @@ import { MdKeyboardArrowLeft, MdKeyboardArrowRight } from "react-icons/md";
 import { PieChart } from '@mui/x-charts/PieChart';
 import Link from 'next/link';
 import OrderScreen from './OrderScreen';
-interface Table {
+export interface Table {
     id: number;
-    tablenumber: string;
+    tablenumber: number;
     availability: number;
 }
-
+export interface OrderedItems {
+    item_id: string;
+    item_name: string;
+    quantity: number;
+    price: number;
+}
 const OrderQueueCard = lazy(() => import('./OrderQueueCard'));
 const TableStatusCard = lazy(() => import('./TableStatusCard'));
 const RecentPaymentCard = lazy(() => import('./RecentPaymentCard'));
@@ -27,6 +32,8 @@ const AdminDashboard: React.FC = () => {
     const [showLeftArrow, setShowLeftArrow] = useState(false);
     const [showRightArrow, setShowRightArrow] = useState(true);
     const [selectedTable, setSelectedTable] = useState<number | null>(null);
+    const [orderedItems, setOrderedItems] = useState<{ tablenumber: number; itemsordered: OrderedItems[] }[]>([]);
+
     useEffect(() => {
         fetchTables();
     }, []);
@@ -37,6 +44,12 @@ const AdminDashboard: React.FC = () => {
         setTableData(data.tables);
     };
 
+    function updateOrderedItems(bookedItems:any) {
+        setOrderedItems((prevItems) => {
+            const updatedItems = [...prevItems, bookedItems];
+            return updatedItems;
+        });
+    }
     useEffect(() => {
         const sliderElement = sliderRef.current;
         if (sliderElement) {
@@ -118,7 +131,7 @@ const AdminDashboard: React.FC = () => {
                 </div>
             </section>
             {selectedTable !== null && (
-                <OrderScreen tableNumber={selectedTable} closeOrderScreen={closeOrderScreen} />
+                <OrderScreen tableNumber={selectedTable} orderedItem={orderedItems} setorderitemsfun={updateOrderedItems} tabledata={tableData} closeOrderScreen={closeOrderScreen} />
             )}
             {/* Table Booking Status Section */}
             <section className='bg-white rounded-[10px] p-[4vh] font-semibold flex flex-col gap-8 relative'>

@@ -8,8 +8,7 @@ export async function PUT(request: NextRequest) {
         try {
             // Start transaction
             await connection.beginTransaction();
-    
-            // Update menu information
+
             await connection.query(
                 `UPDATE menu SET item_description = ?, item_name = ?, item_foodtype = ?, item_price = ?, item_thumbnail = ?,item_type = ?
                  WHERE item_id = ?`,

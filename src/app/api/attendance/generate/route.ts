@@ -1,13 +1,13 @@
 import { dbConnect } from "@/database/database";
 import { NextResponse } from "next/server";
-import { RowDataPacket } from "mysql2";  
+import { RowDataPacket } from "mysql2";
 
 export async function GET() {
     const connection = await dbConnect();
 
     try {
         const currentDate = new Date();
-        const date = currentDate.toISOString().split('T')[0]; 
+        const date = currentDate.toISOString().split('T')[0];
 
         const [existingRecords] = await connection.query<RowDataPacket[]>(
             'SELECT COUNT(*) as count FROM attendance WHERE date = ?',
@@ -20,20 +20,20 @@ export async function GET() {
             for (const user of users) {
                 const { userid, name, role } = user;
                 await connection.query(
-                    'INSERT INTO attendance (userid, name, role, status, date, time) VALUES (?, ?, ?, "absent", ?, NULL)',
+                    'INSERT INTO attendance (userid, name, role, status, date, time) VALUES (?, ?, ?, NULL, ?, NULL)',
                     [userid, name, role, date]
-                );                
+                );
             }
         } else {
             return NextResponse.json({ message: 'Already generated for today' }, { status: 209 });
         }
 
         // Retrieve and return all attendance records
-        const [rows1] = await connection.query<RowDataPacket[]>('SELECT userid, name, role, status, date, time FROM attendance WHERE date = ?',[date]);
+        const [rows1] = await connection.query<RowDataPacket[]>('SELECT userid, name, role, status, date, time FROM attendance WHERE date = ?', [date]);
         return NextResponse.json({ message: 'Attendance Generated Successfully', data: rows1 });
     } catch (error) {
         console.error('Error inserting attendance records:', error);
-        return NextResponse.json({ message: 'Failed to insert attendance records' ,data:error}, { status: 500 });
+        return NextResponse.json({ message: 'Failed to insert attendance records', data: error }, { status: 500 });
     } finally {
         connection.end();
     }

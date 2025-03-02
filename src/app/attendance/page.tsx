@@ -79,7 +79,7 @@ const Page: React.FC = () => {
     useEffect(() => {
         const getAttendanceByDate = async () => {
             setAttendanceloading(true);
-            
+
             try {
                 const response = await axios.post("/api/attendance/byDate", {
                     byDate: getdate
@@ -155,7 +155,7 @@ const Page: React.FC = () => {
                         <section className='flex justify-between items-center py-4'>
                             <div className="flex gap-2">
                                 <div>Date: </div>
-                                <div className="flex gap-2 underline">
+                                <div className="flex gap-2 text-[#222121] underline">
                                     <input
                                         type="date"
                                         name="attend_date"
@@ -220,25 +220,39 @@ const Page: React.FC = () => {
                                     <td className="border px-4 py-4 transition-colors duration-300">{item.name}</td>
                                     <td className="border px-4 py-4 transition-colors duration-300">{item.role.toUpperCase()}</td>
                                     <td className="border px-4 py-4 transition-colors duration-300">
-                                        {item.status === 'present' ? (
-                                            <button onClick={() => giveAttendance(item.userid, 'present', "reset")} className="bg-supporting2 text-white px-4 py-2 rounded text-[12px] w-[18rem]  flex items-center justify-between">
+                                        {new Date(item.date).getTime() < new Date().setHours(0, 0, 0, 0) ? (
+                                            // If date is in the past, show the result
+                                            <span className={`text-[12px] font-bold ${item.status === 'present' ? 'text-green-600' : item.status === 'absent' ? 'text-red-600' : 'text-gray-500'}`}>
+                                                {item.status === 'present' ? 'PRESENT' : item.status === 'absent' ? 'ABSENT' : 'NA'}
+                                            </span>
+                                        ) : item.status === 'present' ? (
+                                            <button
+                                                onClick={() => giveAttendance(item.userid, 'present', "reset")}
+                                                className="bg-supporting2 text-white px-4 py-2 rounded text-[12px] w-[18rem] flex items-center justify-between">
                                                 <div>PRESENT</div> <FaCheck />
                                             </button>
                                         ) : item.status === 'absent' ? (
-                                            <button onClick={() => giveAttendance(item.userid, 'absent', "reset")} className="bg-bgred text-white px-4 py-2 rounded text-[12px] w-[18rem] flex items-center justify-between">
+                                            <button
+                                                onClick={() => giveAttendance(item.userid, 'absent', "reset")}
+                                                className="bg-bgred text-white px-4 py-2 rounded text-[12px] w-[18rem] flex items-center justify-between">
                                                 <div>ABSENT</div> <RxCross2 />
                                             </button>
                                         ) : (
                                             <div className='flex gap-4 w-full'>
-                                                <button onClick={() => giveAttendance(item.userid, 'absent', "update")} className="bg-bgred text-white px-4 py-2 rounded text-[12px] flex items-center gap-10">
+                                                <button
+                                                    onClick={() => giveAttendance(item.userid, 'absent', "update")}
+                                                    className="bg-bgred text-white px-4 py-2 rounded text-[12px] flex items-center gap-10">
                                                     <div>ABSENT</div> <RxCross2 />
                                                 </button>
-                                                <button onClick={() => giveAttendance(item.userid, 'present', "update")} className="bg-supporting2 text-white px-4 py-2 rounded mr-2 text-[12px] flex items-center gap-10">
+                                                <button
+                                                    onClick={() => giveAttendance(item.userid, 'present', "update")}
+                                                    className="bg-supporting2 text-white px-4 py-2 rounded mr-2 text-[12px] flex items-center gap-10">
                                                     <div>PRESENT</div> <FaCheck />
                                                 </button>
                                             </div>
                                         )}
                                     </td>
+
 
                                 </tr>
                             ))}

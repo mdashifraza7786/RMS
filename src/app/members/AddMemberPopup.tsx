@@ -252,7 +252,6 @@ function AddMemberPopup({ onHandle }: any) {
                             placeholder='Enter Address 2'
                             value={addressFields.address_two}
                             onChange={handleChangeAddress}
-                            required
                             className='py-2 px-3 border border-gray-300 rounded outline-none'
                         />
                         <input
@@ -342,7 +341,7 @@ function AddMemberPopup({ onHandle }: any) {
                             placeholder='Enter UPI ID'
                             value={payoutFields.upiid}
                             onChange={handleChangePayout}
-                            required
+                            // required
                             className='py-2 px-3 border border-gray-300 rounded outline-none'
                         />
                         <div className='flex justify-between'>

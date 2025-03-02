@@ -5,6 +5,7 @@ import { MdKeyboardArrowLeft, MdKeyboardArrowRight } from "react-icons/md";
 import { PieChart } from '@mui/x-charts/PieChart';
 import Link from 'next/link';
 import OrderScreen from './OrderScreen';
+import axios from 'axios';
 export interface Table {
     id: number;
     tablenumber: number;
@@ -15,6 +16,9 @@ export interface OrderedItems {
     item_name: string;
     quantity: number;
     price: number;
+}
+export interface billingAmount {
+    subtotal: number;
 }
 const OrderQueueCard = lazy(() => import('./OrderQueueCard'));
 const TableStatusCard = lazy(() => import('./TableStatusCard'));
@@ -32,24 +36,58 @@ const AdminDashboard: React.FC = () => {
     const [showLeftArrow, setShowLeftArrow] = useState(false);
     const [showRightArrow, setShowRightArrow] = useState(true);
     const [selectedTable, setSelectedTable] = useState<number | null>(null);
-    const [orderedItems, setOrderedItems] = useState<{ tablenumber: number; itemsordered: OrderedItems[] }[]>([]);
+    const [orderedItems, setOrderedItems] = useState<{ orderid: number, billing: billingAmount; tablenumber: number; itemsordered: OrderedItems[] }[]>([]);
+
+
+
+    const fetchActiveOrders = async () => {
+        try {
+            const response = await axios.get("/api/order/activeOrders");
+            const activeOrders = response.data.map((order: any) => ({
+                orderid: order.orderId,
+                billing: {
+                    subtotal: order.billing.subtotal
+                },
+                tablenumber: Number(order.tableNumber),
+                itemsordered: order.orderItems.map((item: any) => ({
+                    item_id: item.item_id,
+                    item_name: item.item_name,
+                    quantity: item.quantity,
+                    price: item.price,
+                })),
+            }));
+            setOrderedItems(activeOrders);
+        } catch (error) {
+            console.error("Error fetching active orders:", error);
+        }
+    };
 
     useEffect(() => {
+        fetchActiveOrders();
         fetchTables();
     }, []);
-
     const fetchTables = async () => {
         const response = await fetch("/api/tables");
         const data = await response.json();
         setTableData(data.tables);
     };
 
-    function updateOrderedItems(bookedItems:any) {
+    function updateOrderedItems(bookedItems: any) {
         setOrderedItems((prevItems) => {
-            const updatedItems = [...prevItems, bookedItems];
-            return updatedItems;
+            return prevItems.map(order =>
+                order.tablenumber === bookedItems.tablenumber
+                    ? {
+                        ...order,
+                        billing: {
+                            subtotal:bookedItems.billing.subtotal
+                        },
+                        itemsordered: [...order.itemsordered, ...bookedItems.itemsordered] // Merge items
+                    }
+                    : order
+            ).concat(prevItems.some(order => order.tablenumber === bookedItems.tablenumber) ? [] : [bookedItems]);
         });
     }
+    
     useEffect(() => {
         const sliderElement = sliderRef.current;
         if (sliderElement) {

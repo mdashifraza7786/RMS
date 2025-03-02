@@ -1,13 +1,13 @@
 import axios from "axios";
 import { ChangeEvent, useEffect, useMemo, useState } from "react";
 import { IoCheckmarkCircle, IoClose, IoCloseCircle } from "react-icons/io5";
-import { OrderedItems, Table } from "./AdminDashboard";
+import { billingAmount, OrderedItems, Table } from "./AdminDashboard";
 
 interface OrderScreenProps {
     tableNumber: number;
     tabledata: Table[];
-    orderedItem: { tablenumber: number; itemsordered: OrderedItems[] }[];
-    setorderitemsfun: (bookedItems: { tablenumber: number; itemsordered: OrderedItems[]; }) => void;
+    orderedItem: { orderid: number; billing: billingAmount; tablenumber: number; itemsordered: OrderedItems[] }[];
+    setorderitemsfun: (bookedItems: { orderid: number; billing: billingAmount; tablenumber: number; itemsordered: OrderedItems[]; }) => void;
     closeOrderScreen: () => void;
 }
 
@@ -40,6 +40,7 @@ const OrderScreen: React.FC<OrderScreenProps> = ({ tableNumber, orderedItem, set
         const table = tabledata.find((t) => t.availability === 1 && t.tablenumber === tableNumber);
         if (table) setBooked(true);
     }, [tabledata, tableNumber]);
+
 
 
     const fetchMenuData = async () => {
@@ -77,7 +78,7 @@ const OrderScreen: React.FC<OrderScreenProps> = ({ tableNumber, orderedItem, set
         };
 
         try {
-            const response = await axios.post('/api/order/placeOrder', orderData);
+            const response = booked ? await axios.post(`/api/order/placeOrder/${orderedItem.find(table => table.tablenumber === tableNumber)?.orderid}`, orderData) : await axios.post('/api/order/placeOrder', orderData);
             if (response.data.success) {
                 const bookedItems = selectedItems.map(({ item, quantity }) => ({
                     item_id: item.item_id,
@@ -86,18 +87,19 @@ const OrderScreen: React.FC<OrderScreenProps> = ({ tableNumber, orderedItem, set
                     price: item.item_price,
                 }));
 
-                setorderitemsfun({ tablenumber: tableNumber, itemsordered: bookedItems });
-
-
-
-                setModal({ visible: true, message: `Order Placed Successfully! Order ID: ${response.data.orderId}`, success: true });
-                tabledata.map((table) => {
-                    if (table.tablenumber === tableNumber) {
-                        table.availability = 1;
-                    }
-                });
+                setorderitemsfun({ orderid: response.data.orderId, billing:{subtotal:subtotal}, tablenumber: tableNumber, itemsordered: bookedItems });
+                if (booked) {
+                    setModal({ visible: true, message: `Order Updated Successfully!`, success: true });
+                } else {
+                    setModal({ visible: true, message: `Order Placed Successfully! Order ID: ${response.data.orderId}`, success: true });
+                    tabledata.map((table) => {
+                        if (table.tablenumber === tableNumber) {
+                            table.availability = 1;
+                        }
+                    });
+                    setBooked(true);
+                }
                 setSelectedItems([]);
-                setBooked(true);
             } else {
                 setModal({ visible: true, message: response.data.error || "Order Failed", success: false });
             }
@@ -152,8 +154,12 @@ const OrderScreen: React.FC<OrderScreenProps> = ({ tableNumber, orderedItem, set
     const removeSelectedItem = (itemId: string) => {
         setSelectedItems(selectedItems.filter(entry => entry.item.item_id !== itemId));
     };
+    const currentOrder = orderedItem.length > 0 ? orderedItem.find(table => table.tablenumber === tableNumber) : null;
 
-    const subtotal = selectedItems.reduce((total, entry) => total + (entry.item.item_price * entry.quantity), 0);
+    const presubtotal = currentOrder?.billing?.subtotal ?? 0;
+    const newSubtotal = selectedItems.reduce((total, entry) => total + (entry.item.item_price * entry.quantity), 0);
+
+    const subtotal = presubtotal + newSubtotal;
     const gst = subtotal * 0.18;
     const totalAmount = subtotal + gst;
 
@@ -225,7 +231,7 @@ const OrderScreen: React.FC<OrderScreenProps> = ({ tableNumber, orderedItem, set
                                 <ul className="space-y-2 overflow-y-auto max-h-[33vh]">
                                     {orderedItem
                                         .filter(table => table.tablenumber === tableNumber)
-                                        .flatMap(table => table.itemsordered) 
+                                        .flatMap(table => table.itemsordered)
                                         .map((item) => (
                                             <li key={item.item_id} className="flex justify-between items-center bg-white p-2 rounded-md shadow-sm">
                                                 <span>
@@ -267,7 +273,7 @@ const OrderScreen: React.FC<OrderScreenProps> = ({ tableNumber, orderedItem, set
                                 onClick={placeOrder}
                                 className="w-[100%] bg-primary text-white font-bold py-2 px-4 rounded-lg mt-4 hover:bg-primaryhover"
                             >
-                                Place Order
+                                {!booked ? " Place Order" : "Update Order"}
                             </button>
                         </div>
                     </div>

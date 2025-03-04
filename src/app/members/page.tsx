@@ -4,7 +4,7 @@ import { RowDataPacket } from 'mysql2';
 import React, { useState, useEffect } from 'react';
 import { FaEye, FaUserPlus } from "react-icons/fa";
 import { FaPenToSquare } from "react-icons/fa6";
-import { IoFastFoodOutline } from "react-icons/io5";
+import { PiChefHatThin } from "react-icons/pi";
 import AddMemberPopup from './AddMemberPopup';
 import { Bars } from 'react-loader-spinner';
 
@@ -134,7 +134,7 @@ const Page: React.FC = () => {
             // Optionally show an error message to the user
         }
     };
-    
+
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
@@ -145,7 +145,7 @@ const Page: React.FC = () => {
             reader.readAsDataURL(file);
         }
     };
-    
+
 
     return (
         <>
@@ -165,7 +165,7 @@ const Page: React.FC = () => {
                         />
                         <div className='flex justify-between items-center py-4'>
                             <button onClick={handleAddMemberPopup} className="bg-supporting2 shadow-md font-bold text-white px-4 py-2 rounded flex items-center gap-2">
-                                <IoFastFoodOutline /> <span>Add Member</span>
+                                <PiChefHatThin /> <span>Add Member</span>
                             </button>
                         </div>
                     </section>
@@ -203,7 +203,17 @@ const Page: React.FC = () => {
                         </table>
                     ) : (
                         <div className='flex justify-center items-center py-4'>
-                            <p>No Data Found</p>
+
+                            <Bars
+                                height="50"
+                                width="50"
+                                color="#25476A"
+                                ariaLabel="bars-loading"
+                                wrapperStyle={{}}
+                                wrapperClass=""
+                                visible={true}
+                            />
+
                         </div>
                     )}
                     {filteredData.length > 0 && hasMore && !loading && (
@@ -538,7 +548,7 @@ const Page: React.FC = () => {
                                     </>
                                 ) : (
                                     <div>
-                                        <Bars
+                                        {/* <Bars
                                             height="50"
                                             width="50"
                                             color="#25476A"
@@ -546,7 +556,7 @@ const Page: React.FC = () => {
                                             wrapperStyle={{}}
                                             wrapperClass=""
                                             visible={true}
-                                        />
+                                        /> */}
                                     </div>
                                 )}
 

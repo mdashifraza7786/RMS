@@ -69,11 +69,9 @@ export async function POST(request: Request) {
 
         // Insert into users table
         const [userResult] = await connection.query(`
-            INSERT INTO user (userid, name, role, mobile, email, password, aadhaar, pancard) 
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-        `, [uniqueID, basicInfoFields.name, basicInfoFields.role, basicInfoFields.phone_number, basicInfoFields.email, hashedPassword, basicInfoFields.aadhar_no, basicInfoFields.pan_no]);
-
-
+            INSERT INTO user (userid, name, role,photo, mobile, email, password, aadhaar, pancard) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?,?)
+        `, [uniqueID, basicInfoFields.name, basicInfoFields.role, basicInfoFields.photo, basicInfoFields.phone_number, basicInfoFields.email, hashedPassword, basicInfoFields.aadhar_no, basicInfoFields.pan_no]);
 
         // Insert into user_address table
         await connection.query(`
@@ -81,6 +79,7 @@ export async function POST(request: Request) {
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         `, [uniqueID, addressFields.street_or_house_no, addressFields.landmark, addressFields.address_one, addressFields.address_two, addressFields.city, addressFields.state, addressFields.pin_code, addressFields.country]);
 
+        // insert into payout_details table
         await connection.query(`
             INSERT INTO payout_details (userid, account_name, account_number, ifsc_code, branch_name, upiid) 
             VALUES (?, ?, ?, ?, ?, ?)

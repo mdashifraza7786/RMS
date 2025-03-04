@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, ChangeEvent } from 'react';
 import { FaTimes } from 'react-icons/fa';
 import axios from 'axios';
 type Credentials = {
@@ -13,6 +13,7 @@ function AddMemberPopup({ onHandle }: any) {
     const [isSubmitted, setIsSubmitted] = useState(false);
     const [isRegistered, setIsRegistered] = useState(false);
     const [credgot, setCredgot] = useState<Credentials | null>(null);
+    const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
 
     const [basicInfoFields, setBasicInfoFields] = useState({
         name: '',
@@ -20,7 +21,8 @@ function AddMemberPopup({ onHandle }: any) {
         email: '',
         aadhar_no: '',
         pan_no: '',
-        role: ''
+        role: '',
+        photo: '',
     });
 
     const [addressFields, setAddressFields] = useState({
@@ -47,9 +49,11 @@ function AddMemberPopup({ onHandle }: any) {
     const [isSubmitEnabled, setIsSubmitEnabled] = useState(false);
 
     useEffect(() => {
-        const isBasicInfoComplete = Object.values(basicInfoFields).every(field => field.trim() !== '');
+        const isBasicInfoComplete = Object.values(basicInfoFields).every(field => field && field.trim() !== '') && !!imagePreviewUrl;
         setIsNextEnabled1(isBasicInfoComplete);
-    }, [basicInfoFields]);
+        console.log(isBasicInfoComplete, basicInfoFields, imagePreviewUrl);
+    }, [basicInfoFields, imagePreviewUrl]);
+
 
     useEffect(() => {
         const isAddressComplete = Object.entries(addressFields).every(([key, value]) => {
@@ -58,7 +62,7 @@ function AddMemberPopup({ onHandle }: any) {
         });
         setIsNextEnabled2(isAddressComplete);
     }, [addressFields]);
-    
+
 
     useEffect(() => {
         const isPayoutComplete = Object.values(payoutFields).every(field => field.trim() !== '');
@@ -134,25 +138,66 @@ function AddMemberPopup({ onHandle }: any) {
         }
     };
 
+    const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
+        if (event.target.files && event.target.files.length > 0) {
+            const file = event.target.files[0];
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setImagePreviewUrl(reader.result as string);
+                basicInfoFields.photo = reader.result as string;
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    const handleRemoveImage = () => {
+        setImagePreviewUrl(null);
+        basicInfoFields.photo = '';
+    };
+
     return (
-        <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[60vw] h-[75vh] bg-white z-50 rounded border border-black flex flex-col gap-5 overflow-y-auto">
-            <div className='flex justify-between items-center px-10 py-5 h-[4rem] border-b-[1px] border-gray-300 sticky top-0 left-0 bg-white'>
+        <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[55vw] h-[75vh] bg-white z-50 rounded shadow-md flex flex-col gap-5 overflow-y-auto">
+            <div className='flex justify-between items-center px-10 py-5 h-[4rem] border-b-[1px] border-gray-300 z-20 sticky top-0 left-0 bg-white shadow-sm'>
                 {basicinfo ? (
-                    <h2 className="text-2xl font-bold text-center">Add Member</h2>
+                    <h2 className="text-2xl text-primary font-bold text-center">Add Member</h2>
                 ) : address ? (
-                    <h2 className="text-2xl font-bold text-center">Add Address</h2>
+                    <h2 className="text-2xl text-primary font-bold text-center">Add Address</h2>
                 ) : payout ? (
-                    <h2 className="text-2xl font-bold text-center">Add Payout Details</h2>
+                    <h2 className="text-2xl text-primary font-bold text-center">Add Payout Details</h2>
                 ) : isSubmitted ? (
-                    <h2 className="text-2xl font-bold text-center">Progress...</h2>
-                ):(
-                    <h2 className="text-2xl font-bold text-center">Status</h2>
+                    <h2 className="text-2xl text-primary font-bold text-center">Progress...</h2>
+                ) : (
+                    <h2 className="text-2xl text-primary font-bold text-center">Status</h2>
                 )}
-                <FaTimes onClick={onHandle} className='text-2xl' />
+                <FaTimes onClick={onHandle} className='text-2xl cursor-pointer' />
             </div>
-            <div className='px-10 flex flex-col gap-5 py-5'>
+            <div className='px-10 flex flex-col gap-4 py-5'>
                 {basicinfo && (
                     <>
+                        <div className="flex flex-col items-center gap-4 col-span-2">
+                            {imagePreviewUrl ? (
+                                <div className="image-preview relative ">
+                                    <img src={imagePreviewUrl} alt="Selected Thumbnail" className="" />
+                                    <FaTimes className="remove-icon cursor-pointer absolute top-2 right-2" onClick={handleRemoveImage} />
+                                </div>
+                            ) : (
+                                <div
+                                    className="custom-file-input-wrapper flex justify-center items-center border-2 border-dashed border-gray-300 rounded-lg p-4 cursor-pointer"
+                                    onClick={() => document.getElementById('food_menu_thumbnail')?.click()} // Trigger the file input click
+                                >
+                                    <span>Select Thumbnail</span>
+                                    <input
+                                        type="file"
+                                        id="food_menu_thumbnail"
+                                        className="custom-file-input"
+                                        onChange={handleFileChange}
+                                        name='item_thumbnail'
+                                        style={{ display: 'none' }}
+                                        required
+                                    />
+                                </div>
+                            )}
+                        </div>
                         <input
                             type="text"
                             name='name'
@@ -160,7 +205,7 @@ function AddMemberPopup({ onHandle }: any) {
                             value={basicInfoFields.name}
                             onChange={handleChangeBasicInfo}
                             required
-                            className='py-2 px-3 border border-gray-300 rounded outline-none'
+                            className='py-1 px-2 border border-gray-300 rounded outline-none'
                         />
                         <input
                             type="number"
@@ -169,7 +214,7 @@ function AddMemberPopup({ onHandle }: any) {
                             value={basicInfoFields.phone_number}
                             onChange={handleChangeBasicInfo}
                             required
-                            className='py-2 px-3 border border-gray-300 rounded outline-none'
+                            className='py-1 px-2 border border-gray-300 rounded outline-none'
                         />
                         <input
                             type="email"
@@ -178,7 +223,7 @@ function AddMemberPopup({ onHandle }: any) {
                             value={basicInfoFields.email}
                             onChange={handleChangeBasicInfo}
                             required
-                            className='py-2 px-3 border border-gray-300 rounded outline-none'
+                            className='py-1 px-2 border border-gray-300 rounded outline-none'
                         />
                         <input
                             type="number"
@@ -187,7 +232,7 @@ function AddMemberPopup({ onHandle }: any) {
                             value={basicInfoFields.aadhar_no}
                             onChange={handleChangeBasicInfo}
                             required
-                            className='py-2 px-3 border border-gray-300 rounded outline-none'
+                            className='py-1 px-2 border border-gray-300 rounded outline-none'
                         />
                         <input
                             type="text"
@@ -196,7 +241,7 @@ function AddMemberPopup({ onHandle }: any) {
                             value={basicInfoFields.pan_no}
                             onChange={handleChangeBasicInfo}
                             required
-                            className='py-2 px-3 border border-gray-300 rounded outline-none'
+                            className='py-1 px-2 border border-gray-300 rounded outline-none'
                         />
                         <hr />
                         <select
@@ -352,13 +397,13 @@ function AddMemberPopup({ onHandle }: any) {
                 )}
                 {isSubmitted && (
                     <div className='w-full h-full absolute top-0 left-0 flex justify-center items-center'>
-                         <div className="loader"></div>
+                        <div className="loader"></div>
                     </div>
                 )}
                 {isRegistered && (
                     <div className='flex flex-col gap-5'>
-                       <h2 className='font-semibold'>USERID: {credgot && (credgot as any)?.cred?.uniqueID}</h2>
-                       <h2 className='font-semibold'>Password: {credgot && (credgot as any)?.cred?.password}</h2>
+                        <h2 className='font-semibold'>USERID: {credgot && (credgot as any)?.cred?.uniqueID}</h2>
+                        <h2 className='font-semibold'>Password: {credgot && (credgot as any)?.cred?.password}</h2>
                     </div>
                 )}
             </div>

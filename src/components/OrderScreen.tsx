@@ -87,7 +87,7 @@ const OrderScreen: React.FC<OrderScreenProps> = ({ tableNumber, orderedItem, set
                     price: item.item_price,
                 }));
 
-                setorderitemsfun({ orderid: response.data.orderId, billing:{subtotal:subtotal}, tablenumber: tableNumber, itemsordered: bookedItems });
+                setorderitemsfun({ orderid: response.data.orderId, billing: { subtotal: subtotal }, tablenumber: tableNumber, itemsordered: bookedItems });
                 if (booked) {
                     setModal({ visible: true, message: `Order Updated Successfully!`, success: true });
                 } else {
@@ -162,6 +162,84 @@ const OrderScreen: React.FC<OrderScreenProps> = ({ tableNumber, orderedItem, set
     const subtotal = presubtotal + newSubtotal;
     const gst = subtotal * 0.18;
     const totalAmount = subtotal + gst;
+
+    const printBill = () => {
+        const currentOrder = orderedItem.find(table => table.tablenumber === tableNumber);
+        
+        if (!currentOrder) {
+            alert("No order found for this table.");
+            return;
+        }
+    
+        const subtotal = currentOrder.itemsordered.reduce((sum, item) => sum + item.quantity * item.price, 0);
+        const salesTax = subtotal * 0.07; // 7% Sales Tax
+        const totalAmount = subtotal + salesTax;
+        const currentDate = new Date().toLocaleString();
+        const transactionID = `TXN-${Math.floor(Math.random() * 1000000)}`; // Random Transaction ID
+    
+        const billContent = `
+            <html>
+            <head>
+                <title>Restaurant Bill</title>
+                <style>
+                    body { font-family: 'Courier New', monospace; text-align: center; padding: 20px; }
+                    .bill-container { width: 300px; margin: auto; border: 1px solid black; padding: 15px; border-radius: 8px; text-align: left; }
+                    h2 { text-align: center; margin-bottom: 5px; }
+                    hr { border: 1px dashed black; }
+                    .details, .footer { text-align: left; font-size: 14px; }
+                    table { width: 100%; border-collapse: collapse; margin-top: 10px; text-align: left; }
+                    td, th { padding: 6px; font-size: 14px; }
+                    .total { font-weight: bold; font-size: 16px; }
+                    .footer { text-align: center; margin-top: 10px; }
+                </style>
+            </head>
+            <body>
+                <div class="bill-container">
+                    <h2>BUSINESS NAME</h2>
+                    <p style="text-align:center;">123 Main Street, Suite 567<br>City Name, State 54321<br>📞 123-456-7890</p>
+                    <hr>
+                    <div class="details">
+                        <p><strong>Table Number:</strong> ${tableNumber}</p>
+                        <p><strong>Date & Time:</strong> ${currentDate}</p>
+                    </div>
+                    <hr>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Item</th>
+                                <th>Qty</th>
+                                <th>Price</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${currentOrder.itemsordered.map(item => `
+                                <tr>
+                                    <td>${item.item_name}</td>
+                                    <td>${item.quantity}</td>
+                                    <td>₹${(item.quantity * item.price).toFixed(2)}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                    <hr>
+                    <p class="total">Subtotal: ₹${subtotal.toFixed(2)}</p>
+                    <p class="total">Sales Tax (7%): ₹${salesTax.toFixed(2)}</p>
+                    <p class="total"><strong>TOTAL: ₹${totalAmount.toFixed(2)}</strong></p>
+                    <p>Paid By: Credit</p>
+                    <hr>
+                    <p>Transaction ID: ${transactionID}</p>
+                    <p class="footer">THANK YOU FOR YOUR PURCHASE!</p>
+                </div>
+            </body>
+            </html>
+        `;
+    
+        const printWindow = window.open("", "", "width=400,height=600");
+        printWindow!.document.write(billContent);
+        printWindow!.document.close();
+    };
+    
+    
 
     return (
         <div className="fixed inset-0 bg-gray-900 bg-opacity-70 flex justify-center items-center z-50">
@@ -269,6 +347,23 @@ const OrderScreen: React.FC<OrderScreenProps> = ({ tableNumber, orderedItem, set
                             <span>₹{totalAmount.toFixed(2)}</span>
                         </div>
                         <div className="absolute bottom-0 left-0 right-0 p-5">
+                            {booked && (
+
+                                <div className="grid grid-cols-2 gap-2">
+                                    <button
+                                         onClick={printBill}
+                                        className="w-[100%] bg-supporting3 text-white font-bold py-2 px-4 rounded-lg mt-4 hover:bg-[#e68c09]"
+                                    >
+                                        Print Bill
+                                    </button>
+                                    <button
+                                        className="w-[100%] bg-supporting2 text-white font-bold py-2 px-4 rounded-lg mt-4 hover:bg-[#8ebf11] transition"
+                                    >
+                                        Complete Order
+                                    </button>
+                                </div>
+                            )}
+
                             <button
                                 onClick={placeOrder}
                                 className="w-[100%] bg-primary text-white font-bold py-2 px-4 rounded-lg mt-4 hover:bg-primaryhover"

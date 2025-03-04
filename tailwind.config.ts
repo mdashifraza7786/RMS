@@ -18,7 +18,7 @@ const config: Config = {
         primaryhover:"#193756",
         secondary: "#03A9F4",  //light blue
         supporting1: "#AB47BC",  //dark pink
-        supporting2: "#9FCC2E", //green
+        supporting2: "#9FCC2E", //green use (#0c9c18)
         supporting3: "#FA9F1B",  //golden yellow
         bgred: "#FF0000"       // red
       }

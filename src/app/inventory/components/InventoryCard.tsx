@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect, FormEvent } from "react";
-import { FaPenToSquare } from "react-icons/fa6";
+import { FaPenToSquare, FaTrash } from "react-icons/fa6";
 import axios from "axios";
 import { Bars } from "react-loader-spinner";
 
@@ -25,9 +25,14 @@ const InventoryCard: React.FC = () => {
   const [editData, setEditData] = useState<InventoryItem | null>(null);
   const [editPopupVisible, setEditPopupVisible] = useState(false);
   const [addInventoryPopupVisible, setAddInventoryPopupVisible] = useState(false);
+  const [deletePopupVisible, setDeletePopupVisible] = useState(false);
   const [addLoading, setAddLoading] = useState(false);
   const [editLoading, setEditLoading] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [deleteItemName, setDeleteItemName] = useState("");
+  const [deleteItemId, setDeleteItemId] = useState("");
+  const [deleteItemBoxValue, setDeleteItemBoxValue] = useState("");
 
 
   useEffect(() => {
@@ -63,6 +68,13 @@ const InventoryCard: React.FC = () => {
     setEditPopupVisible(true);
   };
 
+  const handleDeleteClick = (item_id: string, item_name: string) => {
+    // You can use item_id here if needed
+    setDeletePopupVisible(true);
+    setDeleteItemId(item_id);
+    setDeleteItemName(item_name);
+  };
+
   const handleEditInventory = async (data: InventoryItem) => {
     try {
       setEditLoading(true);
@@ -77,6 +89,20 @@ const InventoryCard: React.FC = () => {
       console.error("Error updating inventory item:", error);
     } finally {
       setEditLoading(false);
+    }
+  };
+
+  const handleDeleteInventory = async (deleteItemId: string) => {
+    try {
+      setDeleteLoading(true);
+      await axios.delete("/api/inventory/delete", { data: { item_id: deleteItemId } });
+      fetchInventory();
+      setDeletePopupVisible(false);
+    } catch (error) {
+      console.error("Error deleting inventory item:", error);
+    } finally {
+      setDeleteLoading(false);
+      setDeleteItemBoxValue("");
     }
   };
 
@@ -130,7 +156,7 @@ const InventoryCard: React.FC = () => {
             />
             <button
               onClick={() => setAddInventoryPopupVisible(true)}
-              className="bg-supporting2 w-1/5 text-white font-bold rounded-md px-4 py-2 flex items-center justify-center gap-2 hover:bg-supporting2-dark transition-colors mt-4"
+              className="bg-supporting2 hover:bg-[#badb69] w-1/5 text-white font-bold rounded-md px-4 py-2 flex items-center justify-center gap-2 hover:bg-supporting2-dark transition-colors mt-4"
             >
               Add New Item
             </button>
@@ -157,10 +183,15 @@ const InventoryCard: React.FC = () => {
                   <td className="border px-4 py-4">
                     <div className="flex gap-4 justify-center">
                       <button
-                        className="bg-primary text-white px-6 py-2 rounded text-[12px] flex items-center gap-2"
+                        className="bg-primary hover:bg-[#416f9d] text-white px-6 py-2 rounded text-[12px] flex items-center gap-2"
                         onClick={() => handleEditClick(item)}
                       >
                         <div>Edit</div> <FaPenToSquare />
+                      </button>
+                      <button
+                        className="bg-red-600 hover:bg-red-400 text-white px-6 py-2 rounded text-[12px] flex items-center gap-2"
+                        onClick={() => handleDeleteClick(item.item_id, item.item_name)}>
+                        <div>Delete</div> <FaTrash />
                       </button>
                     </div>
                   </td>
@@ -350,6 +381,51 @@ const InventoryCard: React.FC = () => {
         </div>
       )}
 
+      {/* Delete Confirmation Popup */}
+      {deletePopupVisible && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className="bg-white p-6 md:p-8 rounded-2xl shadow-xl w-96 max-w-full">
+            <h2 className="text-xl font-bold text-red-600 text-center mb-3">Delete Item</h2>
+            <p className="text-gray-700 text-center mb-4">
+              Are you sure you want to delete this item? Type the item name ({deleteItemName}) to confirm.
+            </p>
+
+            <input
+              required
+              type="text"
+              placeholder="Type the item name"
+              className="border border-gray-300 w-full rounded-lg px-4 py-2 focus:ring-2 focus:ring-red-100 focus:outline-none"
+              value={deleteItemBoxValue}
+              onChange={(e) => setDeleteItemBoxValue(e.target.value)}
+            />
+
+            <div className="flex justify-end space-x-3 mt-4">
+              <button
+                onClick={() => {setDeletePopupVisible(false); setDeleteItemBoxValue("");}}
+                className="bg-gray-300 text-gray-800 px-5 py-2 rounded-lg hover:bg-gray-400 transition-all"
+              >
+                Cancel
+              </button>
+              {deleteItemName === deleteItemBoxValue ? (
+
+                <button
+                  onClick={() => handleDeleteInventory(deleteItemId)}
+                  className="bg-red-600 text-white px-5 py-2 rounded-lg hover:bg-red-700 transition-all"
+                >
+                  Delete
+                </button>
+              ) : (
+                <button
+                  disabled
+                  className="bg-red-300 text-white px-5 py-2 rounded-lg hover:bg-red-400 transition-all"
+                >
+                  Delete
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );

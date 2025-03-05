@@ -2,7 +2,7 @@
 import axios from 'axios';
 import { RowDataPacket } from 'mysql2';
 import React, { useState, useEffect } from 'react';
-import { FaEye, FaUserPlus } from "react-icons/fa";
+import { FaEye, FaUserPlus, FaTrash } from "react-icons/fa";
 import { FaPenToSquare } from "react-icons/fa6";
 import { PiChefHatThin } from "react-icons/pi";
 import AddMemberPopup from './AddMemberPopup';
@@ -20,6 +20,11 @@ const Page: React.FC = () => {
     const [editData, setEditData] = useState<any>({});
     const [addMemberPopupVisible, setAddMemberPopupVisible] = useState<boolean>(false);
     const [editLoading, setEditLoading] = useState<true | false>(false);
+    const [deleteLoading, setDeleteLoading] = useState(false);
+    const [deleteMemberName, setDeleteMemberName] = useState("");
+    const [deleteMemberId, setDeleteMemberId] = useState("");
+    const [deleteMemberBoxValue, setDeleteMemberBoxValue] = useState("");
+    const [deletePopupVisible, setDeletePopupVisible] = useState(false);
 
     useEffect(() => {
         document.title = "Members";
@@ -68,6 +73,13 @@ const Page: React.FC = () => {
     const handleEyeClick = (data: any) => {
         setSelectedItem(data);
         setDetailsPopupVisible(true);
+    };
+
+    const handleDeleteClick = (userid: string, name: string) => {
+        // You can use userid here if needed
+        setDeletePopupVisible(true);
+        setDeleteMemberId(userid);
+        setDeleteMemberName(name);
     };
 
     const handleLoadMore = () => {
@@ -135,6 +147,20 @@ const Page: React.FC = () => {
         }
     };
 
+    const handleDeleteInventory = async (deleteMemberId: string) => {
+        try {
+            setDeleteLoading(true);
+            await axios.delete("/api/members/delete", { data: { userid: deleteMemberId } });
+            fetchMemberData();
+            setDeletePopupVisible(false);
+        } catch (error) {
+            console.error("Error deleting member:", error);
+        } finally {
+            setDeleteLoading(false);
+            setDeleteMemberBoxValue("");
+        }
+    };
+
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
@@ -164,7 +190,7 @@ const Page: React.FC = () => {
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
                         <div className='flex justify-between items-center py-4'>
-                            <button onClick={handleAddMemberPopup} className="bg-supporting2 shadow-md font-bold text-white px-4 py-2 rounded flex items-center gap-2">
+                            <button onClick={handleAddMemberPopup} className="bg-supporting2 hover:bg-[#badb69] shadow-md font-bold text-white px-4 py-2 rounded flex items-center gap-2">
                                 <PiChefHatThin /> <span>Add Member</span>
                             </button>
                         </div>
@@ -189,11 +215,14 @@ const Page: React.FC = () => {
                                         <td className="border px-4 py-4 transition-colors duration-300">{item.mobile}</td>
                                         <td className="border px-4 py-4 transition-colors duration-300">
                                             <div className='flex gap-4 justify-center'>
-                                                <button className="bg-primary text-white px-4 py-2 rounded text-[12px] flex items-center gap-10" onClick={() => handleEyeClick(item)}>
+                                                <button className="bg-primary hover:bg-[#416f9d] text-white px-4 py-2 rounded text-[12px] flex items-center gap-10" onClick={() => handleEyeClick(item)}>
                                                     <div>View</div> <FaEye />
                                                 </button>
-                                                <button className="bg-primary text-white px-4 py-2 rounded text-[12px] flex items-center gap-10" onClick={() => handleEditClick(item)}>
+                                                <button className="bg-primary hover:bg-[#416f9d] text-white px-4 py-2 rounded text-[12px] flex items-center gap-10" onClick={() => handleEditClick(item)}>
                                                     <div>Edit</div> <FaPenToSquare />
+                                                </button>
+                                                <button className="bg-red-600 hover:bg-red-400 text-white px-4 py-2 rounded text-[12px] flex items-center gap-10" onClick={() => handleDeleteClick(item.userid,item.name)}>
+                                                    <div>Delete</div> <FaTrash />
                                                 </button>
                                             </div>
                                         </td>
@@ -202,19 +231,19 @@ const Page: React.FC = () => {
                             </tbody>
                         </table>
                     ) : (
-                            <div className='flex justify-center items-center py-4'>
+                        <div className='flex justify-center items-center py-4'>
 
-                                <Bars
-                                    height="50"
-                                    width="50"
-                                    color="#25476A"
-                                    ariaLabel="bars-loading"
-                                    wrapperStyle={{}}
-                                    wrapperClass=""
-                                    visible={true}
-                                />
+                            <Bars
+                                height="50"
+                                width="50"
+                                color="#25476A"
+                                ariaLabel="bars-loading"
+                                wrapperStyle={{}}
+                                wrapperClass=""
+                                visible={true}
+                            />
 
-                            </div>
+                        </div>
                     )}
                     {filteredData.length > 0 && hasMore && !loading && (
                         <button
@@ -294,7 +323,6 @@ const Page: React.FC = () => {
                         </div>
                     </div>
                 )}
-
 
                 {/* Edit Popup */}
                 {editPopupVisible && (
@@ -561,6 +589,52 @@ const Page: React.FC = () => {
                                 )}
 
 
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Delete Confirmation Popup */}
+                {deletePopupVisible && (
+                    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+                        <div className="bg-white p-6 md:p-8 rounded-2xl shadow-xl w-96 max-w-full">
+                            <h2 className="text-xl font-bold text-red-600 text-center mb-3">Delete Item</h2>
+                            <p className="text-gray-700 text-center mb-4">
+                                Are you sure you want to delete this item? Type the item name ({deleteMemberName}) to confirm.
+                            </p>
+
+                            <input
+                                required
+                                type="text"
+                                placeholder="Type the item name"
+                                className="border border-gray-300 w-full rounded-lg px-4 py-2 focus:ring-2 focus:ring-red-100 focus:outline-none"
+                                value={deleteMemberBoxValue}
+                                onChange={(e) => setDeleteMemberBoxValue(e.target.value)}
+                            />
+
+                            <div className="flex justify-end space-x-3 mt-4">
+                                <button
+                                    onClick={() => {setDeletePopupVisible(false); setDeleteMemberBoxValue("");}}
+                                    className="bg-gray-300 text-gray-800 px-5 py-2 rounded-lg hover:bg-gray-400 transition-all"
+                                >
+                                    Cancel
+                                </button>
+                                {deleteMemberName === deleteMemberBoxValue ? (
+
+                                    <button
+                                        onClick={() => handleDeleteInventory(deleteMemberId)}
+                                        className="bg-red-600 text-white px-5 py-2 rounded-lg hover:bg-red-700 transition-all"
+                                    >
+                                        Delete
+                                    </button>
+                                ) : (
+                                    <button
+                                        disabled
+                                        className="bg-red-300 text-white px-5 py-2 rounded-lg hover:bg-red-400 transition-all"
+                                    >
+                                        Delete
+                                    </button>
+                                )}
                             </div>
                         </div>
                     </div>

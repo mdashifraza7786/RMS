@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { FaPenToSquare } from "react-icons/fa6";
 import axios from 'axios';
+import { Bars } from 'react-loader-spinner';
 
 // Define the type for inventory items
 interface InventoryItem {
@@ -18,6 +19,7 @@ const InventoryCard: React.FC = () => {
     const [editData, setEditData] = useState<InventoryItem | null>(null); // Use InventoryItem type
     const [editPopupVisible, setEditPopupVisible] = useState(false);
     const [editLoading, setEditLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         document.title = "Inventory";
@@ -32,6 +34,7 @@ const InventoryCard: React.FC = () => {
 
     const fetchInventory = async () => {
         try {
+            setLoading(true);
             const response = await axios.get('/api/inventory');
             const data = response.data;
             if (data && Array.isArray(data.users)) {
@@ -41,6 +44,9 @@ const InventoryCard: React.FC = () => {
             }
         } catch (error) {
             console.error("Error fetching inventory data:", error);
+        }
+        finally {
+            setLoading(false);
         }
     };
 
@@ -68,122 +74,62 @@ const InventoryCard: React.FC = () => {
 
     return (
         <div className='flex flex-col gap-4'>
-            {/* Search Input */}
-            <input
-                type='search'
-                placeholder='Search Name, ID...'
-                className='border w-1/4 border-[#807c7c] rounded-xl px-4 py-1'
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-            />
-
-            {/* Inventory Table */}
-            <table className="w-full">
-                <thead>
-                    <tr className='bg-primary text-white'>
-                        <th className="px-4 py-2 text-left w-[200px]">ID</th>
-                        <th className="px-4 py-2 text-left">Item</th>
-                        <th className="px-4 py-2 text-left">Current Quantity</th>
-                        <th className="px-4 py-2 text-left">Low Limit</th>
-                        <th className="px-4 py-2 text-left w-[100px]">Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {filteredInventory.map((item, index) => (
-                        <tr key={index} className='text-[14px] font-medium font-montserrat'>
-                            <td className="border px-4 py-2 transition-colors duration-300">{item.item_id}</td>
-                            <td className="border px-4 py-2 transition-colors duration-300">{item.item_name}</td>
-                            <td className="border px-4 py-2 transition-colors duration-300">{item.current_stock} {item.unit}</td>
-                            <td className="border px-4 py-2 transition-colors duration-300">{item.low_limit} {item.unit}</td>
-                            <td className="border px-4 py-4 transition-colors duration-300">
-                                <div className='flex gap-4 justify-center'>
-                                    <button
-                                        className="bg-primary text-white px-4 py-2 rounded text-[12px] flex items-center gap-10"
-                                        onClick={() => handleEditClick(item)}
-                                    >
-                                        <div>Edit</div> <FaPenToSquare />
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
-
-            {/* Edit Popup */}
-            {editPopupVisible && editData && (
-                <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50 font-raleway">
-                    <div className="bg-white p-8 rounded-lg shadow-lg border border-gray-300 max-w-md w-full">
-                        <h2 className="text-2xl font-semibold mb-6 text-primary">Edit Item</h2>
-                        <div className="mb-4">
-                            <label htmlFor="item_id" className="block font-medium text-gray-800">ID:</label>
-                            <input
-                                type="text"
-                                id="item_id"
-                                value={editData.item_id}
-                                className="border border-gray-300 rounded-md px-3 py-2 font-semibold w-full"
-                                readOnly
-                            />
-                        </div>
-                        <div className="mb-4">
-                            <label htmlFor="item_name" className="block font-medium text-gray-800">Name:</label>
-                            <input
-                                type="text"
-                                id="item_name"
-                                value={editData.item_name}
-                                onChange={(e) => setEditData({ ...editData, item_name: e.target.value })}
-                                className="border border-gray-300 rounded-md px-3 py-2 font-semibold w-full"
-                            />
-                        </div>
-                        <div className="mb-4">
-                            <label htmlFor="current_stock" className="block font-medium text-gray-800">Quantity:</label>
-                            <input
-                                type="number"
-                                id="current_stock"
-                                value={editData.current_stock}
-                                onChange={(e) => setEditData({ ...editData, current_stock: parseInt(e.target.value, 10) })}
-                                className="border border-gray-300 rounded-md px-3 py-2 font-semibold w-full"
-                            />
-                        </div>
-                        <div className="mb-4">
-                            <label htmlFor="unit" className="block font-medium text-gray-800">Unit:</label>
-                            <input
-                                type="text"
-                                id="unit"
-                                value={editData.unit}
-                                onChange={(e) => setEditData({ ...editData, unit: e.target.value })}
-                                className="border border-gray-300 rounded-md px-3 py-2 font-semibold w-full"
-                            />
-                        </div>
-                        <div className="mb-4">
-                            <label htmlFor="low_limit" className="block font-medium text-gray-800">Low Limit:</label>
-                            <input
-                                type="number"
-                                id="low_limit"
-                                value={editData.low_limit}
-                                onChange={(e) => setEditData({ ...editData, low_limit: parseInt(e.target.value, 10) })}
-                                className="border border-gray-300 rounded-md px-3 py-2 font-semibold w-full"
-                            />
-                        </div>
-
-                        <div className="flex justify-end gap-2">
-                            <button
-                                onClick={() => setEditPopupVisible(false)}
-                                className="bg-red-600 text-white font-bold rounded-md px-4 py-2 hover:bg-red-700 transition-colors"
-                            >
-                                CANCEL
-                            </button>
-                            <button
-                                onClick={() => editInventory(editData)}
-                                className="bg-supporting2 text-white font-bold rounded-md px-4 py-2 hover:bg-[#a5bd69] transition-colors"
-                                disabled={editLoading}
-                            >
-                                {editLoading ? 'SAVING...' : 'SAVE'}
-                            </button>
-                        </div>
-                    </div>
+            {loading ? (
+                <div className='flex justify-center items-center py-4'>
+                    <Bars
+                        height="50"
+                        width="50"
+                        color="#25476A"
+                        ariaLabel="bars-loading"
+                        visible={true}
+                    />
                 </div>
+            ) : (
+                <>
+                    {/* Search Input */}
+                    <input
+                        type='search'
+                        placeholder='Search Name, ID...'
+                        className='border w-1/4 border-[#807c7c] rounded-xl px-4 py-1'
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                    />
+
+                    {/* Inventory Table */}
+                    <table className="w-full">
+                        <thead>
+                            <tr className='bg-primary text-white'>
+                                <th className="px-4 py-2 text-left w-[200px]">ID</th>
+                                <th className="px-4 py-2 text-left">Item</th>
+                                <th className="px-4 py-2 text-left">Current Quantity</th>
+                                <th className="px-4 py-2 text-left">Low Limit</th>
+                                <th className="px-4 py-2 text-left w-[100px]">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {filteredInventory.map((item, index) => (
+                                <tr key={index} className='text-[14px] font-medium font-montserrat'>
+                                    <td className="border px-4 py-2">{item.item_id}</td>
+                                    <td className="border px-4 py-2">{item.item_name}</td>
+                                    <td className="border px-4 py-2">{item.current_stock} {item.unit}</td>
+                                    <td className="border px-4 py-2">{item.low_limit} {item.unit}</td>
+                                    <td className="border px-4 py-4">
+                                        <div className='flex gap-4 justify-center'>
+                                            <button
+                                                className="bg-primary text-white px-4 py-2 rounded text-[12px] flex items-center gap-10"
+                                                onClick={() => handleEditClick(item)}
+                                            >
+                                                <div>Edit</div> <FaPenToSquare />
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </>
             )}
+
         </div>
     );
 };

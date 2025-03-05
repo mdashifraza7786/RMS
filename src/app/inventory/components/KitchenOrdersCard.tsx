@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { FaPenToSquare } from "react-icons/fa6";
 import { MdBorderColor } from "react-icons/md";
+import { Bars } from 'react-loader-spinner';
 
 // Define the type for kitchen orders
 interface InventoryItem {
@@ -18,6 +19,7 @@ const KitchenOrdersCard: React.FC = () => {
     const [orderPopupVisible, setOrderPopupVisible] = useState(false);
     const [editPopupVisible, setEditPopupVisible] = useState(false);
     const [editData, setEditData] = useState<InventoryItem>({ order_id: '', item_name: '', quantity: 0, unit: '' });
+  const [loading, setLoading] = useState(true); 
 
     useEffect(() => {
         fetchKitchenOrders();
@@ -25,6 +27,7 @@ const KitchenOrdersCard: React.FC = () => {
 
     const fetchKitchenOrders = async () => {
         try {
+            setLoading(true);
             const response = await fetch('/api/kitchenOrder');
             const data = await response.json();
 
@@ -35,6 +38,9 @@ const KitchenOrdersCard: React.FC = () => {
             }
         } catch (error) {
             console.error("Error fetching kitchen orders:", error);
+        }
+        finally {
+            setLoading(false);
         }
     };
 
@@ -90,61 +96,75 @@ const KitchenOrdersCard: React.FC = () => {
 
     return (
         <div className='flex flex-col gap-5'>
-            <div className='flex justify-end'>
-                <button
-                    onClick={handleGenerateOrder}
-                    disabled={selectedItems.length === 0}
-                    className={`bg-supporting2 w-1/5 text-white font-bold rounded-md px-4 py-2 flex items-center justify-center gap-2 hover:bg-supporting2-dark transition-colors mt-4 ${selectedItems.length === 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
-                >
-                    <MdBorderColor className="text-lg" />
-                    <span>Generate Order</span>
-                </button>
-            </div>
-            <table className="w-full border-collapse">
-                <thead>
-                    <tr className='bg-primary text-white'>
-                        <th className="px-4 py-2 text-left w-[50px]">
-                            <input
-                                type="checkbox"
-                                checked={selectedItems.length === kitchenOrders.length}
-                                onChange={handleSelectAllChange}
-                                className="form-checkbox h-4 w-4 text-primary border-gray-300 rounded focus:ring-primary focus:ring-opacity-50"
-                            />
-                        </th>
-                        <th className="px-4 py-2 text-left w-[200px]">ID</th>
-                        <th className="px-4 py-2 text-left">Item</th>
-                        <th className="px-4 py-2 text-left">Order Quantity</th>
-                        <th className="px-4 py-2 text-left w-[100px]">Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {kitchenOrders.map((item, index) => (
-                        <tr key={index} className='text-[14px] font-medium font-montserrat'>
-                            <td className="border px-4 py-2 transition-colors duration-300">
-                                <input
-                                    type="checkbox"
-                                    checked={selectedItems.includes(item.order_id)}
-                                    onChange={() => handleCheckboxChange(item.order_id)}
-                                    className="form-checkbox h-4 w-4 text-primary border-gray-300 rounded focus:ring-primary focus:ring-opacity-50"
-                                />
-                            </td>
-                            <td className="border px-4 py-2 transition-colors duration-300">{item.order_id}</td>
-                            <td className="border px-4 py-2 transition-colors duration-300">{item.item_name}</td>
-                            <td className="border px-4 py-2 transition-colors duration-300">{item.quantity} {item.unit}</td>
-                            <td className="border px-4 py-4 transition-colors duration-300">
-                                <div className='flex gap-4 justify-center'>
-                                    <button className="bg-primary text-white px-4 py-2 rounded text-[12px] flex items-center gap-10"
-                                        onClick={() => handleEditClick(item)}
-                                    >
-                                        <div>Edit</div> <FaPenToSquare />
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
-
+            {loading ? (
+                <div className='flex justify-center items-center py-4'>
+                    <Bars
+                        height="50"
+                        width="50"
+                        color="#25476A"
+                        ariaLabel="bars-loading"
+                        visible={true}
+                    />
+                </div>
+            ) : (
+                <>
+                    <div className='flex justify-end'>
+                        <button
+                            onClick={handleGenerateOrder}
+                            disabled={selectedItems.length === 0}
+                            className={`bg-supporting2 w-1/5 text-white font-bold rounded-md px-4 py-2 flex items-center justify-center gap-2 hover:bg-supporting2-dark transition-colors mt-4 ${selectedItems.length === 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        >
+                            <MdBorderColor className="text-lg" />
+                            <span>Generate Order</span>
+                        </button>
+                    </div>
+                    <table className="w-full border-collapse">
+                        <thead>
+                            <tr className='bg-primary text-white'>
+                                <th className="px-4 py-2 text-left w-[50px]">
+                                    <input
+                                        type="checkbox"
+                                        checked={selectedItems.length === kitchenOrders.length}
+                                        onChange={handleSelectAllChange}
+                                        className="form-checkbox h-4 w-4 text-primary border-gray-300 rounded focus:ring-primary focus:ring-opacity-50"
+                                    />
+                                </th>
+                                <th className="px-4 py-2 text-left w-[200px]">ID</th>
+                                <th className="px-4 py-2 text-left">Item</th>
+                                <th className="px-4 py-2 text-left">Order Quantity</th>
+                                <th className="px-4 py-2 text-left w-[100px]">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {kitchenOrders.map((item, index) => (
+                                <tr key={index} className='text-[14px] font-medium font-montserrat'>
+                                    <td className="border px-4 py-2 transition-colors duration-300">
+                                        <input
+                                            type="checkbox"
+                                            checked={selectedItems.includes(item.order_id)}
+                                            onChange={() => handleCheckboxChange(item.order_id)}
+                                            className="form-checkbox h-4 w-4 text-primary border-gray-300 rounded focus:ring-primary focus:ring-opacity-50"
+                                        />
+                                    </td>
+                                    <td className="border px-4 py-2 transition-colors duration-300">{item.order_id}</td>
+                                    <td className="border px-4 py-2 transition-colors duration-300">{item.item_name}</td>
+                                    <td className="border px-4 py-2 transition-colors duration-300">{item.quantity} {item.unit}</td>
+                                    <td className="border px-4 py-4 transition-colors duration-300">
+                                        <div className='flex gap-4 justify-center'>
+                                            <button className="bg-primary text-white px-4 py-2 rounded text-[12px] flex items-center gap-10"
+                                                onClick={() => handleEditClick(item)}
+                                            >
+                                                <div>Edit</div> <FaPenToSquare />
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </>
+            )}
+    
             {/* Order Popup */}
             {orderPopupVisible && selectedData.length > 0 && (
                 <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50">
@@ -175,7 +195,7 @@ const KitchenOrdersCard: React.FC = () => {
                     </div>
                 </div>
             )}
-
+    
             {/* Edit Popup */}
             {editPopupVisible && (
                 <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50">
@@ -229,6 +249,7 @@ const KitchenOrdersCard: React.FC = () => {
             )}
         </div>
     );
+    
 };
 
 export default KitchenOrdersCard;

@@ -202,19 +202,19 @@ const Page: React.FC = () => {
                             </tbody>
                         </table>
                     ) : (
-                        <div className='flex justify-center items-center py-4'>
+                            <div className='flex justify-center items-center py-4'>
 
-                            <Bars
-                                height="50"
-                                width="50"
-                                color="#25476A"
-                                ariaLabel="bars-loading"
-                                wrapperStyle={{}}
-                                wrapperClass=""
-                                visible={true}
-                            />
+                                <Bars
+                                    height="50"
+                                    width="50"
+                                    color="#25476A"
+                                    ariaLabel="bars-loading"
+                                    wrapperStyle={{}}
+                                    wrapperClass=""
+                                    visible={true}
+                                />
 
-                        </div>
+                            </div>
                     )}
                     {filteredData.length > 0 && hasMore && !loading && (
                         <button

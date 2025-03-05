@@ -121,18 +121,25 @@ const Page: React.FC = () => {
             setAttendanceloading(true);
             try {
                 const response = await axios.get("/api/attendance");
-
+        
                 if (response.status === 500 || response.status === 209) {
                     toast.error(response.data.message);
                 } else {
                     const data = response.data.data || [];
                     setAttendanceData(data);
-
+        
+                    console.warn(response.data); // Check API response
+        
+                    const formatDate = (date: string | null | undefined) => 
+                        date ? new Date(date).toISOString().split('T')[0] : formattedDate;
+        
                     const dates: AvailableDate = {
-                        minDate: response.data.minDate || formattedDate,
-                        maxDate: response.data.maxDate || formattedDate
+                        minDate: formatDate(response.data.minDate),
+                        maxDate: formatDate(response.data.maxDate)
                     };
+        
                     setAvaiableDate(dates);
+                    console.warn("Updated AvailableDate:", dates); // Debugging
                 }
             } catch (error) {
                 toast.error('Failed to fetch attendance.');
@@ -140,10 +147,15 @@ const Page: React.FC = () => {
                 setAttendanceloading(false);
             }
         };
-
+        
         fetchTodayAttendance();
 
     }, []);
+
+    // useEffect(() => {
+    //     console.warn("Updated AvailableDate after state change:", availableDate);
+    // }, [availableDate]); // This runs only when availableDate changes
+    
 
 
     return (
@@ -164,7 +176,6 @@ const Page: React.FC = () => {
                                         max={availableDate.maxDate}
                                         onChange={(e) => setGetdate(e.target.value)}
                                     />
-
 
                                 </div>
                             </div>
@@ -271,6 +282,7 @@ const Page: React.FC = () => {
                         />
                     </div>
                 ) : (
+                    // generate div
                     <div className='flex flex-col gap-5 items-center justify-center h-[30vh]'>
                         <p className='text-[18px] font-bold font-montserrat'>Please Generate Attendance for today.</p>
                         <button

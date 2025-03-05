@@ -18,6 +18,7 @@ const InventoryCard: React.FC = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [editData, setEditData] = useState<InventoryItem | null>(null); // Use InventoryItem type
     const [editPopupVisible, setEditPopupVisible] = useState(false);
+    const [addInventoryPopupVisible, setAddInventoryPopupVisible] = useState(false);
     const [editLoading, setEditLoading] = useState(false);
     const [loading, setLoading] = useState(true);
 
@@ -87,13 +88,19 @@ const InventoryCard: React.FC = () => {
             ) : (
                 <>
                     {/* Search Input */}
-                    <input
-                        type='search'
-                        placeholder='Search Name, ID...'
-                        className='border w-1/4 border-[#807c7c] rounded-xl px-4 py-1'
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                    />
+                    <section className='flex gap-4 items-center justify-between'>
+                        <input
+                            type='search'
+                            placeholder='Search Name, ID...'
+                            className='border w-1/4 border-[#807c7c] rounded-xl px-4 py-1'
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                        />
+                        <button onClick={() => setAddInventoryPopupVisible(true)}
+                            className='bg-supporting2 w-1/5 text-white font-bold rounded-md px-4 py-2 flex items-center justify-center gap-2 hover:bg-supporting2-dark transition-colors mt-4'>
+                            Add New Item
+                        </button>
+                    </section>
 
                     {/* Inventory Table */}
                     <table className="w-full">
@@ -128,6 +135,77 @@ const InventoryCard: React.FC = () => {
                         </tbody>
                     </table>
                 </>
+            )}
+
+            {editPopupVisible && (
+                <div></div>
+            )}
+
+            {addInventoryPopupVisible && (
+              <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50">
+              <div className="bg-white p-8 rounded-2xl shadow-lg w-96 max-w-full">
+                {/* Modal Header */}
+                <h2 className="text-xl font-bold text-primary mb-4 text-center">Add New Item</h2>
+            
+                {/* Edit Form */}
+                <div className="flex flex-col gap-4">
+                  {/* Item Name */}
+                  <div>
+                    <label className="block font-medium text-gray-700 mb-1">Item Name</label>
+                    <input 
+                      type="text" 
+                      className="border border-gray-300 w-full rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-400 focus:outline-none" 
+                    />
+                  </div>
+            
+                  {/* Current Quantity */}
+                  <div>
+                    <label className="block font-medium text-gray-700 mb-1">Current Quantity</label>
+                    <input 
+                      type="number" 
+                      className="border border-gray-300 w-full rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-400 focus:outline-none" 
+                    />
+                  </div>
+            
+                  {/* Low Limit */}
+                  <div>
+                    <label className="block font-medium text-gray-700 mb-1">Low Limit</label>
+                    <input 
+                      type="number" 
+                      className="border border-gray-300 w-full rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-400 focus:outline-none" 
+                    />
+                  </div>
+            
+                  {/* Unit Dropdown */}
+                  <div>
+                    <label className="block font-medium text-gray-700 mb-1">Unit</label>
+                    <select 
+                      className="border border-gray-300 w-full rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-400 focus:outline-none"
+                    >
+                      {["kg", "g", "ml", "l", "pcs", "pack", "box", "bottle", "jar", "can", "bag", "sachet", "roll", "bundle", "set", "pair", "dozen", "piece"].map((unit) => (
+                        <option key={unit} value={unit}>{unit}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+            
+                {/* Buttons */}
+                <div className="flex justify-end mt-6 space-x-3">
+                  <button 
+                    onClick={() => setAddInventoryPopupVisible(false)}
+                    className="bg-red-500 text-white px-5 py-2 rounded-lg hover:bg-red-600 transition"
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    className="bg-green-500 text-white px-5 py-2 rounded-lg hover:bg-green-600 transition"
+                  >
+                    Add Now
+                  </button>
+                </div>
+              </div>
+            </div>
+            
             )}
 
         </div>

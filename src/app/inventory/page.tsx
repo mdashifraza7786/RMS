@@ -96,7 +96,7 @@ const Page: React.FC = () => {
                         {showLeftArrow && (
                             <button
                                 onClick={scrollLeft}
-                                className='scrollbar-hide absolute left-[-30px] top-1/2 -translate-y-1/2 w-[50px] h-[50px] rounded-full bg-supporting3 flex justify-center items-center'
+                                className='absolute left-[-30px] top-1/2 -translate-y-1/2 w-[50px] h-[50px] rounded-full bg-supporting3 flex justify-center items-center'
                             >
                                 <MdKeyboardArrowLeft className='text-5xl text-white' />
                             </button>

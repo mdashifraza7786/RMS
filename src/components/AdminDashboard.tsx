@@ -6,6 +6,7 @@ import { PieChart } from '@mui/x-charts/PieChart';
 import Link from 'next/link';
 import OrderScreen from './OrderScreen';
 import axios from 'axios';
+import { Bars } from 'react-loader-spinner';
 export interface Table {
     id: number;
     tablenumber: number;
@@ -37,7 +38,7 @@ const AdminDashboard: React.FC = () => {
     const [showRightArrow, setShowRightArrow] = useState(true);
     const [selectedTable, setSelectedTable] = useState<number | null>(null);
     const [orderedItems, setOrderedItems] = useState<{ orderid: number, billing: billingAmount; tablenumber: number; itemsordered: OrderedItems[] }[]>([]);
-
+    const [tableLoaded, setTableLoaded] = useState(false);
 
 
     const fetchActiveOrders = async () => {
@@ -67,10 +68,24 @@ const AdminDashboard: React.FC = () => {
         fetchTables();
     }, []);
     const fetchTables = async () => {
-        const response = await fetch("/api/tables");
-        const data = await response.json();
-        setTableData(data.tables);
+        try {
+            setTableLoaded(true);
+
+            const response = await fetch("/api/tables");
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+
+            const data = await response.json();
+            setTableData(data.tables);
+        } catch (error: any) {
+            console.error("Error fetching tables:", error.message);
+        } finally {
+            setTableLoaded(false);
+        }
     };
+
 
     function updateOrderedItems(bookedItems: any) {
         setOrderedItems((prevItems) => {
@@ -79,7 +94,7 @@ const AdminDashboard: React.FC = () => {
                     ? {
                         ...order,
                         billing: {
-                            subtotal:bookedItems.billing.subtotal
+                            subtotal: bookedItems.billing.subtotal
                         },
                         itemsordered: [...order.itemsordered, ...bookedItems.itemsordered] // Merge items
                     }
@@ -87,7 +102,7 @@ const AdminDashboard: React.FC = () => {
             ).concat(prevItems.some(order => order.tablenumber === bookedItems.tablenumber) ? [] : [bookedItems]);
         });
     }
-    
+
     useEffect(() => {
         const sliderElement = sliderRef.current;
         if (sliderElement) {
@@ -189,7 +204,19 @@ const AdminDashboard: React.FC = () => {
                 </div>
                 <div className='flex flex-wrap gap-[10px]'>
                     <Suspense fallback={<div>Loading tables...</div>}>
-                        {tableData && tableData.length > 0 ? (
+                        {tableLoaded ? (
+                            <div className="flex justify-center items-center h-20 w-full">
+                                <Bars
+                                    height="50"
+                                    width="50"
+                                    color="#25476A"
+                                    ariaLabel="bars-loading"
+                                    wrapperStyle={{}}
+                                    wrapperClass=""
+                                    visible={true}
+                                />
+                            </div>
+                        ) : tableData && tableData.length > 0 ? (
                             tableData.map((item, index) => (
                                 <TableStatusCard
                                     key={index}
@@ -199,7 +226,9 @@ const AdminDashboard: React.FC = () => {
                                 />
                             ))
                         ) : (
-                            <div className='flex justify-center items-center h-20 w-full'>No tables available, Please add a table</div>
+                            <div className="flex justify-center items-center h-20 w-full">
+                                No tables available, Please add a table
+                            </div>
                         )}
 
 
@@ -207,9 +236,7 @@ const AdminDashboard: React.FC = () => {
                 </div>
             </section>
 
-            {/* Sales Graph and Recent Payments Section */}
             <section className='flex gap-[20px]'>
-                {/* Sales Graph Section */}
                 <div className='bg-white rounded-lg p-[4vh]'>
                     <div>Sales</div>
                     <PieChart
@@ -225,7 +252,6 @@ const AdminDashboard: React.FC = () => {
                     />
                 </div>
 
-                {/* Recent Payments Section */}
                 <div className='bg-white rounded-lg p-[4vh] w-full flex flex-col gap-10'>
                     <div className='flex justify-between'>
                         <div className='font-extrabold text-[15px]'>Recent Payments</div>

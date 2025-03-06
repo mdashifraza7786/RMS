@@ -152,16 +152,11 @@ const Page: React.FC = () => {
 
     }, []);
 
-    // useEffect(() => {
-    //     console.warn("Updated AvailableDate after state change:", availableDate);
-    // }, [availableDate]); // This runs only when availableDate changes
-    
-
-
     return (
         <div className='bg-[#e6e6e6] py-[5vh] px-[8vw] font-raleway flex flex-col gap-[6vh]'>
             <h1 className="font-bold">Attendance</h1>
             <section className='bg-white rounded-[10px] p-[4vh] font-semibold flex flex-col gap-3 relative'>
+                
                 {attendanceData && attendanceData.length > 0 && (
                     <>
                         <section className='flex justify-between items-center py-4'>
@@ -269,7 +264,7 @@ const Page: React.FC = () => {
                             ))}
                         </tbody>
                     </table>
-                ) : attendanceloading ? (
+                 ) : attendanceloading ? (
                     <div className='flex items-center justify-center h-[30vh]'>
                         <Bars
                             height="80"

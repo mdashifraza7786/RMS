@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 
 export async function POST(request: Request) {
     const data = await request.json();
-    const { item_name, quantity, date, time, unit,remarks } = data; // Removed order_id
+    const { item_id, item_name, quantity, date, time, unit, remarks } = data; 
 
     function generateFiveDigitRandomNumber(): number {
         return Math.floor(10000 + Math.random() * 90000); 
@@ -22,28 +22,30 @@ export async function POST(request: Request) {
         return uniqueID;
     }
 
-    const uniqueID = await generateUniqueOrderId(); // Generate unique order_id
+    const uniqueID = await generateUniqueOrderId();
 
     const connection = await dbConnect();
     try {
         await connection.beginTransaction();
 
-        // Insert into recent_inventory_order table
+        // Ensure `date` is stored correctly
+        const formattedDate = new Date(date).toISOString().split('T')[0]; // YYYY-MM-DD format
+
         await connection.query(
-            `INSERT INTO recent_inventory_order (order_id, order_name, price, quantity, date, time, total_amount, unit,remarks) 
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?,?)`, 
-            [uniqueID, item_name, 0, quantity, date, time, 0, unit,remarks]
+            `INSERT INTO recent_inventory_order (order_id, item_id, order_name, price, quantity, date, time, total_amount, unit, remarks) 
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, 
+            [uniqueID, item_id, item_name, 0, quantity, formattedDate, time, 0, unit, remarks]
         );
 
         await connection.commit();
 
         return NextResponse.json({ 
             message: "Data inserted successfully", 
-            cred: { order_id: uniqueID, item_name, quantity, date, time, unit,remarks } 
+            cred: { order_id: uniqueID, item_id, item_name, quantity, date: formattedDate, time, unit, remarks } 
         });
     } catch (err: any) {
         await connection.rollback();
-        console.error("Database Error:", err); // Log error
+        console.error("Database Error:", err);
         return NextResponse.json({ error: err.message });
     } finally {
         await connection.end();

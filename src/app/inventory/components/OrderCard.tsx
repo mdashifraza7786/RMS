@@ -6,12 +6,12 @@ import GeneratedOrderPage from "./GeneratedOrderPage";
 import { Bars } from "react-loader-spinner";
 
 interface InventoryData {
+    item_id: string;
     item_name: string;
     quantity: number;
     date?: string;
     time?: string;
     unit: string;
-    lowlimit?: number;
     remarks?: string;
 }
 
@@ -28,10 +28,10 @@ const OrderCard: React.FC = () => {
                 if (response.data && Array.isArray(response.data.users)) {
                     setInventory(response.data.users);
                 } else {
-                    console.error("Fetched data does not contain a valid inventory array:", response.data);
+                    console.error("Invalid inventory data:", response.data);
                 }
             } catch (error) {
-                console.error("Error fetching inventory data:", error);
+                console.error("Error fetching inventory:", error);
             }
         };
         fetchInventory();
@@ -40,9 +40,11 @@ const OrderCard: React.FC = () => {
     const handleAddOrder = () => {
         if (inventory.length > 0) {
             setInventoryOrder([...inventoryOrder, {
+                item_id: inventory[0].item_id,
                 item_name: inventory[0].item_name,
-                quantity: 0,
-                unit: inventory[0].unit
+                quantity: 1,
+                unit: inventory[0].unit,
+                remarks: ""
             }]);
         }
     };
@@ -56,7 +58,7 @@ const OrderCard: React.FC = () => {
         if (selectedItem) {
             setInventoryOrder((prev) =>
                 prev.map((order, i) =>
-                    i === index ? { ...order, item_name: itemName, unit: selectedItem.unit } : order
+                    i === index ? { ...order, item_id: selectedItem.item_id, item_name: itemName, unit: selectedItem.unit } : order
                 )
             );
         }
@@ -64,41 +66,37 @@ const OrderCard: React.FC = () => {
 
     const handleQuantityChange = (index: number, value: number) => {
         setInventoryOrder((prev) =>
-            prev.map((order, i) => (i === index ? { ...order, quantity: value } : order))
+            prev.map((order, i) => (i === index ? { ...order, quantity: Number(value) || 0 } : order))
         );
     };
 
     const handleGenerateOrder = async () => {
         setLoading(true);
-
         try {
             if (inventoryOrder.length > 0) {
                 for (const order of inventoryOrder) {
                     const orderData = {
                         ...order,
-                        date: new Date().toLocaleDateString(),
+                        date: new Date().toISOString().split('T')[0], // Converts to YYYY-MM-DD
                         time: new Date().toLocaleTimeString(),
                     };
-
-                    await axios.post("/api/inventory/inventoryOrder", orderData);
+    
+                    await axios.post("/api/inventory/InventoryOrder", orderData);
                 }
-
                 setIsPopupOpen(true);
             }
         } catch (e) {
-            console.log(e);
-            console.warn("blasted:", e);
+            console.error("Order submission error:", e);
         } finally {
             setLoading(false);
         }
     };
-
+    
 
     return (
         <div className="w-full max-w-full px-4 py-6">
             <div className="bg-white p-8 rounded-lg shadow-lg border border-gray-300 w-full">
                 <h2 className="text-2xl font-semibold mb-6 text-primary">Order Details</h2>
-
                 {loading ? (
                     <div className="flex justify-center items-center py-4">
                         <Bars height="50" width="50" color="#25476A" ariaLabel="bars-loading" visible={true} />
@@ -107,7 +105,7 @@ const OrderCard: React.FC = () => {
                     <>
                         {inventoryOrder.map((order, index) => (
                             <div key={index} className="relative mb-6 border-b border-gray-200 pb-4">
-                                <button onClick={() => handleRemoveOrder(index)} className="absolute top-0 right-2 font-extrabold text-red-500 hover:text-red-700">
+                                <button onClick={() => handleRemoveOrder(index)} className="absolute top-0 right-2 text-red-500 hover:text-red-700">
                                     <IoMdClose size={23} />
                                 </button>
                                 <div className="flex flex-wrap gap-4 w-full">
@@ -116,12 +114,10 @@ const OrderCard: React.FC = () => {
                                         <select
                                             value={order.item_name}
                                             onChange={(e) => handleItemChange(index, e.target.value)}
-                                            className="border border-gray-300 rounded-md px-3 py-2 font-semibold w-full"
+                                            className="border border-gray-300 rounded-md px-3 py-2 w-full"
                                         >
                                             {inventory.map((item) => (
-                                                <option key={item.item_name} value={item.item_name}>
-                                                    {item.item_name}
-                                                </option>
+                                                <option key={item.item_id} value={item.item_name}>{item.item_name}</option>
                                             ))}
                                         </select>
                                     </div>
@@ -130,56 +126,38 @@ const OrderCard: React.FC = () => {
                                         <input
                                             type="number"
                                             value={order.quantity}
-                                            onChange={(e) => handleQuantityChange(index, parseInt(e.target.value, 10))}
-                                            className="border border-gray-300 rounded-md px-3 py-2 font-semibold w-full"
+                                            onChange={(e) => handleQuantityChange(index, Number(e.target.value))}
+                                            className="border border-gray-300 rounded-md px-3 py-2 w-full"
                                         />
                                     </div>
                                     <div className="flex-1">
                                         <label className="block font-medium text-gray-800">Unit:</label>
-                                        <input
-                                            type="text"
-                                            value={order.unit}
-                                            readOnly
-                                            className="border border-gray-300 rounded-md px-3 py-2 font-semibold w-full bg-gray-100 cursor-not-allowed"
-                                        />
+                                        <input type="text" value={order.unit} readOnly className="border border-gray-300 rounded-md px-3 py-2 w-full bg-gray-100" />
                                     </div>
                                 </div>
                                 <div className="my-4">
                                     <label className="block font-medium text-gray-800">Remarks:</label>
                                     <textarea
                                         value={order.remarks || ""}
-                                        onChange={(e) =>
-                                            setInventoryOrder((prev) =>
-                                                prev.map((o, i) => (i === index ? { ...o, remarks: e.target.value } : o))
-                                            )
-                                        }
-                                        className="border border-gray-300 rounded-md px-3 py-2 font-semibold w-full h-16 resize-none"
+                                        onChange={(e) => setInventoryOrder((prev) => prev.map((o, i) => (i === index ? { ...o, remarks: e.target.value } : o)))}
+                                        className="border border-gray-300 rounded-md px-3 py-2 w-full h-16 resize-none"
                                     />
                                 </div>
                             </div>
                         ))}
-
                         <div className="flex justify-between items-center mb-6">
-                            <button
-                                onClick={handleAddOrder}
-                                className="bg-supporting1 text-white font-bold rounded-md px-4 py-2 flex items-center gap-2 hover:bg-[#9b5f9d] transition-colors"
-                            >
-                                <IoMdAdd /> <div>ADD MORE ORDER</div>
+                            <button onClick={handleAddOrder} className="bg-primary text-white font-bold rounded-md px-4 py-2 flex items-center gap-2 hover:bg-[#193756]">
+                                <IoMdAdd /> ADD MORE ORDER
                             </button>
-                            <button
-                                onClick={handleGenerateOrder}
-                                className="bg-supporting2 text-white font-bold rounded-md px-4 py-2 flex items-center gap-2 hover:bg-[#b6d36e] transition-colors"
-                            >
-                                <IoIosPaper /> <div>GENERATE ORDER</div>
+                            <button onClick={handleGenerateOrder} className="bg-supporting2 text-white font-bold rounded-md px-4 py-2 flex items-center gap-2 hover:bg-[#b6d36e]">
+                                <IoIosPaper /> GENERATE ORDER
                             </button>
                         </div>
                     </>
                 )}
             </div>
-
             {isPopupOpen && <GeneratedOrderPage inventoryOrder={inventoryOrder} onClose={() => setIsPopupOpen(false)} />}
         </div>
-
     );
 };
 

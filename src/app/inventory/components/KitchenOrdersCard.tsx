@@ -10,6 +10,10 @@ interface InventoryItem {
     order_id: string;
     item_name: string;
     quantity: number;
+    date?: string;
+    status?: string;
+    time?: string;
+    remarks?: string;
     unit: string;
 }
 
@@ -18,8 +22,8 @@ const KitchenOrdersCard: React.FC = () => {
     const [selectedItems, setSelectedItems] = useState<string[]>([]);
     const [orderPopupVisible, setOrderPopupVisible] = useState(false);
     const [editPopupVisible, setEditPopupVisible] = useState(false);
-    const [editData, setEditData] = useState<InventoryItem>({ order_id: '', item_name: '', quantity: 0, unit: '' });
-  const [loading, setLoading] = useState(true); 
+    const [editData, setEditData] = useState<InventoryItem>({ order_id: '', item_name: '', quantity: 0, unit: '', status: '', date: '', time: '', remarks: '' });
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         fetchKitchenOrders();
@@ -33,6 +37,7 @@ const KitchenOrdersCard: React.FC = () => {
 
             if (data && Array.isArray(data.users)) {
                 setKitchenOrders(data.users);
+                console.log("Fetched kitchen orders:", data);
             } else {
                 console.error("Fetched data does not contain an array of users:", data);
             }
@@ -58,7 +63,7 @@ const KitchenOrdersCard: React.FC = () => {
                 },
                 body: JSON.stringify(editData),
             });
-    
+
             if (response.ok) {
                 fetchKitchenOrders();
                 setEditPopupVisible(false);
@@ -69,7 +74,7 @@ const KitchenOrdersCard: React.FC = () => {
             console.error("Error updating kitchen order:", error);
         }
     };
-    
+
 
     const handleCheckboxChange = (order_id: string) => {
         setSelectedItems(prevSelected =>
@@ -129,9 +134,13 @@ const KitchenOrdersCard: React.FC = () => {
                                         className="form-checkbox h-4 w-4 text-primary border-gray-300 rounded focus:ring-primary focus:ring-opacity-50"
                                     />
                                 </th>
-                                <th className="px-4 py-2 text-left w-[200px]">ID</th>
+                                <th className="px-4 py-2 text-left w-[200px]">Order ID</th>
                                 <th className="px-4 py-2 text-left">Item</th>
                                 <th className="px-4 py-2 text-left">Order Quantity</th>
+                                <th className="px-4 py-2 text-left">Order Status</th>
+                                <th className="px-4 py-2 text-left">Order Date</th>
+                                <th className="px-4 py-2 text-left">Order Time</th>
+                                <th className="px-4 py-2 text-left">Remarks</th>
                                 <th className="px-4 py-2 text-left w-[100px]">Action</th>
                             </tr>
                         </thead>
@@ -149,6 +158,13 @@ const KitchenOrdersCard: React.FC = () => {
                                     <td className="border px-4 py-2 transition-colors duration-300">{item.order_id}</td>
                                     <td className="border px-4 py-2 transition-colors duration-300">{item.item_name}</td>
                                     <td className="border px-4 py-2 transition-colors duration-300">{item.quantity} {item.unit}</td>
+                                    <td className="border px-4 py-2 transition-colors duration-300">{item.status}</td>
+                                    <td className="border px-4 py-2 transition-colors duration-300">
+                                        {item.date ? new Date(item.date).toLocaleDateString() : "N/A"}
+                                    </td>
+
+                                    <td className="border px-4 py-2 transition-colors duration-300">{item.time}</td>
+                                    <td className="border px-4 py-2 transition-colors duration-300">{item.remarks}</td>
                                     <td className="border px-4 py-4 transition-colors duration-300">
                                         <div className='flex gap-4 justify-center'>
                                             <button className="bg-primary text-white px-4 py-2 rounded text-[12px] flex items-center gap-10"
@@ -164,7 +180,7 @@ const KitchenOrdersCard: React.FC = () => {
                     </table>
                 </>
             )}
-    
+
             {/* Order Popup */}
             {orderPopupVisible && selectedData.length > 0 && (
                 <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50">
@@ -195,24 +211,29 @@ const KitchenOrdersCard: React.FC = () => {
                     </div>
                 </div>
             )}
-    
+
             {/* Edit Popup */}
             {editPopupVisible && (
                 <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50">
                     <div className="bg-white p-8 rounded-lg w-96 max-w-full">
+
+                        <h1 className="text-xl font-semibold mb-4 text-primary">Edit Order</h1>
                         {/* Edit Form */}
                         <div className="flex flex-col gap-4">
+
                             <div>
-                                <label className="block font-medium text-gray-800">Name:</label>
+                                <label className="block font-medium text-gray-800">Item Name:</label>
                                 <input
+                                disabled
                                     type="text"
                                     value={editData.item_name}
                                     onChange={(e) => setEditData({ ...editData, item_name: e.target.value })}
-                                    className="border border-gray-300 rounded-md px-3 py-2 font-semibold w-full"
+                                    className="border border-gray-300 rounded-md px-3 py-2 w-full"
                                 />
                             </div>
+                           
                             <div>
-                                <label className="block font-medium text-gray-800">Quantity:</label>
+                                <label className="block font-medium text-gray-800">Quantity (in {editData.unit}):</label>
                                 <input
                                     type="number"
                                     value={editData.quantity}
@@ -220,15 +241,16 @@ const KitchenOrdersCard: React.FC = () => {
                                     className="border border-gray-300 rounded-md px-3 py-2 font-semibold w-full"
                                 />
                             </div>
+
                             <div>
-                                <label className="block font-medium text-gray-800">Unit:</label>
-                                <input
-                                    type="text"
-                                    value={editData.unit}
-                                    onChange={(e) => setEditData({ ...editData, unit: e.target.value })}
-                                    className="border border-gray-300 rounded-md px-3 py-2 font-semibold w-full"
-                                />
+                                <label className="block font-medium text-gray-800">Remarks:</label>
+                                <textarea
+                                    value={editData.remarks}
+                                    onChange={(e) => setEditData({ ...editData, remarks: e.target.value })}
+                                    className="border border-gray-300 rounded-md px-3 py-2 w-full h-16 resize-none"
+                                ></textarea>
                             </div>
+
                         </div>
                         <div className="flex justify-end mt-4">
                             <button
@@ -249,7 +271,7 @@ const KitchenOrdersCard: React.FC = () => {
             )}
         </div>
     );
-    
+
 };
 
 export default KitchenOrdersCard;

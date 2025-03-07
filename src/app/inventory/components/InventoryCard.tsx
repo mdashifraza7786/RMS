@@ -189,7 +189,7 @@ const InventoryCard: React.FC = () => {
                         <div>Edit</div> <FaPenToSquare />
                       </button>
                       <button
-                        className="bg-red-600 hover:bg-red-400 text-white px-6 py-2 rounded text-[12px] flex items-center gap-2"
+                        className="bg-red-500 hover:bg-red-400 text-white px-6 py-2 rounded text-[12px] flex items-center gap-2"
                         onClick={() => handleDeleteClick(item.item_id, item.item_name)}>
                         <div>Delete</div> <FaTrash />
                       </button>

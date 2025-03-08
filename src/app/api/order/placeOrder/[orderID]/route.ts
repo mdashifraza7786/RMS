@@ -16,7 +16,7 @@ export async function POST(
     await connection.beginTransaction();
 
     const [existingOrder]: any = await connection.query(
-      `SELECT order_items FROM orders WHERE id = ? LIMIT 1`,
+      "SELECT order_items FROM orders WHERE id = ? LIMIT 1",
       [orderID]
     );
 
@@ -27,21 +27,29 @@ export async function POST(
       );
     }
 
-    const existingItems = JSON.parse(existingOrder[0].order_items);
-    const updatedItems = [...existingItems, ...items];
-    const updatedItemsString = JSON.stringify(updatedItems);
+    let existingItems = JSON.parse(existingOrder[0].order_items);
 
-    await connection.query(`UPDATE orders SET order_items = ? WHERE id = ?`, [
-      updatedItemsString,
-      orderID,
-    ]);
+    items.forEach((newItem:any) => {
+      const existingItem = existingItems.find(
+        (item: any) => item.item_id === newItem.item_id
+      );
+
+      if (existingItem) {
+        existingItem.quantity += newItem.quantity;
+      } else {
+        existingItems.push(newItem);
+      }
+    });
+
+    const updatedItemsString = JSON.stringify(existingItems);
 
     await connection.query(
-      `UPDATE invoices 
-         SET subtotal = ?, 
-             gst = ?, 
-             total_amount = ? 
-         WHERE orderid = ?`,
+      "UPDATE orders SET order_items = ? WHERE id = ?",
+      [updatedItemsString, orderID]
+    );
+
+    await connection.query(
+      "UPDATE invoices SET subtotal = ?, gst = ?, total_amount = ? WHERE orderid = ?",
       [subtotal, gst, totalAmount, orderID]
     );
 

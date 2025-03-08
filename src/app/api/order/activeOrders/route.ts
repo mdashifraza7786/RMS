@@ -13,6 +13,7 @@ export async function GET() {
     ["completed"]
   );
 
+
   const fullOrderDetails = rows.map((row: RowDataPacket) => ({
     orderId: row.id,
     billing: {

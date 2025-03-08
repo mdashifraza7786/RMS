@@ -7,6 +7,7 @@ import { FaPenToSquare } from "react-icons/fa6";
 import { PiChefHatThin } from "react-icons/pi";
 import AddMemberPopup from './AddMemberPopup';
 import { Bars } from 'react-loader-spinner';
+import Image from 'next/image';
 
 const Page: React.FC = () => {
     const [memberData, setMemberData] = useState<any[]>([]);
@@ -263,14 +264,14 @@ const Page: React.FC = () => {
                             <h2 className="text-xl font-semibold mb-4 text-primary">Member Details</h2>
 
                             <div className="space-y-4">
-                                {/* Photo and Personal Information */}
                                 <div className="flex flex-row items-start gap-4">
-                                    {/* Photo Section */}
                                     <div className="flex-shrink-0">
-                                        <img
-                                            src={selectedItem.photo} // Replace with your photo URL
+                                        <Image
+                                            src={selectedItem.photo}
                                             alt="Member Photo"
-                                            className="w-40 h-38 object-cover rounded border border-gray-300"
+                                            className="w-40 h-36 object-cover rounded border border-gray-300"
+                                            width={160}
+                                            height={144}
                                         />
                                     </div>
 

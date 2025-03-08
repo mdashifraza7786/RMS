@@ -8,6 +8,7 @@ interface OrderScreenProps {
     tabledata: Table[];
     orderedItem: { orderid: number; billing: billingAmount; tablenumber: number; itemsordered: OrderedItems[] }[];
     setorderitemsfun: (bookedItems: { orderid: number; billing: billingAmount; tablenumber: number; itemsordered: OrderedItems[]; }) => void;
+    removeOrderedItems: (itemId: string, tableNumber: number, orderID: number) => void;
     closeOrderScreen: () => void;
 }
 
@@ -21,7 +22,7 @@ interface MenuData {
     item_type: string;
 }
 
-const OrderScreen: React.FC<OrderScreenProps> = ({ tableNumber, orderedItem, setorderitemsfun, tabledata, closeOrderScreen }) => {
+const OrderScreen: React.FC<OrderScreenProps> = ({ tableNumber, orderedItem, setorderitemsfun, removeOrderedItems, tabledata, closeOrderScreen }) => {
     const [menuData, setMenuData] = useState<MenuData[]>([]);
     const [searchTerm, setSearchTerm] = useState<string>('');
     const [isDropdownVisible, setIsDropdownVisible] = useState<boolean>(false);
@@ -151,9 +152,12 @@ const OrderScreen: React.FC<OrderScreenProps> = ({ tableNumber, orderedItem, set
             setSelectedItems(selectedItems.filter(({ item }) => item.item_id !== itemId));
         }
     };
+
     const removeSelectedItem = (itemId: string) => {
         setSelectedItems(selectedItems.filter(entry => entry.item.item_id !== itemId));
     };
+
+
     const currentOrder = orderedItem.length > 0 ? orderedItem.find(table => table.tablenumber === tableNumber) : null;
 
     const presubtotal = currentOrder?.billing?.subtotal ?? 0;
@@ -165,18 +169,18 @@ const OrderScreen: React.FC<OrderScreenProps> = ({ tableNumber, orderedItem, set
 
     const printBill = () => {
         const currentOrder = orderedItem.find(table => table.tablenumber === tableNumber);
-        
+
         if (!currentOrder) {
             alert("No order found for this table.");
             return;
         }
-    
+
         const subtotal = currentOrder.itemsordered.reduce((sum, item) => sum + item.quantity * item.price, 0);
-        const salesTax = subtotal * 0.07; // 7% Sales Tax
-        const totalAmount = subtotal + salesTax;
+        const GST = subtotal * 0.18;
+        const totalAmount = subtotal + GST;
         const currentDate = new Date().toLocaleString();
         const transactionID = `TXN-${Math.floor(Math.random() * 1000000)}`; // Random Transaction ID
-    
+
         const billContent = `
             <html>
             <head>
@@ -223,8 +227,8 @@ const OrderScreen: React.FC<OrderScreenProps> = ({ tableNumber, orderedItem, set
                     </table>
                     <hr>
                     <p class="total">Subtotal: ₹${subtotal.toFixed(2)}</p>
-                    <p class="total">Sales Tax (7%): ₹${salesTax.toFixed(2)}</p>
-                    <p class="total"><strong>TOTAL: ₹${totalAmount.toFixed(2)}</strong></p>
+                    <p class="total">GST (18%): ₹${GST.toFixed(2)}</p>
+                    <p class="total"><b>TOTAL: ₹${totalAmount.toFixed(2)}</b></p>
                     <p>Paid By: Credit</p>
                     <hr>
                     <p>Transaction ID: ${transactionID}</p>
@@ -233,13 +237,13 @@ const OrderScreen: React.FC<OrderScreenProps> = ({ tableNumber, orderedItem, set
             </body>
             </html>
         `;
-    
+
         const printWindow = window.open("", "", "width=400,height=600");
         printWindow!.document.write(billContent);
         printWindow!.document.close();
     };
-    
-    
+
+
 
     return (
         <div className="fixed inset-0 bg-gray-900 bg-opacity-70 flex justify-center items-center z-50">
@@ -309,22 +313,29 @@ const OrderScreen: React.FC<OrderScreenProps> = ({ tableNumber, orderedItem, set
                                 <ul className="space-y-2 overflow-y-auto max-h-[33vh]">
                                     {orderedItem
                                         .filter(table => table.tablenumber === tableNumber)
-                                        .flatMap(table => table.itemsordered)
-                                        .map((item) => (
-                                            <li key={item.item_id} className="flex justify-between items-center bg-white p-2 rounded-md shadow-sm">
-                                                <span>
-                                                    {item.item_name} - ₹{item.price} ×
-                                                    <input
-                                                        type="text"
-                                                        disabled
-                                                        value={item.quantity === 0 ? "" : item.quantity.toString()}
-                                                        onChange={(e) => handleQuantityChange(item.item_id, e.target.value)}
-                                                        onBlur={() => handleBlur(item.item_id, item.quantity)}
-                                                        className="w-10 border text-center"
-                                                    />
-                                                </span>
-                                            </li>
-                                        ))}
+                                        .flatMap(table =>
+                                            table.itemsordered.map((item) => (
+                                                <li key={item.item_id} className="flex justify-between items-center bg-white p-2 rounded-md shadow-sm">
+                                                    <span>
+                                                        {item.item_name} - ₹{item.price} ×
+                                                        <input
+                                                            type="text"
+                                                            disabled
+                                                            value={item.quantity === 0 ? "" : item.quantity.toString()}
+                                                            onChange={(e) => handleQuantityChange(item.item_id, e.target.value)}
+                                                            onBlur={() => handleBlur(item.item_id, item.quantity)}
+                                                            className="w-10 border text-center"
+                                                        />
+                                                    </span>
+                                                    <button
+                                                        onClick={() => removeOrderedItems(item.item_id, tableNumber, table.orderid)}
+                                                        className="text-red-500 hover:text-red-700"
+                                                    >
+                                                        <IoClose size={20} />
+                                                    </button>
+                                                </li>
+                                            ))
+                                        )}
 
                                 </ul>
                             </div>
@@ -351,7 +362,7 @@ const OrderScreen: React.FC<OrderScreenProps> = ({ tableNumber, orderedItem, set
 
                                 <div className="grid grid-cols-2 gap-2">
                                     <button
-                                         onClick={printBill}
+                                        onClick={printBill}
                                         className="w-[100%] bg-supporting3 text-white font-bold py-2 px-4 rounded-lg mt-4 hover:bg-[#e68c09]"
                                     >
                                         Print Bill

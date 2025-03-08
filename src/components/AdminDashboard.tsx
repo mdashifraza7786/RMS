@@ -96,12 +96,62 @@ const AdminDashboard: React.FC = () => {
                         billing: {
                             subtotal: bookedItems.billing.subtotal
                         },
-                        itemsordered: [...order.itemsordered, ...bookedItems.itemsordered] // Merge items
+                        itemsordered: mergeItems([...order.itemsordered], bookedItems.itemsordered)
                     }
                     : order
             ).concat(prevItems.some(order => order.tablenumber === bookedItems.tablenumber) ? [] : [bookedItems]);
         });
     }
+    function mergeItems(existingItems: any[], newItems: any[]) {
+        const updatedItems = existingItems.map(item => ({ ...item }));
+    
+        newItems.forEach(newItem => {
+            const existingItem = updatedItems.find(item => item.item_id === newItem.item_id);
+    
+            if (existingItem) {
+                existingItem.quantity += newItem.quantity; 
+            } else {
+                updatedItems.push({ ...newItem });
+            }
+        });
+    
+        return updatedItems;
+    }
+    
+    
+    const removeOrderedItem = async (itemId: string, tableNumber: number, orderID:number) => {
+        
+        setOrderedItems((prevItems) => {
+            return prevItems
+                .map(order => {
+                    if (order.tablenumber === tableNumber) {
+                        const filteredItems = order.itemsordered.filter(item => item.item_id !== itemId);
+                        
+                        return filteredItems.length > 0 
+                            ? { ...order, itemsordered: filteredItems }
+                            : null;
+                    }
+                    return order;
+                })
+                .filter(Boolean) as typeof prevItems;
+        });
+
+        try {
+            const requestBody = {
+                orderid: orderID,
+                itemid: itemId,
+            };
+        
+            const response = await axios.post("/api/order/modifyOrder", requestBody);
+        
+            const data = response.data;
+        } catch (error: any) {
+            console.error("Error posting to tables:", error.response?.data || error.message);
+        }
+
+    };
+    
+  
 
     useEffect(() => {
         const sliderElement = sliderRef.current;
@@ -184,7 +234,7 @@ const AdminDashboard: React.FC = () => {
                 </div>
             </section>
             {selectedTable !== null && (
-                <OrderScreen tableNumber={selectedTable} orderedItem={orderedItems} setorderitemsfun={updateOrderedItems} tabledata={tableData} closeOrderScreen={closeOrderScreen} />
+                <OrderScreen tableNumber={selectedTable} orderedItem={orderedItems} setorderitemsfun={updateOrderedItems} removeOrderedItems={removeOrderedItem} tabledata={tableData} closeOrderScreen={closeOrderScreen} />
             )}
             {/* Table Booking Status Section */}
             <section className='bg-white rounded-[10px] p-[4vh] font-semibold flex flex-col gap-8 relative'>
@@ -236,10 +286,10 @@ const AdminDashboard: React.FC = () => {
                 </div>
             </section>
 
-            <section className='flex gap-[20px]'>
+            <section className='grid grid-cols-2 gap-[20px]'>
                 <div className='bg-white rounded-lg p-[4vh]'>
                     <div>Sales</div>
-                    <PieChart
+                    {/* <PieChart
                         series={[
                             {
                                 data,
@@ -249,7 +299,7 @@ const AdminDashboard: React.FC = () => {
                         ]}
                         height={350}
                         width={700}
-                    />
+                    /> */}
                 </div>
 
                 <div className='bg-white rounded-lg p-[4vh] w-full flex flex-col gap-10'>

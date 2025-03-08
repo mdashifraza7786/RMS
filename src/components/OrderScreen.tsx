@@ -9,6 +9,7 @@ interface OrderScreenProps {
     orderedItem: { orderid: number; billing: billingAmount; tablenumber: number; itemsordered: OrderedItems[] }[];
     setorderitemsfun: (bookedItems: { orderid: number; billing: billingAmount; tablenumber: number; itemsordered: OrderedItems[]; }) => void;
     removeOrderedItems: (itemId: string, tableNumber: number, orderID: number) => void;
+    resettable: (tablenumber:any) => void; 
     closeOrderScreen: () => void;
 }
 
@@ -22,7 +23,7 @@ interface MenuData {
     item_type: string;
 }
 
-const OrderScreen: React.FC<OrderScreenProps> = ({ tableNumber, orderedItem, setorderitemsfun, removeOrderedItems, tabledata, closeOrderScreen }) => {
+const OrderScreen: React.FC<OrderScreenProps> = ({ tableNumber, orderedItem, setorderitemsfun,resettable, removeOrderedItems, tabledata, closeOrderScreen }) => {
     const [menuData, setMenuData] = useState<MenuData[]>([]);
     const [searchTerm, setSearchTerm] = useState<string>('');
     const [isDropdownVisible, setIsDropdownVisible] = useState<boolean>(false);
@@ -43,7 +44,30 @@ const OrderScreen: React.FC<OrderScreenProps> = ({ tableNumber, orderedItem, set
     }, [tabledata, tableNumber]);
 
 
+    const completeOrder = async (tablenumber:any, orderid:any) =>{
+        try {
+            const response = await axios.post(`/api/order/completeOrder/${orderid}`,{tablenumber:tablenumber});
+            if(response.data.success){
+                setModal({ visible: true, message: `Order Completed!`, success: true });
+                tabledata.map((table) => {
+                    if (table.tablenumber === tableNumber) {
+                        table.availability = 0;
+                    }
+                });
+                setBooked(false);
+                setSelectedItems([]);
+                setorderitemsfun({ orderid: 0, billing: { subtotal: 0 }, tablenumber: 0, itemsordered: [] });
+                resettable(tablenumber);
 
+            }else{
+                setModal({ visible: true, message: response.data.message || "Order Completion failed", success: false });
+
+            }
+            
+        } catch (error) {
+            
+        }
+    }
     const fetchMenuData = async () => {
         try {
             const response = await axios.get('/api/menu');
@@ -158,7 +182,7 @@ const OrderScreen: React.FC<OrderScreenProps> = ({ tableNumber, orderedItem, set
     };
 
 
-    const currentOrder = orderedItem.length > 0 ? orderedItem.find(table => table.tablenumber === tableNumber) : null;
+    let currentOrder = orderedItem.length > 0 ? orderedItem.find(table => table.tablenumber === tableNumber) : null;
 
     const presubtotal = currentOrder?.billing?.subtotal ?? 0;
     const newSubtotal = selectedItems.reduce((total, entry) => total + (entry.item.item_price * entry.quantity), 0);
@@ -368,6 +392,7 @@ const OrderScreen: React.FC<OrderScreenProps> = ({ tableNumber, orderedItem, set
                                         Print Bill
                                     </button>
                                     <button
+                                        onClick={() => completeOrder(tableNumber, orderedItem.find(table => table.tablenumber === tableNumber)?.orderid)}
                                         className="w-[100%] bg-supporting2 text-white font-bold py-2 px-4 rounded-lg mt-4 hover:bg-[#8ebf11] transition"
                                     >
                                         Complete Order

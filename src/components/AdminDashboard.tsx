@@ -86,7 +86,9 @@ const AdminDashboard: React.FC = () => {
         }
     };
 
-
+    function resetTable(tablenumber:any){
+        setOrderedItems((prevItems) => prevItems.filter(order => order.tablenumber !== tablenumber));
+    }
     function updateOrderedItems(bookedItems: any) {
         setOrderedItems((prevItems) => {
             return prevItems.map(order =>
@@ -234,7 +236,7 @@ const AdminDashboard: React.FC = () => {
                 </div>
             </section>
             {selectedTable !== null && (
-                <OrderScreen tableNumber={selectedTable} orderedItem={orderedItems} setorderitemsfun={updateOrderedItems} removeOrderedItems={removeOrderedItem} tabledata={tableData} closeOrderScreen={closeOrderScreen} />
+                <OrderScreen tableNumber={selectedTable}  orderedItem={orderedItems} setorderitemsfun={updateOrderedItems} resettable={resetTable} removeOrderedItems={removeOrderedItem} tabledata={tableData} closeOrderScreen={closeOrderScreen} />
             )}
             {/* Table Booking Status Section */}
             <section className='bg-white rounded-[10px] p-[4vh] font-semibold flex flex-col gap-8 relative'>

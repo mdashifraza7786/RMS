@@ -76,6 +76,25 @@ export async function getInventoryById(itemID: string) {
     }
 }
 
+export async function getInventoryOrderById(orderID: string) {
+    const connection = await dbConnect();
+    try {
+        const [rows] = await connection.execute<RowDataPacket[]>('SELECT * FROM recent_inventory_order WHERE item_id = ?', [orderID]);
+
+        if (rows.length > 0) {
+            return rows[0];
+        } else {
+            return false;
+        }
+
+
+    } catch (error: any) {
+        throw error;
+    } finally {
+        await connection.end();
+    }
+}
+
 
 export async function getMembers() {
     const connection = await dbConnect();
@@ -318,7 +337,7 @@ export async function getKitchenOrders() {
     try {
         // Fetch data from the 'kitchen_order' table
         const [userRows] = await connection.query<RowDataPacket[]>(
-            'SELECT order_id,item_name,quantity,status,unit FROM kitchen_order'
+            'SELECT order_id,item_name,time,date,remarks,quantity,status,unit FROM kitchen_order WHERE status != "cancelled"'
         );
 
         if (userRows.length > 0) {

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+import { FaTrash } from 'react-icons/fa';
 import { FaPenToSquare } from "react-icons/fa6";
 import { MdBorderColor } from "react-icons/md";
 import { Bars } from 'react-loader-spinner';
@@ -24,6 +25,10 @@ const KitchenOrdersCard: React.FC = () => {
     const [editPopupVisible, setEditPopupVisible] = useState(false);
     const [editData, setEditData] = useState<InventoryItem>({ order_id: '', item_name: '', quantity: 0, unit: '', status: '', date: '', time: '', remarks: '' });
     const [loading, setLoading] = useState(true);
+    const [deletePopupVisible, setDeletePopupVisible] = useState(false);
+    const [deleteItemName, setDeleteItemName] = useState("");
+    const [deleteItemId, setDeleteItemId] = useState("");
+    const [deleteItemBoxValue, setDeleteItemBoxValue] = useState("");
 
     useEffect(() => {
         fetchKitchenOrders();
@@ -99,6 +104,30 @@ const KitchenOrdersCard: React.FC = () => {
 
     const selectedData = kitchenOrders.filter(item => selectedItems.includes(item.order_id));
 
+    const handleCancelClick = async (order_id: string) => {
+        try {
+            const response = await fetch('/api/kitchenOrder/updateKitchenOrder', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(editData),
+            });
+
+            if (response.ok) {
+                fetchKitchenOrders();
+            } else {
+                console.error('Failed to cancel the kitchen order');
+            }
+        } catch (error) {
+            console.error("Error canceling kitchen order:", error);
+        }
+        finally {
+            setDeletePopupVisible(false);
+            setDeleteItemBoxValue("");
+        }
+    };
+
     return (
         <div className='flex flex-col gap-5'>
             {loading ? (
@@ -117,7 +146,7 @@ const KitchenOrdersCard: React.FC = () => {
                         <button
                             onClick={handleGenerateOrder}
                             disabled={selectedItems.length === 0}
-                            className={`bg-supporting2 w-1/5 text-white font-bold rounded-md px-4 py-2 flex items-center justify-center gap-2 hover:bg-supporting2-dark transition-colors mt-4 ${selectedItems.length === 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
+                            className={`bg-supporting2 hover:bg-[#badb69] w-1/5 text-white font-bold rounded-md px-4 py-2 flex items-center justify-center gap-2 hover:bg-supporting2-dark transition-colors mt-4 ${selectedItems.length === 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
                         >
                             <MdBorderColor className="text-lg" />
                             <span>Generate Order</span>
@@ -137,7 +166,7 @@ const KitchenOrdersCard: React.FC = () => {
                                 <th className="px-4 py-2 text-left w-[200px]">Order ID</th>
                                 <th className="px-4 py-2 text-left">Item</th>
                                 <th className="px-4 py-2 text-left">Order Quantity</th>
-                                <th className="px-4 py-2 text-left">Order Status</th>
+                                {/* <th className="px-4 py-2 text-left">Order Status</th> */}
                                 <th className="px-4 py-2 text-left">Order Date</th>
                                 <th className="px-4 py-2 text-left">Order Time</th>
                                 <th className="px-4 py-2 text-left">Remarks</th>
@@ -158,7 +187,7 @@ const KitchenOrdersCard: React.FC = () => {
                                     <td className="border px-4 py-2 transition-colors duration-300">{item.order_id}</td>
                                     <td className="border px-4 py-2 transition-colors duration-300">{item.item_name}</td>
                                     <td className="border px-4 py-2 transition-colors duration-300">{item.quantity} {item.unit}</td>
-                                    <td className="border px-4 py-2 transition-colors duration-300">{item.status}</td>
+                                    {/* <td className="border px-4 py-2 transition-colors duration-300">{item.status}</td> */}
                                     <td className="border px-4 py-2 transition-colors duration-300">
                                         {item.date ? new Date(item.date).toLocaleDateString() : "N/A"}
                                     </td>
@@ -167,10 +196,19 @@ const KitchenOrdersCard: React.FC = () => {
                                     <td className="border px-4 py-2 transition-colors duration-300">{item.remarks}</td>
                                     <td className="border px-4 py-4 transition-colors duration-300">
                                         <div className='flex gap-4 justify-center'>
-                                            <button className="bg-primary text-white px-4 py-2 rounded text-[12px] flex items-center gap-10"
+                                            <button className="bg-primary hover:bg-[#30557b] text-white px-4 py-2 rounded text-[12px] flex items-center gap-10"
                                                 onClick={() => handleEditClick(item)}
                                             >
                                                 <div>Edit</div> <FaPenToSquare />
+                                            </button>
+
+                                            <button className="bg-red-500 hover:bg-red-400 text-white px-4 py-2 rounded text-[12px] flex items-center gap-8"
+                                                onClick={() => {
+                                                    setDeletePopupVisible(true); setDeleteItemName(item.item_name); setDeleteItemId(item.order_id);
+                                                    setEditData({ ...item, status: 'cancelled' });
+                                                }}
+                                            >
+                                                <>Cancel <FaTrash /></>
                                             </button>
                                         </div>
                                     </td>
@@ -224,14 +262,14 @@ const KitchenOrdersCard: React.FC = () => {
                             <div>
                                 <label className="block font-medium text-gray-800">Item Name:</label>
                                 <input
-                                disabled
+                                    disabled
                                     type="text"
                                     value={editData.item_name}
                                     onChange={(e) => setEditData({ ...editData, item_name: e.target.value })}
                                     className="border border-gray-300 rounded-md px-3 py-2 w-full"
                                 />
                             </div>
-                           
+
                             <div>
                                 <label className="block font-medium text-gray-800">Quantity (in {editData.unit}):</label>
                                 <input
@@ -265,6 +303,56 @@ const KitchenOrdersCard: React.FC = () => {
                             >
                                 Save
                             </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Delete Confirmation Popup */}
+            {deletePopupVisible && (
+                <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+                    <div className="bg-white p-6 md:p-8 rounded-2xl shadow-xl w-96 max-w-full">
+                        <h2 className="text-xl font-bold text-red-600 text-center mb-3">Delete Item</h2>
+                        <p className="text-gray-700 text-center mb-4">
+                            Are you sure you want to delete this item? Type the item name ({deleteItemName}) to confirm.
+                        </p>
+
+                        <input
+                            required
+                            type="text"
+                            placeholder="Type the item name"
+                            className="border border-gray-300 w-full rounded-lg px-4 py-2 focus:ring-2 focus:ring-red-100 focus:outline-none"
+                            value={deleteItemBoxValue}
+                            onChange={(e) => setDeleteItemBoxValue(e.target.value)}
+                        />
+
+                        <div className="flex justify-end space-x-3 mt-4">
+                            <button
+                                onClick={() => {
+                                    setDeletePopupVisible(false); setDeleteItemBoxValue("");
+                                    setEditData({ order_id: '', item_name: '', quantity: 0, unit: '', status: '', date: '', time: '', remarks: '' });
+
+                                }}
+                                className="bg-gray-300 text-gray-800 px-5 py-2 rounded-lg hover:bg-gray-400 transition-all"
+                            >
+                                Cancel
+                            </button>
+                            {deleteItemName === deleteItemBoxValue ? (
+
+                                <button
+                                    onClick={() => handleCancelClick(deleteItemId)}
+                                    className="bg-red-600 text-white px-5 py-2 rounded-lg hover:bg-red-700 transition-all"
+                                >
+                                    Delete
+                                </button>
+                            ) : (
+                                <button
+                                    disabled
+                                    className="bg-red-300 text-white px-5 py-2 rounded-lg hover:bg-red-400 transition-all"
+                                >
+                                    Delete
+                                </button>
+                            )}
                         </div>
                     </div>
                 </div>

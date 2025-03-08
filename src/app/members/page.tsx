@@ -215,13 +215,13 @@ const Page: React.FC = () => {
                                         <td className="border px-4 py-4 transition-colors duration-300">{item.mobile}</td>
                                         <td className="border px-4 py-4 transition-colors duration-300">
                                             <div className='flex gap-4 justify-center'>
-                                                <button className="bg-primary hover:bg-[#416f9d] text-white px-4 py-2 rounded text-[12px] flex items-center gap-10" onClick={() => handleEyeClick(item)}>
+                                                <button className="bg-supporting3 hover:bg-[#fbb64e] text-white px-4 py-2 rounded text-[12px] flex items-center gap-10" onClick={() => handleEyeClick(item)}>
                                                     <div>View</div> <FaEye />
                                                 </button>
                                                 <button className="bg-primary hover:bg-[#416f9d] text-white px-4 py-2 rounded text-[12px] flex items-center gap-10" onClick={() => handleEditClick(item)}>
                                                     <div>Edit</div> <FaPenToSquare />
                                                 </button>
-                                                <button className="bg-red-600 hover:bg-red-400 text-white px-4 py-2 rounded text-[12px] flex items-center gap-10" onClick={() => handleDeleteClick(item.userid,item.name)}>
+                                                <button className="bg-red-500 hover:bg-red-400 text-white px-4 py-2 rounded text-[12px] flex items-center gap-10" onClick={() => handleDeleteClick(item.userid,item.name)}>
                                                     <div>Delete</div> <FaTrash />
                                                 </button>
                                             </div>

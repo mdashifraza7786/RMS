@@ -25,11 +25,11 @@ const InventoryCard: React.FC = () => {
   const [editData, setEditData] = useState<InventoryItem | null>(null);
   const [editPopupVisible, setEditPopupVisible] = useState(false);
   const [addInventoryPopupVisible, setAddInventoryPopupVisible] = useState(false);
-  const [deletePopupVisible, setDeletePopupVisible] = useState(false);
   const [addLoading, setAddLoading] = useState(false);
   const [editLoading, setEditLoading] = useState(false);
   const [loading, setLoading] = useState(true);
   const [deleteLoading, setDeleteLoading] = useState(false);
+  const [deletePopupVisible, setDeletePopupVisible] = useState(false);
   const [deleteItemName, setDeleteItemName] = useState("");
   const [deleteItemId, setDeleteItemId] = useState("");
   const [deleteItemBoxValue, setDeleteItemBoxValue] = useState("");
@@ -183,7 +183,7 @@ const InventoryCard: React.FC = () => {
                   <td className="border px-4 py-4">
                     <div className="flex gap-4 justify-center">
                       <button
-                        className="bg-primary hover:bg-[#416f9d] text-white px-6 py-2 rounded text-[12px] flex items-center gap-2"
+                        className="bg-primary hover:bg-[#30557b] text-white px-6 py-2 rounded text-[12px] flex items-center gap-2"
                         onClick={() => handleEditClick(item)}
                       >
                         <div>Edit</div> <FaPenToSquare />

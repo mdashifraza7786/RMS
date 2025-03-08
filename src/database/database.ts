@@ -337,7 +337,7 @@ export async function getKitchenOrders() {
     try {
         // Fetch data from the 'kitchen_order' table
         const [userRows] = await connection.query<RowDataPacket[]>(
-            'SELECT order_id,item_name,time,date,remarks,quantity,status,unit FROM kitchen_order'
+            'SELECT order_id,item_name,time,date,remarks,quantity,status,unit FROM kitchen_order WHERE status != "cancelled"'
         );
 
         if (userRows.length > 0) {

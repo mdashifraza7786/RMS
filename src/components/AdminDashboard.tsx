@@ -86,7 +86,7 @@ const AdminDashboard: React.FC = () => {
         }
     };
 
-    function resetTable(tablenumber:any){
+    function resetTable(tablenumber: any) {
         setOrderedItems((prevItems) => prevItems.filter(order => order.tablenumber !== tablenumber));
     }
     function updateOrderedItems(bookedItems: any) {
@@ -106,30 +106,30 @@ const AdminDashboard: React.FC = () => {
     }
     function mergeItems(existingItems: any[], newItems: any[]) {
         const updatedItems = existingItems.map(item => ({ ...item }));
-    
+
         newItems.forEach(newItem => {
             const existingItem = updatedItems.find(item => item.item_id === newItem.item_id);
-    
+
             if (existingItem) {
-                existingItem.quantity += newItem.quantity; 
+                existingItem.quantity += newItem.quantity;
             } else {
                 updatedItems.push({ ...newItem });
             }
         });
-    
+
         return updatedItems;
     }
-    
-    
-    const removeOrderedItem = async (itemId: string, tableNumber: number, orderID:number) => {
-        
+
+
+    const removeOrderedItem = async (itemId: string, tableNumber: number, orderID: number) => {
+
         setOrderedItems((prevItems) => {
             return prevItems
                 .map(order => {
                     if (order.tablenumber === tableNumber) {
                         const filteredItems = order.itemsordered.filter(item => item.item_id !== itemId);
-                        
-                        return filteredItems.length > 0 
+
+                        return filteredItems.length > 0
                             ? { ...order, itemsordered: filteredItems }
                             : null;
                     }
@@ -143,34 +143,47 @@ const AdminDashboard: React.FC = () => {
                 orderid: orderID,
                 itemid: itemId,
             };
-        
+
             const response = await axios.post("/api/order/modifyOrder", requestBody);
-        
+
             const data = response.data;
         } catch (error: any) {
             console.error("Error posting to tables:", error.response?.data || error.message);
         }
 
     };
-    
-  
+
+
 
     useEffect(() => {
         const sliderElement = sliderRef.current;
-        if (sliderElement) {
-            const handleScroll = () => {
-                setShowLeftArrow(sliderElement.scrollLeft > 0);
-                setShowRightArrow(
-                    sliderElement.scrollLeft < sliderElement.scrollWidth - sliderElement.clientWidth
-                );
-            };
-            sliderElement.addEventListener('scroll', handleScroll);
-            return () => {
-                sliderElement.removeEventListener('scroll', handleScroll);
-            };
-        }
+        if (!sliderElement) return;
 
-    }, []);
+        const handleScroll = () => {
+            setShowLeftArrow(sliderElement.scrollLeft > 0);
+            setShowRightArrow(
+                sliderElement.scrollLeft < sliderElement.scrollWidth - sliderElement.clientWidth
+            );
+        };
+
+        const checkOverflow = () => {
+            const isOverflowing = sliderElement.scrollWidth > sliderElement.clientWidth;
+            setShowRightArrow(isOverflowing);
+            setShowLeftArrow(false);
+        };
+
+        checkOverflow();
+        sliderElement.addEventListener("scroll", handleScroll);
+        window.addEventListener("resize", checkOverflow);
+
+        return () => {
+            sliderElement.removeEventListener("scroll", handleScroll);
+            window.removeEventListener("resize", checkOverflow);
+        };
+    }, [orderedItems]);
+
+
+
 
     const scrollLeft = () => {
         if (sliderRef.current) {
@@ -214,15 +227,36 @@ const AdminDashboard: React.FC = () => {
 
                     <div ref={sliderRef} className='flex gap-[20px] overflow-x-auto scroll-smooth py-3'>
                         <Suspense fallback={<div>Loading orders...</div>}>
-                            <OrderQueueCard table="1" waiter="Shyal Lal" amount="989.32" orid="2" />
-                            <OrderQueueCard table="1" waiter="Shyal Lal" amount="989.32" orid="2" />
-                            <OrderQueueCard table="1" waiter="Shyal Lal" amount="989.32" orid="2" />
-                            <OrderQueueCard table="1" waiter="Shyal Lal" amount="989.32" orid="2" />
-                            <OrderQueueCard table="1" waiter="Shyal Lal" amount="989.32" orid="2" />
-                            <OrderQueueCard table="1" waiter="Shyal Lal" amount="989.32" orid="2" />
-                            <OrderQueueCard table="1" waiter="Shyal Lal" amount="989.32" orid="2" />
+
+                            {tableLoaded ? (
+                                <div className="flex justify-center items-center h-20 w-full">
+                                    <Bars
+                                        height="50"
+                                        width="50"
+                                        color="#25476A"
+                                        ariaLabel="bars-loading"
+                                        wrapperStyle={{}}
+                                        wrapperClass=""
+                                        visible={true}
+                                    />
+                                </div>
+                            ) : orderedItems.length > 0 ? (
+                                    orderedItems.map((order) => (
+                                        <OrderQueueCard
+                                            key={order.orderid}
+                                            table={order.tablenumber.toString()}
+                                            waiter="Shyal Lal"
+                                            amount={(order.billing.subtotal + order.billing.subtotal * 0.18).toFixed(2)}
+                                            orid={order.orderid.toString()}
+                                            orderedItems={order.itemsordered}
+                                        />
+                                ))
+                            ) : (
+                                <div>No active orders</div>
+                            )}
                         </Suspense>
                     </div>
+
 
                     {/* Right Scroll Button */}
                     {showRightArrow && (
@@ -236,7 +270,7 @@ const AdminDashboard: React.FC = () => {
                 </div>
             </section>
             {selectedTable !== null && (
-                <OrderScreen tableNumber={selectedTable}  orderedItem={orderedItems} setorderitemsfun={updateOrderedItems} resettable={resetTable} removeOrderedItems={removeOrderedItem} tabledata={tableData} closeOrderScreen={closeOrderScreen} />
+                <OrderScreen tableNumber={selectedTable} orderedItem={orderedItems} setorderitemsfun={updateOrderedItems} resettable={resetTable} removeOrderedItems={removeOrderedItem} tabledata={tableData} closeOrderScreen={closeOrderScreen} />
             )}
             {/* Table Booking Status Section */}
             <section className='bg-white rounded-[10px] p-[4vh] font-semibold flex flex-col gap-8 relative'>

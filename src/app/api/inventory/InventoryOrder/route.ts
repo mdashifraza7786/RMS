@@ -34,7 +34,7 @@ export async function POST(request: Request) {
         await connection.query(
             `INSERT INTO recent_inventory_order (order_id, item_id, order_name, price, quantity, date, time, total_amount, unit, remarks) 
              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, 
-            [uniqueID, item_id, item_name, 0, quantity, formattedDate, time, 0, unit, remarks]
+            [uniqueID, item_id, item_name, 0, quantity, formattedDate, time,0, unit, remarks]
         );
 
         await connection.commit();

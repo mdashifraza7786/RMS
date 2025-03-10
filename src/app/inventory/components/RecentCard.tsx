@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { FaPenToSquare } from "react-icons/fa6";
 import axios from 'axios';
 import { Bars } from "react-loader-spinner"; // Ensure this is installed
+import { FaTrash } from 'react-icons/fa';
 
 // Define the type for recent inventory order items
 interface InventoryOrderItem {
@@ -19,6 +20,12 @@ const RecentCard: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [inventory, setInventory] = useState<InventoryOrderItem[]>([]);
     const [editPopupVisible, setEditPopupVisible] = useState(false);
+    const [deleteLoading, setDeleteLoading] = useState(false);
+    const [deletePopupVisible, setDeletePopupVisible] = useState(false);
+    const [deleteItemName, setDeleteItemName] = useState("");
+    const [deleteItemId, setDeleteItemId] = useState("");
+    const [deleteItemBoxValue, setDeleteItemBoxValue] = useState("");
+
     const [editData, setEditData] = useState<InventoryOrderItem>({
         order_id: '',
         order_name: '',
@@ -36,6 +43,7 @@ const RecentCard: React.FC = () => {
 
     const handleEditSave = async () => {
         try {
+            editData.total_amount = editData.price * editData.quantity;
             const response = await axios.put('/api/recentOrder/updateOrder', editData);
             if (response.status === 200) {
                 fetchRecentOrders();
@@ -62,6 +70,20 @@ const RecentCard: React.FC = () => {
             console.error("Error fetching inventory data:", error);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleDelete = async (deleteItemId: string) => {
+        try {
+            setDeleteLoading(true);
+            await axios.delete("/api/recentOrder/delete", { data: { order_id: deleteItemId } });
+            fetchRecentOrders();
+            setDeletePopupVisible(false);
+        } catch (error) {
+            console.error("Error deleting inventory item:", error);
+        } finally {
+            setDeleteLoading(false);
+            setDeleteItemBoxValue("");
         }
     };
 
@@ -103,15 +125,27 @@ const RecentCard: React.FC = () => {
                                         <td className="border px-6 py-4">{item.order_name}</td>
                                         <td className="border px-6 py-4">{item.price}</td>
                                         <td className="border px-6 py-4">{item.quantity} {item.unit}</td>
-                                        <td className="border px-6 py-4">{item.date}</td>
+                                        <td className="border px-6 py-4">{new Date(item.date).toLocaleDateString()}</td>
                                         <td className="border px-6 py-4">{item.total_amount}</td>
-                                        <td className="border px-6 py-4">
+                                        <td className="border px-6 py-4 flex gap-4 justify-center">
                                             <button
                                                 onClick={() => handleEditClick(item)}
-                                                className="bg-primary text-white px-4 py-2 flex gap-6 items-center justify-center rounded text-[12px] hover:bg-primary-dark transition-colors"
+                                                className="bg-primary hover:bg-primaryhover text-white px-4 py-2 flex gap-6 items-center justify-center rounded text-[12px] hover:bg-primary-dark transition-colors"
                                             >
                                                 <div>Edit</div> <FaPenToSquare />
                                             </button>
+
+                                            <button
+                                                onClick={() => {
+                                                    setDeleteItemName(item.order_name); setDeleteItemId(item.order_id);
+                                                    // setDeleteItemBoxValue(item.order_name);
+                                                    setDeletePopupVisible(true);
+                                                }}
+                                                className="bg-red-500 hover:bg-red-400 text-white px-4 py-2 flex gap-5 items-center justify-center rounded text-[12px] hover:bg-primary-dark transition-colors"
+                                            >
+                                                <div>Delete</div> <FaTrash />
+                                            </button>
+
                                         </td>
                                     </tr>
                                 ))}
@@ -122,10 +156,12 @@ const RecentCard: React.FC = () => {
                         {editPopupVisible && (
                             <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50">
                                 <div className="bg-white p-8 rounded-lg w-96 max-w-full">
+                                    <h1 className="text-xl font-bold mb-4 text-primary">Edit Recent Order</h1>
                                     <div className="flex flex-col gap-4">
                                         <div>
                                             <label className="block font-medium text-gray-800">Name:</label>
                                             <input
+                                                disabled
                                                 type="text"
                                                 value={editData.order_name}
                                                 onChange={(e) => setEditData({ ...editData, order_name: e.target.value })}
@@ -144,6 +180,7 @@ const RecentCard: React.FC = () => {
                                         <div>
                                             <label className="block font-medium text-gray-800">Unit:</label>
                                             <input
+                                                disabled
                                                 type="text"
                                                 value={editData.unit}
                                                 onChange={(e) => setEditData({ ...editData, unit: e.target.value })}
@@ -151,7 +188,7 @@ const RecentCard: React.FC = () => {
                                             />
                                         </div>
                                         <div>
-                                            <label className="block font-medium text-gray-800">Price:</label>
+                                            <label className="block font-medium text-gray-800">Price per {editData.unit}:</label>
                                             <input
                                                 type="number"
                                                 value={editData.price}
@@ -159,7 +196,7 @@ const RecentCard: React.FC = () => {
                                                 className="border border-gray-300 rounded-md px-3 py-2 font-semibold w-full"
                                             />
                                         </div>
-                                        <div>
+                                        {/* <div>
                                             <label className="block font-medium text-gray-800">Date:</label>
                                             <input
                                                 type="text"
@@ -167,7 +204,7 @@ const RecentCard: React.FC = () => {
                                                 onChange={(e) => setEditData({ ...editData, date: e.target.value })}
                                                 className="border border-gray-300 rounded-md px-3 py-2 font-semibold w-full"
                                             />
-                                        </div>
+                                        </div> */}
                                     </div>
                                     <div className="flex justify-end mt-4">
                                         <button
@@ -182,6 +219,52 @@ const RecentCard: React.FC = () => {
                                         >
                                             Save
                                         </button>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Delete Confirmation Popup */}
+                        {deletePopupVisible && (
+                            <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+                                <div className="bg-white p-6 md:p-8 rounded-2xl shadow-xl w-96 max-w-full">
+                                    <h2 className="text-xl font-bold text-red-600 text-center mb-3">Delete Item</h2>
+                                    <p className="text-gray-700 text-center mb-4">
+                                        Are you sure you want to delete this item? Type the item name ({deleteItemName}) to confirm.
+                                    </p>
+
+                                    <input
+                                        required
+                                        type="text"
+                                        placeholder="Type the item name"
+                                        className="border border-gray-300 w-full rounded-lg px-4 py-2 focus:ring-2 focus:ring-red-100 focus:outline-none"
+                                        value={deleteItemBoxValue}
+                                        onChange={(e) => setDeleteItemBoxValue(e.target.value)}
+                                    />
+
+                                    <div className="flex justify-end space-x-3 mt-4">
+                                        <button
+                                            onClick={() => { setDeletePopupVisible(false); setDeleteItemBoxValue(""); }}
+                                            className="bg-gray-300 text-gray-800 px-5 py-2 rounded-lg hover:bg-gray-400 transition-all"
+                                        >
+                                            Cancel
+                                        </button>
+                                        {deleteItemName === deleteItemBoxValue ? (
+
+                                            <button
+                                                onClick={() => handleDelete(deleteItemId)}
+                                                className="bg-red-600 text-white px-5 py-2 rounded-lg hover:bg-red-700 transition-all"
+                                            >
+                                                Delete
+                                            </button>
+                                        ) : (
+                                            <button
+                                                disabled
+                                                className="bg-red-300 text-white px-5 py-2 rounded-lg hover:bg-red-400 transition-all"
+                                            >
+                                                Delete
+                                            </button>
+                                        )}
                                     </div>
                                 </div>
                             </div>

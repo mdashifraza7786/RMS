@@ -242,6 +242,7 @@ const AdminDashboard: React.FC = () => {
                                 </div>
                             ) : orderedItems.length > 0 ? (
                                     orderedItems.map((order) => (
+                                        order.tablenumber > 0 &&
                                         <OrderQueueCard
                                             key={order.orderid}
                                             table={order.tablenumber.toString()}
@@ -250,6 +251,7 @@ const AdminDashboard: React.FC = () => {
                                             orid={order.orderid.toString()}
                                             orderedItems={order.itemsordered}
                                         />
+                                        
                                 ))
                             ) : (
                                 <div>No active orders</div>

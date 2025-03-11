@@ -15,12 +15,7 @@ const OrderQueueCard: React.FC<OrderQueueCardProps> = ({ table, waiter, amount, 
     const subtotal = orderedItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
     const gst = subtotal * 0.18;
     const totalAmount = subtotal + gst;
-    useEffect(() => {
-        document.body.style.overflow = "hidden";
-        return () => {
-            document.body.style.overflow = "auto";
-        };
-    }, []);
+    
     return (
         <>
             <div className='min-w-[22rem] h-[6rem] border border-[#25476A] rounded-[10px] relative'>

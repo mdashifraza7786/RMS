@@ -24,6 +24,7 @@ const Page: React.FC = () => {
     const sliderRef = useRef<HTMLDivElement>(null);
     const [showLeftArrow, setShowLeftArrow] = useState(false);
     const [showRightArrow, setShowRightArrow] = useState(true);
+   
 
     useEffect(() => {
         const checkLowStock = () => {
@@ -139,6 +140,7 @@ const Page: React.FC = () => {
                 </section>
             )}
 
+            {/* lower divs */}
             <div className='bg-white rounded-[10px] p-[4vh] font-semibold flex flex-col gap-6'>
                 <div className='flex text-md gap-4'>
                     <div
@@ -172,6 +174,9 @@ const Page: React.FC = () => {
                 {selectedFilter === 'order' && <OrderCard />}
                 {selectedFilter === 'kitchenOrders' && <KitchenOrdersCard />}
             </div>
+
+            
+
         </div>
     );
 

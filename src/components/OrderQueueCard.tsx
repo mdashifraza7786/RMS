@@ -38,40 +38,50 @@ const OrderQueueCard: React.FC<OrderQueueCardProps> = ({ table, waiter, amount, 
             </div>
 
             {isModalOpen && (
-                <div className='fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50'>
-                    <div className='bg-white rounded-lg w-[400px] shadow-2xl relative p-6 transform scale-95 transition-all duration-300'>
-                        <h2 className='text-xl font-bold mb-4 text-center text-gray-800'>Order Details</h2>
-                        <p className='text-sm text-gray-600'><strong>Table:</strong> #{table}</p>
-                        <p className='text-sm text-gray-600'><strong>Order ID:</strong> {orid}</p>
-
-                        <ul className='mt-4 max-h-[200px] overflow-auto border-t pt-2 space-y-2'>
-                            {orderedItems.length > 0 ? (
-                                orderedItems.map((item) => (
-                                    <li key={item.item_id} className='flex justify-between items-center border-b py-2 px-2 text-gray-700'>
-                                        <span className='font-medium'>{item.item_name}</span>
-                                        <span>{item.quantity} x ₹{item.price.toFixed(2)}</span>
-                                    </li>
-                                ))
-                            ) : (
-                                <p className='text-center text-gray-500'>No items found.</p>
-                            )}
-                        </ul>
-
-                        <div className='mt-4 border-t pt-3 space-y-2 text-gray-800'>
-                            <p className='flex justify-between'><span>Subtotal:</span> <span>₹{subtotal.toFixed(2)}</span></p>
-                            <p className='flex justify-between'><span>GST (18%):</span> <span>₹{gst.toFixed(2)}</span></p>
-                            <p className='flex justify-between font-bold text-lg'><span>Total:</span> <span>₹{totalAmount.toFixed(2)}</span></p>
-                        </div>
-
-                        <button
-                            className='absolute top-3 right-3 px-3 py-1 rounded-full transition-all duration-200'
-                            onClick={() => setIsModalOpen(false)}
-                        >
-                            <IoClose size={24} />
-
-                        </button>
-                    </div>
-                </div>
+               <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+               <div className="bg-white rounded-2xl w-[420px] shadow-2xl relative p-6 transform scale-100 transition-all duration-300">
+                   {/* Header */}
+                   <div className="flex justify-between items-center border-b pb-3">
+                       <h2 className="text-2xl font-semibold text-primary">Order Details</h2>
+                       <button
+                           className="text-gray-500 hover:text-gray-800 transition"
+                           onClick={() => setIsModalOpen(false)}
+                       >
+                           <IoClose className="text-red-600 font-bold" size={28} />
+                       </button>
+                   </div>
+   
+                   {/* Order Info */}
+                   <div className="mt-3 text-gray-700 text-sm">
+                       <p><strong>Table:</strong> <span className='text-secondary font-bold'>#{table}</span></p>
+                       <p><strong>Order ID:</strong><span className='text-secondary font-bold'> {orid}</span></p>
+                   </div>
+   
+                   {/* Ordered Items */}
+                   <ul className="mt-4 max-h-[220px] overflow-auto border-t pt-2 space-y-3">
+                       {orderedItems.length > 0 ? (
+                           orderedItems.map((item) => (
+                               <li key={item.item_id} className="flex bg-gray-200 rounded-md justify-between items-center border-b py-2 px-2 text-gray-700">
+                                   <span className="font-medium">{item.item_name}</span>
+                                   <span className="text-gray-900 font-semibold">{item.quantity} x ₹{item.price.toFixed(2)}</span>
+                               </li>
+                           ))
+                       ) : (
+                           <p className="text-center text-gray-500">No items found.</p>
+                       )}
+                   </ul>
+   
+                   {/* Pricing Details */}
+                   <div className="mt-4 border-t pt-3 text-gray-900 text-sm">
+                       <p className="flex justify-between"><span className='text-primary'>Subtotal:</span> <span>₹{subtotal.toFixed(2)}</span></p>
+                       <p className="flex justify-between"><span className='text-primary'>GST (18%):</span> <span>₹{gst.toFixed(2)}</span></p>
+                       <p className="flex justify-between font-bold text-lg mt-2">
+                           <span>Total:</span>
+                           <span className="text-black font-bold">₹{totalAmount.toFixed(2)}</span>
+                       </p>
+                   </div>
+               </div>
+           </div>
             )}
         </>
     );

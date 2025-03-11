@@ -18,10 +18,20 @@ interface InventoryItem {
     unit: string;
 }
 
+interface InventoryData {
+    item_id: string;
+    item_name: string;
+    quantity: number;
+    date?: string;
+    time?: string;
+    unit: string;
+    remarks?: string;
+}
+
 const KitchenOrdersCard: React.FC = () => {
     const [kitchenOrders, setKitchenOrders] = useState<InventoryItem[]>([]);
+    const [inventoryOrder, setInventoryOrder] = useState<InventoryData[]>([]);
     const [selectedItems, setSelectedItems] = useState<string[]>([]);
-    const [orderPopupVisible, setOrderPopupVisible] = useState(false);
     const [editPopupVisible, setEditPopupVisible] = useState(false);
     const [editData, setEditData] = useState<InventoryItem>({ order_id: '', item_name: '', quantity: 0, unit: '', status: '', date: '', time: '', remarks: '' });
     const [loading, setLoading] = useState(true);
@@ -87,6 +97,7 @@ const KitchenOrdersCard: React.FC = () => {
                 ? prevSelected.filter(id => id !== order_id)
                 : [...prevSelected, order_id]
         );
+        console.warn("Selected Items:", selectedItems);
     };
 
     const handleSelectAllChange = () => {
@@ -96,11 +107,53 @@ const KitchenOrdersCard: React.FC = () => {
             const allIds = kitchenOrders.map(item => item.order_id);
             setSelectedItems(allIds);
         }
+        console.warn("Selected Items:", selectedItems);
     };
 
-    const handleGenerateOrder = () => {
-        setOrderPopupVisible(true);
+    const handleGenerateOrder = async () => {
+        setLoading(true);
+        try {
+            const selectedData = kitchenOrders.filter(item => selectedItems.includes(item.order_id));
+    
+            if (selectedData.length > 0) {
+                for (const order of selectedData) {
+                    const orderData = {
+                        item_id: order.order_id, 
+                        item_name: order.item_name,
+                        quantity: order.quantity,
+                        unit: order.unit,
+                        date: new Date().toISOString().split('T')[0], 
+                        time: new Date().toLocaleTimeString(),
+                        remarks: order.remarks,
+                    };
+    
+                    await fetch("/api/inventory/InventoryOrder", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify(orderData),
+                    });
+
+                    await fetch("/api/kitchenOrder/updateKitchenOrder", {
+                        method: "PUT",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({ order_id: order.order_id, status: "accepted" ,item_name: order.item_name, quantity: order.quantity, unit: order.unit}),
+                    });
+              
+                    setSelectedItems([]); // Clear selections after order generation
+                }
+            }
+            fetchKitchenOrders();
+        } catch (e) {
+            console.error("Order submission error:", e);
+        } finally {
+            setLoading(false);
+        }
     };
+    
 
     const selectedData = kitchenOrders.filter(item => selectedItems.includes(item.order_id));
 
@@ -217,37 +270,6 @@ const KitchenOrdersCard: React.FC = () => {
                         </tbody>
                     </table>
                 </>
-            )}
-
-            {/* Order Popup */}
-            {orderPopupVisible && selectedData.length > 0 && (
-                <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50">
-                    <div className="bg-white p-8 rounded-lg w-96 max-w-full">
-                        <h3 className="text-xl font-semibold mb-4 text-primary">Selected Orders</h3>
-                        <ul>
-                            {selectedData.map(item => (
-                                <li key={item.order_id} className="mb-2 border-b pb-2">
-                                    <div><strong>Item:</strong> {item.item_name}</div>
-                                    <div><strong>Quantity:</strong> {item.quantity} {item.unit}</div>
-                                </li>
-                            ))}
-                        </ul>
-                        <div className="flex justify-end mt-4 gap-2">
-                            <button
-                                onClick={() => setOrderPopupVisible(false)}
-                                className="bg-bgred text-white hover:bg-red-600 cursor-pointer rounded-md px-4 py-2"
-                            >
-                                CLOSE
-                            </button>
-                            <button
-                                onClick={() => setOrderPopupVisible(false)}
-                                className="bg-supporting2 text-white hover:bg-[#8bbf3b] cursor-pointer rounded-md px-4 py-2"
-                            >
-                                ORDER
-                            </button>
-                        </div>
-                    </div>
-                </div>
             )}
 
             {/* Edit Popup */}

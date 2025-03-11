@@ -156,6 +156,7 @@ const OrderCard: React.FC = () => {
                     </>
                 )}
             </div>
+            
             {isPopupOpen && <GeneratedOrderPage inventoryOrder={inventoryOrder} onClose={() => setIsPopupOpen(false)} />}
         </div>
     );

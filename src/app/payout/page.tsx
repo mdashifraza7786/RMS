@@ -17,10 +17,10 @@ const Page = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage] = useState(5);
     const [selectedFilter, setSelectedFilter] = useState('All');
-    const [editPopupVisible, setEditPopupVisible] = useState(false);
+    // const [editPopupVisible, setEditPopupVisible] = useState(false);
     const [detailsPopupVisible, setDetailsPopupVisible] = useState(false); // State for details popup
     const [selectedItem, setSelectedItem] = useState({ id: '', name: '', role: '', amount: '', status: '', image: null, mobile: '', accountHolder: '', accountNumber: '', ifsc: '', branch: '' }); // State to store selected item data
-    const [editData, setEditData] = useState({ amount: '', status: 'paid', id: '' });
+    // const [editData, setEditData] = useState({ amount: '', status: 'paid', id: '' });
 
     // Logic to filter data based on search query and selected filter
     const filteredData = sampleData.filter(item =>
@@ -42,10 +42,10 @@ const Page = () => {
     };
 
     // Function to handle edit icon click
-    const handleEditClick = (data: any) => {
-        setEditData(data);
-        setEditPopupVisible(true);
-    };
+    // const handleEditClick = (data: any) => {
+    //     setEditData(data);
+    //     setEditPopupVisible(true);
+    // };
 
     // Function to handle eye icon click
     const handleEyeClick = (data: any) => {
@@ -54,20 +54,20 @@ const Page = () => {
     };
 
 
-    const handleEdit = () => {
+    // const handleEdit = () => {
 
-        const dataIndex = sampleData.findIndex(item => item.id === editData.id);
+    //     const dataIndex = sampleData.findIndex(item => item.id === editData.id);
 
 
-        if (dataIndex !== -1) {
-            const updatedData = [...sampleData];
-            updatedData[dataIndex] = { ...updatedData[dataIndex], amount: editData.amount, status: editData.status };
+    //     if (dataIndex !== -1) {
+    //         const updatedData = [...sampleData];
+    //         updatedData[dataIndex] = { ...updatedData[dataIndex], amount: editData.amount, status: editData.status };
 
-            sampleData.splice(0, sampleData.length, ...updatedData);
-        }
+    //         sampleData.splice(0, sampleData.length, ...updatedData);
+    //     }
 
-        setEditPopupVisible(false);
-    };
+    //     setEditPopupVisible(false);
+    // };
 
     return (
         <div className='bg-[#e6e6e6] py-[5vh] px-[8vw] font-raleway flex flex-col gap-[6vh]'>
@@ -88,19 +88,19 @@ const Page = () => {
                 {/* Filter buttons */}
                 <div className='flex text-md gap-4'>
                     <div
-                        className={`px-[10px] rounded-xl cursor-pointer ${selectedFilter === 'All' ? 'font-bold bg-[#FA9F1B70]  transition-colors duration-300 text-[#fc9802e3]' : ''}`}
+                        className={`px-[12px] py-2 rounded-xl cursor-pointer ${selectedFilter === 'All' ? 'font-bold bg-[#FA9F1B70]  transition-colors duration-300 text-[#fc9802e3]' : ''}`}
                         onClick={() => changeFilter('All')}
                     >
                         All
                     </div>
                     <div
-                        className={`px-[10px] rounded-xl cursor-pointer ${selectedFilter === 'paid' ? 'font-bold bg-[#FA9F1B70]  transition-colors duration-300 text-[#fc9802e3]' : ''}`}
+                        className={`px-[12px] py-2 rounded-xl cursor-pointer ${selectedFilter === 'paid' ? 'font-bold bg-[#FA9F1B70]  transition-colors duration-300 text-[#fc9802e3]' : ''}`}
                         onClick={() => changeFilter('paid')}
                     >
                         Paid
                     </div>
                     <div
-                        className={`px-[10px] rounded-xl cursor-pointer ${selectedFilter === 'unpaid' ? 'font-bold bg-[#FA9F1B70]  transition-colors duration-300 text-[#fc9802e3]' : ''}`}
+                        className={`px-[12px] py-2 rounded-xl cursor-pointer ${selectedFilter === 'unpaid' ? 'font-bold bg-[#FA9F1B70]  transition-colors duration-300 text-[#fc9802e3]' : ''}`}
                         onClick={() => changeFilter('unpaid')}
                     >
                         Unpaid
@@ -130,9 +130,9 @@ const Page = () => {
                                         <button className="bg-primary text-white px-4 py-2 rounded text-[12px] flex items-center gap-2" onClick={() => handleEyeClick(item)}>
                                             <HiEye /> <span>View</span>
                                         </button>
-                                        <button className="bg-primary text-white px-4 py-2 rounded text-[12px] flex items-center gap-2" onClick={() => handleEditClick(item)}>
+                                        {/* <button className="bg-primary text-white px-4 py-2 rounded text-[12px] flex items-center gap-2" onClick={() => handleEditClick(item)}>
                                             <HiPencilAlt /> <span>Edit</span>
-                                        </button>
+                                        </button> */}
                                     </div>
                                 </td>
                             </tr>
@@ -228,7 +228,7 @@ const Page = () => {
 
 
             {/* Edit Popup */}
-            {editPopupVisible && (
+            {/* {editPopupVisible && (
                 <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50">
                     <div className="bg-white p-8 rounded-lg shadow-lg border border-gray-300">
                         <h2 className="text-2xl font-semibold mb-6 text-primary">Edit Data</h2>
@@ -270,7 +270,7 @@ const Page = () => {
                         </div>
                     </div>
                 </div>
-            )}
+            )} */}
 
 
 

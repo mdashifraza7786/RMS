@@ -132,13 +132,13 @@ const Page: React.FC = () => {
         try {
             setDeleteLoading(true);
             await axios.delete("/api/menu/delete", { data: { item_id: deleteMenuId } });
-            fetchMenuData();
             setDeletePopupVisible(false);
         } catch (error) {
             console.error("Error deleting menu item:", error);
         } finally {
             setDeleteLoading(false);
             setDeleteMenuBoxValue("");
+            fetchMenuData();
         }
     };
 
@@ -159,9 +159,9 @@ const Page: React.FC = () => {
                                 onChange={handleSearchChange}
                             />
                             <div className="flex">
-                                <button onClick={addMenuHandler} className='bg-[#9FCC2E] hover:bg-[#badb69] shadow-md px-4 py-1 text-white font-bold text-lg flex items-center justify-center gap-4 font-medium rounded-sm'>
+                                <button onClick={addMenuHandler} className='bg-[#9FCC2E] hover:bg-[#badb69] shadow-md px-4 py-2 text-white font-bold text-lg flex items-center justify-center gap-4 rounded-sm'>
                                     <RiBillLine />
-                                    <div>Add Menu Item</div>
+                                    <div>Add Item</div>
                                 </button>
                             </div>
                         </section>
@@ -218,7 +218,7 @@ const Page: React.FC = () => {
                                                             <div>Edit</div> <FaPenToSquare />
                                                         </button>
 
-                                                        <button className="bg-red-600 hover:bg-red-400 text-white px-4 py-2 rounded text-[12px] flex items-center gap-10" onClick={() => handleDeleteClick(item.item_id, item.item_name)}>
+                                                        <button className="bg-red-500 hover:bg-red-400 text-white px-4 py-2 rounded text-[12px] flex items-center gap-10" onClick={() => handleDeleteClick(item.item_id, item.item_name)}>
                                                             <div>Delete</div> <FaTrash />
                                                         </button>
                                                     </div>

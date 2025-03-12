@@ -159,6 +159,7 @@ const Page: React.FC = () => {
         } finally {
             setDeleteLoading(false);
             setDeleteMemberBoxValue("");
+            fetchMemberData();
         }
     };
 

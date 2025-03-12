@@ -169,7 +169,7 @@ function AddMemberPopup({ onHandle }: any) {
                 ) : (
                     <h2 className="text-2xl text-primary font-bold text-center">Status</h2>
                 )}
-                <FaTimes onClick={onHandle} className='text-2xl cursor-pointer' />
+                <FaTimes onClick={onHandle} className='text-2xl text-red-600 cursor-pointer' />
             </div>
             <div className='px-10 flex flex-col gap-4 py-5'>
                 {basicinfo && (

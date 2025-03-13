@@ -154,6 +154,30 @@ export async function getMenu() {
     }
 }
 
+
+export async function getPayout() {
+    const connection = await dbConnect();
+    try {
+        // Fetch data from the 'payout' table
+        const [userRows] = await connection.query<RowDataPacket[]>(
+            'SELECT userid,account_number,upi_id,amount,status FROM payout'
+        );
+
+        if (userRows.length > 0) {
+            return {
+                payout: userRows,
+            };
+        } else {
+            return false;
+        }
+
+    } catch (error: any) {
+        throw error;
+    } finally {
+        await connection.end();
+    }
+}
+
 export async function getTables() {
     const connection = await dbConnect();
     try {

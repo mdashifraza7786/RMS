@@ -58,6 +58,7 @@ const Page: React.FC = () => {
                     const newItems = combinedData.filter((item: any) => !existingIds.has(item.userid));
                     return [...prevData, ...newItems];
                 });
+                console.warn(combinedData);
             }
         } catch (error) {
             console.error('Error fetching data:', error);
@@ -223,7 +224,7 @@ const Page: React.FC = () => {
                                                 <button className="bg-primary hover:bg-[#416f9d] text-white px-4 py-2 rounded text-[12px] flex items-center gap-10" onClick={() => handleEditClick(item)}>
                                                     <div>Edit</div> <FaPenToSquare />
                                                 </button>
-                                                <button className="bg-red-500 hover:bg-red-400 text-white px-4 py-2 rounded text-[12px] flex items-center gap-10" onClick={() => handleDeleteClick(item.userid,item.name)}>
+                                                <button className="bg-red-500 hover:bg-red-400 text-white px-4 py-2 rounded text-[12px] flex items-center gap-10" onClick={() => handleDeleteClick(item.userid, item.name)}>
                                                     <div>Delete</div> <FaTrash />
                                                 </button>
                                             </div>
@@ -260,71 +261,72 @@ const Page: React.FC = () => {
                 {/* View Popup */}
                 {detailsPopupVisible && selectedItem && (
                     <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50">
-                        <div className="bg-white p-6 rounded-lg w-auto max-w-[600px] relative">
+                        <div className="bg-white p-6 rounded-xl w-full max-w-lg shadow-2xl relative border border-gray-200">
+                            {/* Header */}
+                            <div className="flex justify-between items-center border-b border-gray-200 pb-3 mb-5">
+                            <h2 className="text-2xl font-semibold text-primary">Member Details</h2>
+                            <button
+                                onClick={() => setDetailsPopupVisible(false)}
+                                className="text-gray-600 hover:text-red-600 font-extrabold transition-colors"
+                            >
+                                ✕
+                            </button>
+                        </div>
 
-                            <h2 className="text-xl font-semibold mb-4 text-primary">Member Details</h2>
+                            {/* Member Info */}
+                            <div className="flex flex-col gap-6">
+                                <div className="flex items-center justify-center h-36 gap-6">
+                                    {/* Profile Image */}
+                                    
+                                    <Image
+                                        src={selectedItem.photo}
+                                        alt="Member Photo"
+                                        className="w-36 h-36 object-cover rounded-lg border border-gray-300 shadow-sm"
+                                        width={250}
+                                        height={250}
+                                    />
 
-                            <div className="space-y-4">
-                                <div className="flex flex-row items-start gap-4">
-                                    <div className="flex-shrink-0">
-                                        <Image
-                                            src={selectedItem.photo}
-                                            alt="Member Photo"
-                                            className="w-40 h-36 object-cover rounded border border-gray-300"
-                                            width={160}
-                                            height={144}
-                                        />
-                                    </div>
-
-                                    {/* Personal Information */}
-                                    <div className="flex-grow bg-gray-100 p-4 rounded-lg shadow-md">
-                                        <h3 className="text-lg font-semibold mb-2 text-primary">Personal Information</h3>
-                                        <div className="space-y-2">
-                                            <p className="font-medium text-gray-800"><strong>Name:</strong> {selectedItem.name}</p>
-                                            <p className="font-medium text-gray-800"><strong>Mobile:</strong> {selectedItem.mobile}</p>
-                                            <p className="font-medium text-gray-800"><strong>Role:</strong> {selectedItem.role}</p>
+                                    {/* Personal Info */}
+                                    <div className="flex-grow bg-gray-50 p-4 rounded-lg shadow-sm border">
+                                        <h3 className="text-lg font-semibold text-gray-800 mb-3">Personal Information</h3>
+                                        <div className="text-gray-700 space-y-1">
+                                            <p><strong>Name:</strong> {selectedItem.name}</p>
+                                            <p><strong>Mobile:</strong> {selectedItem.mobile}</p>
+                                            <p><strong>Role:</strong> {selectedItem.role}</p>
                                         </div>
                                     </div>
                                 </div>
 
-                                {/* Bank Details and Address */}
-                                <div className="flex flex-row gap-4">
+                                {/* Bank & Address Section */}
+                                <div className="grid grid-cols-2 gap-4">
                                     {/* Bank Details */}
-                                    <div className="flex-grow bg-gray-100 p-4 rounded-lg shadow-md">
-                                        <h3 className="text-lg font-semibold mb-2 text-primary">Bank Details</h3>
-                                        <div className="space-y-2">
-                                            <p className="font-medium text-gray-800"><strong>Account Holder:</strong> {selectedItem.account_name}</p>
-                                            <p className="font-medium text-gray-800"><strong>Account Number:</strong> {selectedItem.account_number}</p>
-                                            <p className="font-medium text-gray-800"><strong>IFSC:</strong> {selectedItem.ifsc_code}</p>
-                                            <p className="font-medium text-gray-800"><strong>Branch:</strong> {selectedItem.branch_name}</p>
+                                    <div className="bg-gray-50 p-4 rounded-lg shadow-sm border">
+                                        <h3 className="text-lg font-semibold text-gray-800 mb-3">Bank Details</h3>
+                                        <div className="text-gray-700 space-y-1">
+                                            <p><strong>Holder:</strong> {selectedItem.account_name}</p>
+                                            <p><strong>Account:</strong> {selectedItem.account_number}</p>
+                                            <p><strong>IFSC:</strong> {selectedItem.ifsc_code}</p>
+                                            <p><strong>Branch:</strong> {selectedItem.branch_name}</p>
                                         </div>
                                     </div>
 
                                     {/* Address */}
-                                    <div className="flex-grow bg-gray-100 p-4 rounded-lg shadow-md">
-                                        <h3 className="text-lg font-semibold mb-2 text-primary">Address</h3>
-                                        <div className="space-y-2">
-                                            <p className="font-medium text-gray-800"><strong>Street/House No:</strong> {selectedItem.street_or_house_no}</p>
-                                            <p className="font-medium text-gray-800"><strong>Address One:</strong> {selectedItem.address_one}</p>
-                                            <p className="font-medium text-gray-800"><strong>City:</strong> {selectedItem.city}</p>
-                                            <p className="font-medium text-gray-800"><strong>State:</strong> {selectedItem.state}</p>
-                                            <p className="font-medium text-gray-800"><strong>PIN:</strong> {selectedItem.pin}</p>
+                                    <div className="bg-gray-50 p-4 rounded-lg shadow-sm border">
+                                        <h3 className="text-lg font-semibold text-gray-800 mb-3">Address</h3>
+                                        <div className="text-gray-700 space-y-1">
+                                            <p><strong>Street:</strong> {selectedItem.street_or_house_no}</p>
+                                            <p><strong>Address:</strong> {selectedItem.address_one}</p>
+                                            <p><strong>City:</strong> {selectedItem.city}</p>
+                                            <p><strong>State:</strong> {selectedItem.state}</p>
+                                            <p><strong>PIN:</strong> {selectedItem.pin}</p>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-
-                            <div className="flex justify-end mt-4">
-                                <button
-                                    onClick={() => setDetailsPopupVisible(false)}
-                                    className="bg-bgred text-white hover:bg-red-600 rounded-md px-4 py-2"
-                                >
-                                    Close
-                                </button>
-                            </div>
                         </div>
                     </div>
                 )}
+
 
                 {/* Edit Popup */}
                 {editPopupVisible && (
@@ -616,7 +618,7 @@ const Page: React.FC = () => {
 
                             <div className="flex justify-end space-x-3 mt-4">
                                 <button
-                                    onClick={() => {setDeletePopupVisible(false); setDeleteMemberBoxValue("");}}
+                                    onClick={() => { setDeletePopupVisible(false); setDeleteMemberBoxValue(""); }}
                                     className="bg-gray-300 text-gray-800 px-5 py-2 rounded-lg hover:bg-gray-400 transition-all"
                                 >
                                     Cancel

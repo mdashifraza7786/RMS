@@ -1,9 +1,13 @@
 "use client"
-import React, { useState } from 'react';
+import React, { use, useEffect, useState } from 'react';
 import { HiEye, HiPencilAlt } from 'react-icons/hi';
+import axios from 'axios';
+import { RowDataPacket } from 'mysql2';
+import { FaCheck } from 'react-icons/fa';
+import { RxCross2 } from 'react-icons/rx';
 
 const sampleData = [
-    { id: '#CHEF119', image: 'https://placehold.co/150x150', mobile: '+91-7643088251', accountHolder: 'John Doe', accountNumber: '3928415252', ifsc: 'CBIN0248596', branch: 'Marwan', dateofpayment: '02-12-2024 12:03 PM', name: 'John Doe', role: 'Chef', amount: '₹20,000', status: 'paid' },
+    { id: '#CHEF119', image: 'https://placehold.co/150x150', mobile: '+91-7643088251', accountHolder: 'John Doe', accountNumber: '3928415252', ifsc: 'CBIN0248596', branch: 'Marwan', dateofpayment: '02-12-2024 12:03 PM', name: 'John Doe', role: 'Chef', amount: '₹20,000', status: 'null' },
     { id: '#CHEF120', image: 'https://placehold.co/150x150', mobile: '+91-7643088251', accountHolder: 'John Doe', accountNumber: '3928415252', ifsc: 'CBIN0248596', branch: 'Marwan', dateofpayment: '02-12-2024 12:03 PM', name: 'Jane Smith', role: 'Chef', amount: '₹20,000', status: 'unpaid' },
     { id: '#WAITER121', image: 'https://placehold.co/150x150', mobile: '+91-7643088251', accountHolder: 'John Doe', accountNumber: '3928415252', ifsc: 'CBIN0248596', branch: 'Marwan', dateofpayment: '02-12-2024 12:03 PM', name: 'Alice Johnson', role: 'Waiter', amount: '₹10,000', status: 'paid' },
     { id: '#WAITER122', image: 'https://placehold.co/150x150', mobile: '+91-7643088251', accountHolder: 'John Doe', accountNumber: '3928415252', ifsc: 'CBIN0248596', branch: 'Marwan', dateofpayment: '02-12-2024 12:03 PM', name: 'Bob Brown', role: 'Waiter', amount: '₹10,000', status: 'paid' },
@@ -12,21 +16,55 @@ const sampleData = [
     { id: '#WAITER126', image: 'https://placehold.co/150x150', mobile: '+91-7643088251', accountHolder: 'John Doe', accountNumber: '3928415252', ifsc: 'CBIN0248596', branch: 'Marwan', dateofpayment: '02-12-2024 12:03 PM', name: 'Bob Brown', role: 'Waiter', amount: '₹10,000', status: 'paid' },
 ];
 
+interface PayoutInfo {
+    userid: string,
+    account_number: string,
+    upi_id: string,
+    amount: string,
+    status: string,
+}
+
+interface User {
+    userid: string,
+    name: string,
+    mobile: string,
+    photo?: string,
+    role: string,
+    ifsc_code: string,
+    branch_name: string,
+}
+
+interface MergedUserPayout {
+    userid: string;
+    name: string;
+    mobile: string;
+    photo?: string;
+    account_number: string;
+    upi_id: string;
+    amount: string;
+    status: string;
+    role: string;
+    ifsc_code: string;
+    branch: string;
+}
+
+
 const Page = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage] = useState(5);
     const [selectedFilter, setSelectedFilter] = useState('All');
-    // const [editPopupVisible, setEditPopupVisible] = useState(false);
     const [detailsPopupVisible, setDetailsPopupVisible] = useState(false); // State for details popup
-    const [selectedItem, setSelectedItem] = useState({ id: '', name: '', role: '', amount: '', status: '', image: null, mobile: '', accountHolder: '', accountNumber: '', ifsc: '', branch: '' }); // State to store selected item data
-    // const [editData, setEditData] = useState({ amount: '', status: 'paid', id: '' });
+    const [payoutInfo, setPayoutInfo] = useState([] as PayoutInfo[]);
+    const [userInfo, setUserInfo] = useState([] as User[]);
+    const [mergedData, setMergedData] = useState<MergedUserPayout[]>([]);
+    const [selectedItem, setSelectedItem] = useState({ userid: '', name: '', role: '', amount: '', status: '', photo: '', mobile: '', account_number: '', ifsc_code: '', branch: '' }); // State to store selected item data
 
     // Logic to filter data based on search query and selected filter
-    const filteredData = sampleData.filter(item =>
+    const filteredData = mergedData.filter(item =>
         (selectedFilter === 'All' || item.status === selectedFilter)
         &&
-        (item.id.toLowerCase() === searchQuery.toLowerCase() || item.name.toLowerCase().includes(searchQuery.toLowerCase()))
+        (item.userid.toLowerCase() === searchQuery.toLowerCase() || item.name.toLowerCase().includes(searchQuery.toLowerCase()))
     );
 
     // Logic to paginate data
@@ -41,33 +79,73 @@ const Page = () => {
         setCurrentPage(1); // Reset current page when changing filter
     };
 
-    // Function to handle edit icon click
-    // const handleEditClick = (data: any) => {
-    //     setEditData(data);
-    //     setEditPopupVisible(true);
-    // };
-
-    // Function to handle eye icon click
     const handleEyeClick = (data: any) => {
         setSelectedItem(data);
         setDetailsPopupVisible(true); // Show details popup
     };
 
 
-    // const handleEdit = () => {
+    useEffect(() => {
+        async function fetchDetails() {
+            try {
+                const response = await axios.get('api/payout');
+                setPayoutInfo(response.data.payout);
 
-    //     const dataIndex = sampleData.findIndex(item => item.id === editData.id);
+            } catch (err) {
+                console.log(err);
+            }
+        }
 
+        async function fetchUserInfo() {
+            try {
+                const response = await axios.get('api/members');
+                const { users, payouts, addresses } = await response.data;
+                const combinedData = users.map((user: RowDataPacket, index: number) => ({
+                    ...user,
+                    ...payouts[index],
+                    ...addresses[index]
+                }));
 
-    //     if (dataIndex !== -1) {
-    //         const updatedData = [...sampleData];
-    //         updatedData[dataIndex] = { ...updatedData[dataIndex], amount: editData.amount, status: editData.status };
+                setUserInfo(prevData => {
+                    const existingIds = new Set(prevData.map(item => item.userid));
+                    const newItems = combinedData.filter((item: any) => !existingIds.has(item.userid));
+                    return [...prevData, ...newItems];
+                });
 
-    //         sampleData.splice(0, sampleData.length, ...updatedData);
-    //     }
+            }
+            catch (err) {
+                console.log(err);
+            }
+        }
 
-    //     setEditPopupVisible(false);
-    // };
+        fetchDetails();
+        fetchUserInfo();
+    }
+        , []);
+
+    useEffect(() => {
+        // Assuming userInfo and payoutInfo are already set
+        const merged = payoutInfo.map(payout => {
+            const user = userInfo.find(user => user.userid === payout.userid);
+            return {
+                userid: payout.userid,
+                name: user?.name || '',
+                mobile: user?.mobile || '',
+                photo: user?.photo,
+                role: user?.role || '',
+                ifsc_code: user?.ifsc_code || '',
+                branch: user?.branch_name || '',
+                account_number: payout.account_number,
+                upi_id: payout.upi_id,
+                amount: payout.amount,
+                status: payout.status,
+            };
+        });
+
+        setMergedData(merged);
+        console.log(merged);
+    }, [userInfo, payoutInfo]);
+
 
     return (
         <div className='bg-[#e6e6e6] py-[5vh] px-[8vw] font-raleway flex flex-col gap-[6vh]'>
@@ -115,24 +193,50 @@ const Page = () => {
                             <th className="px-4 py-2 text-left">Name</th>
                             <th className="px-4 py-2 text-left">Role</th>
                             <th className="px-4 py-2 text-left">Amount</th>
+                            <th className="px-4 py-2 text-left w-[100px]">Status</th>
                             <th className="px-4 py-2 text-left w-[100px]">Action</th>
                         </tr>
                     </thead>
                     <tbody>
                         {currentItems.map((item, index) => (
                             <tr key={index}>
-                                <td className="border px-4 py-2 transition-colors duration-300">{item.id}</td>
+                                <td className="border px-4 py-2 transition-colors duration-300">{item.userid}</td>
                                 <td className="border px-4 py-2 transition-colors duration-300">{item.name}</td>
                                 <td className="border px-4 py-2 transition-colors duration-300">{item.role}</td>
-                                <td className={`${item.status === 'paid' ? 'text-green-600' : 'text-red-600'} font-bold border px-4 py-2 transition-colors duration-300`}>{item.amount}</td>
+                                <td className="border px-4 py-2 transition-colors duration-300">₹ {item.amount}</td>
+                                <td className={`border px-4 py-2 text-center ${item.status === 'paid' ? 'text-green-600' : 'text-red-600'}`}>
+                                    {item.status === 'paid' ? (
+                                        <button
+                                            // onClick={() => giveAttendance(item.userid, 'present', "reset")}
+                                            className="bg-supporting2 text-white px-4 py-2 rounded text-[12px] w-[18rem] flex items-center justify-between">
+                                            <div>PAID</div> <FaCheck />
+                                        </button>
+                                    ) : item.status === 'unpaid' ? (
+                                        <button
+                                            // onClick={() => giveAttendance(item.userid, 'absent', "reset")}
+                                            className="bg-bgred text-white px-4 py-2 rounded text-[12px] w-[18rem] flex items-center justify-between">
+                                            <div>UNPAID</div> <RxCross2 />
+                                        </button>
+                                    ) : (
+                                        <div className='flex gap-4 w-full justify-between'>
+                                            <button
+                                                // onClick={() => giveAttendance(item.userid, 'absent', "update")}
+                                                className="bg-bgred text-white px-4 py-2 w-32 rounded text-[12px] flex items-center justify-between gap-10">
+                                                <div>UNPAID</div> <RxCross2 className='font-bold'/>
+                                            </button>
+                                            <button
+                                                // onClick={() => giveAttendance(item.userid, 'present', "update")}
+                                                className="bg-supporting2 text-white px-4 py-2 w-32 rounded text-[12px]  flex justify-between items-center gap-10">
+                                                <div>PAID  </div> <FaCheck />
+                                            </button>
+                                        </div>
+                                    )}
+                                </td>
                                 <td className="border px-4 py-2 text-center">
                                     <div className='flex justify-center gap-4'>
                                         <button className="bg-primary text-white px-4 py-2 rounded text-[12px] flex items-center gap-2" onClick={() => handleEyeClick(item)}>
                                             <HiEye /> <span>View</span>
                                         </button>
-                                        {/* <button className="bg-primary text-white px-4 py-2 rounded text-[12px] flex items-center gap-2" onClick={() => handleEditClick(item)}>
-                                            <HiPencilAlt /> <span>Edit</span>
-                                        </button> */}
                                     </div>
                                 </td>
                             </tr>
@@ -160,118 +264,57 @@ const Page = () => {
             {/* Details Popup */}
             {detailsPopupVisible && selectedItem && (
                 <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50 font-raleway">
-                    <div className="bg-white p-8 rounded-lg shadow-xl max-w-md w-full border border-gray-300 overflow-hidden">
-                        <h2 className="text-3xl font-bold mb-8 text-primary border-b border-gray-200 pb-2">Details</h2>
-                        <div className="flex flex-col gap-6">
-                            <div className="flex items-start overflow-x-auto">
-                                <div className="flex-shrink-0">
-                                    <img className="w-[120px] h-[120px] object-cover rounded-full" src={selectedItem.image} alt="Profile" />
-                                </div>
-                                <div className="flex flex-col ml-6">
-                                    <div className="grid grid-cols-2 gap-x-4 text-gray-800 text-medium">
-                                        <div className="font-medium"><strong>ID:</strong></div>
-                                        <div className="text-secondary font-semibold">{selectedItem.id}</div>
-
-                                        <div className="font-medium"><strong>Name:</strong></div>
-                                        <div className="text-secondary font-semibold">{selectedItem.name}</div>
-
-                                        <div className="font-medium"><strong>Role:</strong></div>
-                                        <div className="text-secondary font-semibold">{selectedItem.role}</div>
-
-                                        <div className="font-medium"><strong>Amount:</strong></div>
-                                        <div className={`font-semibold ${selectedItem.status === 'paid' ? 'text-green-600' : 'text-bgred'}`}>
-                                            {selectedItem.amount}
-                                        </div>
-
-                                        <div className="font-medium"><strong>Status:</strong></div>
-                                        <div className={`font-semibold ${selectedItem.status === 'paid' ? 'text-green-600' : 'text-bgred'}`}>
-                                            {selectedItem.status === 'paid' ? 'PAID' : 'UNPAID'}
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="bg-white p-6 rounded-lg shadow-lg border border-gray-300 overflow-x-auto">
-                                <h3 className="text-2xl font-semibold mb-4 text-primary">Account Details</h3>
-                                <table className="w-full text-gray-800 border-collapse">
-                                    <tbody>
-                                        <tr className="border-b border-gray-200">
-                                            <td className="py-2 font-medium">Account Number:</td>
-                                            <td className="py-2 font-semibold text-secondary">{selectedItem.accountNumber}</td>
-                                        </tr>
-                                        <tr className="border-b border-gray-200">
-                                            <td className="py-2 font-medium">IFSC Code:</td>
-                                            <td className="py-2 font-semibold text-secondary">{selectedItem.ifsc}</td>
-                                        </tr>
-                                        <tr className="border-b border-gray-200">
-                                            <td className="py-2 font-medium">Branch:</td>
-                                            <td className="py-2 font-semibold text-secondary">{selectedItem.branch}</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                        <div className="flex justify-end mt-6">
+                    <div className="bg-white p-6 rounded-2xl shadow-2xl max-w-lg w-[25vw] border border-gray-300">
+                        {/* Header */}
+                        <div className="flex justify-between items-center border-b border-gray-200 pb-3 mb-5">
+                            <h2 className="text-3xl font-semibold text-primary">Details</h2>
                             <button
                                 onClick={() => setDetailsPopupVisible(false)}
-                                className="bg-red-600 font-bold text-white rounded-md px-6 py-3 hover:bg-red-300 transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-50"
+                                className="text-gray-600 hover:text-red-600 font-extrabold transition-colors"
                             >
-                                CLOSE
+                                ✕
                             </button>
                         </div>
-                    </div>
-                </div>
 
-
-
-            )}
-
-
-            {/* Edit Popup */}
-            {/* {editPopupVisible && (
-                <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50">
-                    <div className="bg-white p-8 rounded-lg shadow-lg border border-gray-300">
-                        <h2 className="text-2xl font-semibold mb-6 text-primary">Edit Data</h2>
-                        <div className="mb-4">
-                            <label htmlFor="amount" className="block font-medium text-gray-800">Amount:</label>
-                            <input
-                                type="text"
-                                id="amount"
-                                value={editData.amount}
-                                onChange={(e) => setEditData({ ...editData, amount: e.target.value })}
-                                className="border border-gray-300 rounded-md px-3 py-2 font-semibold w-full"
+                        {/* User Info Section */}
+                        <div className="flex flex-col items-center gap-4">
+                            <img className="w-28 h-28 object-cover rounded-full border-2 border-gray-300"
+                                src={selectedItem.photo}
+                                alt="Profile"
                             />
+                            <div className="text-center">
+                                <p className="text-xl font-semibold text-gray-800">{selectedItem.name}</p>
+                                <p className="text-sm text-gray-500">{selectedItem.role}</p>
+                            </div>
                         </div>
-                        <div className="mb-4">
-                            <label htmlFor="status" className="block font-medium text-gray-800">Status:</label>
-                            <select
-                                id="status"
-                                value={editData.status}
-                                onChange={(e) => setEditData({ ...editData, status: e.target.value })}
-                                className="border font-semibold border-gray-300 rounded-md px-3 py-2 w-full"
-                            >
-                                <option value="paid" className="text-green-600 font-semibold">Paid</option>
-                                <option value="unpaid" className="text-bgred font-semibold">Unpaid</option>
-                            </select>
+
+                        {/* Details Grid */}
+                        <div className="grid grid-cols-2 gap-x-6 gap-y-3 text-gray-800 text-base mt-5">
+                            <p className="font-medium">ID:</p> <p className="text-gray-600">{selectedItem.userid}</p>
+                            <p className="font-medium">Mobile:</p> <p className="text-gray-600">{selectedItem.mobile}</p>
+                            <p className="font-medium">Amount:</p>
+                            <p className={`font-semibold ${selectedItem.status === 'paid' ? 'text-green-600' : 'text-red-600'}`}>
+                                ₹{selectedItem.amount}
+                            </p>
+                            <p className="font-medium">Status:</p>
+                            <p className={`font-semibold uppercase ${selectedItem.status === 'paid' ? 'text-green-600' : 'text-red-600'}`}>
+                                {selectedItem.status}
+                            </p>
                         </div>
-                        <div className="flex justify-end gap-2">
-                            <button
-                                onClick={() => setEditPopupVisible(false)}
-                                className="bg-red-500 text-white font-bold rounded-md px-4 py-2 hover:bg-red-300 transition-colors"
-                            >
-                                CANCEL
-                            </button>
-                            <button
-                                onClick={handleEdit}
-                                className="bg-supporting2 text-white font-bold rounded-md px-4 py-2 hover:bg-[#a8b38d] transition-colors"
-                            >
-                                SAVE
-                            </button>
+
+                        {/* Account Details */}
+                        <div className="bg-gray-100 p-5 rounded-lg mt-6 shadow-sm border">
+                            <h3 className="text-lg font-semibold mb-3 text-gray-700">Account Details</h3>
+                            <div className="grid grid-cols-2 gap-x-4 text-gray-700 text-sm">
+                                <p className="font-medium">Account No.:</p> <p className="text-gray-600">{selectedItem.account_number}</p>
+                                <p className="font-medium">IFSC Code:</p> <p className="text-gray-600">{selectedItem.ifsc_code}</p>
+                                <p className="font-medium">Branch:</p> <p className="text-gray-600">{selectedItem.branch}</p>
+                            </div>
                         </div>
+
                     </div>
                 </div>
-            )} */}
-
+            )}
 
 
         </div>

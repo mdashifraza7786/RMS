@@ -144,10 +144,7 @@ const Page: React.FC = () => {
 
     return (
         <div className='bg-[#e6e6e6] py-[5vh] px-[8vw] font-raleway flex flex-col gap-[6vh] relative'>
-            {popupOpened ? (
-                <AddMenu popuphandle={addMenuHandler} />
-            ) : (
-                <>
+            <>
                     <h1 className="font-bold">Menu</h1>
                     <section className='bg-white rounded-[10px] p-[4vh] font-semibold flex flex-col gap-3 relative'>
                         <section className='flex justify-between items-center py-4'>
@@ -234,6 +231,8 @@ const Page: React.FC = () => {
                             </table>)}
                     </section>
                 </>
+            {popupOpened && (
+                <AddMenu popuphandle={addMenuHandler} />
             )}
 
             {editPopupVisible && (

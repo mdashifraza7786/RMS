@@ -28,7 +28,8 @@ const AddMenu: React.FC<AddMenuProps> = ({ popuphandle }) => {
         setIsDropdownVisible(true);
     };
 
-    const handleCategorySelect = (category: string) => {
+    const handleCategorySelect = (event: ChangeEvent<HTMLSelectElement>) => {
+        const category = event.target.value;
         setSelectedCategory(category);
         setSearchTerm('');
         setIsDropdownVisible(false);
@@ -76,13 +77,13 @@ const AddMenu: React.FC<AddMenuProps> = ({ popuphandle }) => {
             item_foodtype: formValues.item_foodtype,
             item_price: formValues.item_price,
             item_type: selectedCategory,
-            item_thumbnail: imagePreviewUrl, 
+            item_thumbnail: imagePreviewUrl,
         };
 
         try {
             const response = await axios.post('/api/menu/register', formData);
             console.log(response.data);
-            popuphandle(); 
+            popuphandle();
         } catch (error) {
             console.error('Error uploading menu item:', error);
         }
@@ -93,18 +94,21 @@ const AddMenu: React.FC<AddMenuProps> = ({ popuphandle }) => {
     );
 
     return (
-        <div className="h-screen w-screen bg-white fixed left-0 top-0 z-50 overflow-hidden popup-transition">
-            <form className="flex flex-col gap-10" onSubmit={handleSubmit}>
-                <div className="h-16 border-b-2 border-gray-300 flex items-center justify-between px-20 text-2xl">
-                    <button type="submit" className="bg-supporting2 rounded-lg px-6 py-1 text-white">SAVE</button>
-                    <FaTimes className="cursor-pointer" onClick={popuphandle} />
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+            <div className="bg-white shadow-xl rounded-lg p-8 w-full max-w-2xl relative">
+                {/* Header */}
+                <div className="flex justify-between items-center border-b pb-4">
+                    <h1 className="text-2xl font-semibold text-primary">Add Menu</h1>
+                    <FaTimes className="text-gray-600 text-[25px] cursor-pointer hover:text-red-500" onClick={popuphandle} />
                 </div>
-                <div className="px-20 grid grid-cols-5 gap-14">
-                    <div className="col-span-3 flex flex-col gap-7">
-                        <h1 className='text-2xl font-bold uppercase'>Add Menu</h1>
-                        <div className="flex flex-col gap-7">
+
+                {/* Form */}
+                <form className="mt-6 space-y-6" onSubmit={handleSubmit}>
+                    <div className="grid grid-cols-2 text-gray-700 items-center justify-center gap-2">
+                        {/* Left Section - Form Inputs */}
+                        <div className="space-y-5">
                             <input
-                                className="outline-none border-2 border-gray-300 px-3 py-2"
+                                className="w-full border border-gray-300 rounded-md px-4 py-2"
                                 type="text"
                                 name="item_name"
                                 placeholder="Enter item name"
@@ -113,88 +117,90 @@ const AddMenu: React.FC<AddMenuProps> = ({ popuphandle }) => {
                                 required
                             />
                             <textarea
-                                className="outline-none border-2 border-gray-300 px-3 py-2 resize-none"
+                                className="w-full border border-gray-300 rounded-md px-4 py-2 resize-none"
                                 name="item_description"
-                                placeholder="Enter description for item"
+                                placeholder="Enter description"
                                 value={formValues.item_description}
                                 onChange={handleInputChange}
                                 required
                             />
 
-                            <div className="flex gap-7 relative">
-                                <div className='relative'>
-                                    <input
-                                        className="outline-none border-2 border-gray-300 px-3 py-2"
-                                        type="text"
-                                        placeholder="Search categories"
-                                        name='item_category'
-                                        value={searchTerm || selectedCategory}
-                                        onChange={handleCategoryChange}
-                                    />
-                                    {isDropdownVisible && filteredCategories.length > 0 && (
-                                        <ul className="absolute top-full left-0 w-full border-2 border-gray-300 bg-white z-10">
-                                            {filteredCategories.map((category, index) => (
-                                                <li
-                                                    key={index}
-                                                    className="px-3 py-2 cursor-pointer hover:bg-gray-200"
-                                                    onClick={() => handleCategorySelect(category)}
-                                                >
-                                                    {category}
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    )}
-                                </div>
-                                <div>
+                            {/* Category & Price */}
+                            <div className="grid grid-cols-1 gap-4">
+                                {/* Category input - Full Width */}
+                                <div className="relative">
                                     <select
-                                        className="outline-none border-2 border-gray-300 px-3 py-2"
+                                        className="w-full border border-gray-300 rounded-md px-4 py-2"
+                                        name="item_category"
+                                        value={selectedCategory}
+                                        onChange={handleCategorySelect}
+                                    >
+                                        <option value="" disabled>Select Category</option>
+                                        {filteredCategories.map((category, index) => (
+                                            <option key={index} value={category}>
+                                                {category}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+
+
+                                {/* Food type and Price - In a row */}
+                                <div className="grid grid-cols-2 gap-4">
+                                    <select
+                                        className="w-full border border-gray-300 rounded-md px-4 py-2"
                                         name="item_foodtype"
                                         value={formValues.item_foodtype}
                                         onChange={handleInputChange}
                                     >
                                         <option value="veg">Veg</option>
-                                        <option value="nveg">Non - Veg</option>
+                                        <option value="nveg">Non-Veg</option>
                                     </select>
-                                </div>
-                                <div>
-                                    <input  
-                                        name='item_price'
+
+                                    <input
+                                        name="item_price"
                                         type="number"
-                                        placeholder='Price'
-                                        className="outline-none border-2 border-gray-300 px-3 py-2"
+                                        placeholder="Price"
+                                        className="w-full border border-gray-300 rounded-md px-4 py-2"
                                         value={formValues.item_price}
                                         onChange={handleInputChange}
                                         required
                                     />
                                 </div>
                             </div>
+
+                        </div>
+
+                        {/* Right Section - Image Upload */}
+                        <div className="flex flex-col items-center">
+                            {imagePreviewUrl ? (
+                                <div className="relative">
+                                    <img src={imagePreviewUrl} alt="Thumbnail" className="w-40 h-40 object-cover rounded-md shadow-md" />
+                                    <FaTimes className="absolute top-2 right-2 text-gray-600 cursor-pointer hover:text-red-500" onClick={handleRemoveImage} />
+                                </div>
+                            ) : (
+                                <label className="flex flex-col items-center justify-center w-40 h-40 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:bg-gray-100">
+                                    <span className="text-gray-600">Select Thumbnail</span>
+                                    <input
+                                        type="file"
+                                        id="food_menu_thumbnail"
+                                        className="hidden"
+                                        onChange={handleFileChange}
+                                        name="item_thumbnail"
+                                    />
+                                </label>
+                            )}
                         </div>
                     </div>
-                    <div className="flex flex-col items-center gap-4 col-span-2">
-                        {imagePreviewUrl ? (
-                            <div className="image-preview relative">
-                                <img src={imagePreviewUrl} alt="Selected Thumbnail" className="max-w-full max-h-full object-cover" />
-                                <FaTimes className="remove-icon cursor-pointer absolute top-2 right-2" onClick={handleRemoveImage} />
-                            </div>
-                        ) : (
-                            <div 
-                                className="custom-file-input-wrapper flex justify-center items-center border-2 border-dashed border-gray-300 rounded-lg p-4 cursor-pointer"
-                                onClick={() => document.getElementById('food_menu_thumbnail')?.click()} // Trigger the file input click
-                            >
-                                <span>Select Thumbnail</span>
-                                <input
-                                    type="file"
-                                    id="food_menu_thumbnail"
-                                    className="custom-file-input"
-                                    onChange={handleFileChange}
-                                    name='item_thumbnail'
-                                    style={{ display: 'none' }}
-                                />
-                            </div>
-                        )}
+
+                    {/* Add Button */}
+                    <div className="flex justify-end">
+                        <button type="submit" className="bg-[#9FCC2E] hover:bg-[#badb69]  text-white font-bold px-6 py-2 rounded-md hover:bg-primary-dark">
+                            ADD NOW
+                        </button>
                     </div>
-                </div>
-            </form>
+                </form>
+            </div>
         </div>
     );
 };

@@ -29,7 +29,7 @@ const LineChart: FC<LineChartProps> = ({ data, options }) => {
       },
       title: {
         display: true,
-        text: 'Sales Trend (Line Chart)',
+        // text: '',
       },
     },
     scales: {

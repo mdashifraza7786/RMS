@@ -17,7 +17,7 @@ const PieChart: FC<PieChartProps> = ({ data }) => {
       },
       title: {
         display: true,
-        text: 'Sales Distribution by Category',
+        // text: '',
       },
     },
   };

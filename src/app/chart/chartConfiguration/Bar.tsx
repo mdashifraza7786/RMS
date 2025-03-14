@@ -29,7 +29,7 @@ const BarChart: FC<BarChartProps> = ({ data, options }) => {
       },
       title: {
         display: true,
-        text: 'Sales by Menu Item',
+        // text: '',
       },
     },
     scales: {

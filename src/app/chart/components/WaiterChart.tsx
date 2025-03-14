@@ -1,20 +1,19 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from 'react';
+import axios from 'axios';
 import BarChart from '../chartConfiguration/Bar';
 import PieChart from '../chartConfiguration/Pie';
 import LineChart from '../chartConfiguration/Line';
 import { ChartOptions } from 'chart.js';
 
-type ChartKey =
-    'Waiter vs Ratings' |
-    'Waiter vs Orders Served';
+type ChartKey = 'Waiter vs Ratings' | 'Waiter vs Orders Served';
 
 const WaiterChart: React.FC = () => {
     const [chartXY, setChartXY] = useState<ChartKey>('Waiter vs Ratings');
     const [chartType, setChartType] = useState<'bar' | 'pie' | 'line'>('bar');
     const [timeFrame, setTimeFrame] = useState<'weekly' | 'monthly' | 'yearly'>('weekly');
-    const [comparisonMode, setComparisonMode] = useState(false);
+    const [waiterData, setWaiterData] = useState<any[]>([]);
 
     useEffect(() => {
         document.title = "WaiterChart";
@@ -26,34 +25,47 @@ const WaiterChart: React.FC = () => {
         '#90BE6D', '#43AA8B', '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0'
     ], []);
 
-    const generateData = (label: string) => {
-        return {
-            labels: ['Waiter A', 'Waiter B', 'Waiter C', 'Waiter D', 'Waiter E', 'Waiter F', 'Waiter G'],
-            datasets: [{
-                label,
-                data: timeFrame === 'weekly' ? [0.5, 0.8, 1.2, 0.7, 1.1, 0.9, 1.0] :
-                    timeFrame === 'monthly' ? [0.5, 0.8, 1.2, 0.7, 3.1, 0.8, 1.0] : [4.5, 2.8, 1.2, 0.7, 1.1, 0.9, 1.0],
-                backgroundColor: colors.slice(0, 7),
-                borderColor: colors.slice(0, 7),
-                borderWidth: 1,
-                hoverOffset: 10,
-            }]
+    useEffect(() => {
+        const fetchDataset = async () => {
+            try {
+                const response = await axios.get("/api/chart/waiterChart");
+                setWaiterData(response.data);
+            } catch (error) {
+                console.error(error);
+            }
         };
-    };
+        fetchDataset();
+    }, []);
 
-    const chartData = useMemo(() => {
-        if (comparisonMode) {
-            return {
-                labels: generateData('Current Data').labels,
-                datasets: [
-                    ...generateData('Current Period').datasets,
-                    ...generateData('Previous Period').datasets,
-                ]
-            };
-        }
-        const label = chartXY === 'Waiter vs Orders Served' ? 'Orders Served' : 'Ratings';
-        return generateData(label);
-    }, [chartXY, colors, timeFrame, comparisonMode]);
+   const generateData = useMemo(() => {
+        if (waiterData.length === 0) return { labels: [], datasets: [] };
+
+        const labels = waiterData.map((waiter) => waiter.name);
+        const data =
+            chartXY === "Waiter vs Orders Served"
+                ? waiterData.map((waiter) =>
+                      timeFrame === "weekly"
+                          ? waiter.total_orders_week
+                          : timeFrame === "monthly"
+                          ? waiter.total_orders_month
+                          : waiter.total_orders_year
+                  )
+                : waiterData.map((waiter) => waiter.ratings);
+
+        return {
+            labels,
+            datasets: [
+                {
+                    label: chartXY === "Waiter vs Orders Served" ? "Orders Served" : "Ratings",
+                    data,
+                    backgroundColor: colors.slice(0, labels.length),
+                    borderColor: colors.slice(0, labels.length),
+                    borderWidth: 1,
+                    hoverOffset: 10,
+                },
+            ],
+        };
+    }, [waiterData, chartXY, timeFrame, colors]);
 
     const chartOptions: ChartOptions<'bar'> | ChartOptions<'line'> = useMemo(() => {
         const xAxisLabels: Record<ChartKey, string> = {
@@ -142,21 +154,13 @@ const WaiterChart: React.FC = () => {
                     <option value="yearly">Yearly</option>
                 </select>
 
-                <div className="flex items-center">
-                    <label className="mr-2">Comparison Mode</label>
-                    <input
-                        type="checkbox"
-                        checked={comparisonMode}
-                        onChange={() => setComparisonMode(!comparisonMode)}
-                    />
-                </div>
             </section>
 
             {/* Chart */}
             <section className="flex justify-center items-center" style={{ width: '100%', height: '450px' }}>
-                {chartType === 'bar' && <BarChart data={chartData} options={chartOptions as ChartOptions<'bar'>} />}
-                {chartType === 'pie' && <PieChart data={chartData} />}
-                {chartType === 'line' && <LineChart data={chartData} options={chartOptions as ChartOptions<'line'>} />}
+                {chartType === 'bar' && <BarChart data={generateData} options={chartOptions as ChartOptions<'bar'>} />}
+                {chartType === 'pie' && <PieChart data={generateData} />}
+                {chartType === 'line' && <LineChart data={generateData} options={chartOptions as ChartOptions<'line'>} />}
             </section>
         </div>
     );

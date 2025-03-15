@@ -7,6 +7,8 @@ import Link from 'next/link';
 import OrderScreen from './OrderScreen';
 import axios from 'axios';
 import { Bars } from 'react-loader-spinner';
+import RecentTableOrders from '@/components/RecentTableOrders';
+
 export interface Table {
     id: number;
     tablenumber: number;
@@ -333,8 +335,7 @@ const AdminDashboard: React.FC = () => {
             </section>
 
             <section className='grid grid-cols-2 gap-[20px]'>
-                {/* <RecentTableOrders /> */}
-                <div>No Recent Table Orders Component Found</div>
+                <RecentTableOrders />
 
                 <div className='bg-white rounded-lg p-[4vh] w-full flex flex-col gap-10'>
                     <div className='flex justify-between'>

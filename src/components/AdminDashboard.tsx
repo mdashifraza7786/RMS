@@ -89,6 +89,7 @@ const AdminDashboard: React.FC = () => {
     function resetTable(tablenumber: any) {
         setOrderedItems((prevItems) => prevItems.filter(order => order.tablenumber !== tablenumber));
     }
+
     function updateOrderedItems(bookedItems: any) {
         setOrderedItems((prevItems) => {
             return prevItems.map(order =>
@@ -145,8 +146,13 @@ const AdminDashboard: React.FC = () => {
             };
 
             const response = await axios.post("/api/order/modifyOrder", requestBody);
-
-            const data = response.data;
+            if(response.data.deleted){
+                tableData.map((table) => {
+                        if (table.tablenumber === tableNumber) {
+                            table.availability = 0;
+                        }
+                    });
+            }
         } catch (error: any) {
             console.error("Error posting to tables:", error.response?.data || error.message);
         }

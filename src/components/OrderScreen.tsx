@@ -46,9 +46,13 @@ const OrderScreen: React.FC<OrderScreenProps> = ({ tableNumber, orderedItem, set
             document.body.style.overflow = "auto";
         };
     }, []);
-    useEffect(() => {
+    useEffect(() => { 
         const table = tabledata.find((t) => t.availability === 1 && t.tablenumber === tableNumber);
-        if (table) setBooked(true);
+        if (table) {
+            setBooked(true);
+        }else{
+            setBooked(false);
+        }
     }, [tabledata, tableNumber]);
 
 

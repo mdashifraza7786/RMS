@@ -25,18 +25,26 @@ export async function POST(request: Request): Promise<NextResponse> {
     const gst = +(subtotal * 0.18).toFixed(2); 
     const totalAmount = subtotal + gst;
 
-    await connection.query(
-      "UPDATE orders SET order_items = ? WHERE id = ?",
-      [JSON.stringify(updatedItems), orderid]
-    );
-
-    await connection.query(
-      "UPDATE invoices SET subtotal = ?, gst = ?, total_amount = ? WHERE orderid = ?",
-      [subtotal, gst, totalAmount, orderid]
-    );
-
-    await connection.commit();
-    return NextResponse.json({ success: true, message: "Item removed & invoice updated successfully" });
+    if(totalAmount === 0) {
+      await connection.query("DELETE FROM orders WHERE id = ?", [orderid]);
+      await connection.query("DELETE FROM invoices WHERE orderid = ?", [orderid]);
+      await connection.commit();
+      return NextResponse.json({ success: true, deleted:true, message: "Item removed & order deleted successfully" });
+    }else{
+      await connection.query(
+        "UPDATE orders SET order_items = ? WHERE id = ?",
+        [JSON.stringify(updatedItems), orderid]
+      );
+  
+      await connection.query(
+        "UPDATE invoices SET subtotal = ?, gst = ?, total_amount = ? WHERE orderid = ?",
+        [subtotal, gst, totalAmount, orderid]
+      );
+  
+      await connection.commit();
+      return NextResponse.json({ success: true, deleted:false, message: "Item removed & invoice updated successfully" });
+    }
+    
   } catch (error) {
     await connection.rollback();
     console.error("Error:", error);

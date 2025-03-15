@@ -12,7 +12,11 @@ const TableStatusCard: React.FC<TableStatusCardProps> = ({ tableno, tablestatus,
 
     return (
         <div className={`min-w-[10.2rem]  h-[48px] flex justify-center items-center font-semibold text-[15px] text-white rounded-[6.08px] tracking-wider ${bgColorClass} cursor-pointer`} onClick={()=>{doOrder(tableno)}}>
-            Table No.: #{tableno}
+            {tableno === 0 ? (
+                "Parcel" 
+            ):(
+                `Table No.: #${tableno}`
+            )}
         </div>
     );
 };

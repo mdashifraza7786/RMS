@@ -46,11 +46,11 @@ const OrderScreen: React.FC<OrderScreenProps> = ({ tableNumber, orderedItem, set
             document.body.style.overflow = "auto";
         };
     }, []);
-    useEffect(() => { 
+    useEffect(() => {
         const table = tabledata.find((t) => t.availability === 1 && t.tablenumber === tableNumber);
         if (table) {
             setBooked(true);
-        }else{
+        } else {
             setBooked(false);
         }
     }, [tabledata, tableNumber]);
@@ -240,7 +240,7 @@ const OrderScreen: React.FC<OrderScreenProps> = ({ tableNumber, orderedItem, set
                     <p style="text-align:center;">123 Main Street, Suite 567<br>City Name, State 54321<br>📞 123-456-7890</p>
                     <hr>
                     <div class="details">
-                        <p><strong>Table Number:</strong> ${tablenumber}</p>
+                        ${tablenumber === 0 ? "<p><strong>Order Type: Parcel Order</strong></p>" : `<p><strong>Table Number:</strong> ${tablenumber}</p>`}
                         <p><strong>Date & Time:</strong> ${currentDate}</p>
                         <p><strong>Order ID: </strong>${orderid}</p>
 
@@ -291,7 +291,9 @@ const OrderScreen: React.FC<OrderScreenProps> = ({ tableNumber, orderedItem, set
         <div className="fixed inset-0 bg-gray-900 bg-opacity-70 flex justify-center items-center z-50">
             <div className="w-[90%] h-[90%] bg-white font-semibold flex flex-col gap-3 relative shadow-lg rounded-2xl p-5">
                 <div className="flex justify-between shadow-md rounded-lg p-[2vh]">
-                    <div className="font-bold text-[15px]">Order for Table #{tableNumber}</div>
+                    <div className="font-bold text-[15px]">
+                        {tableNumber === 0 ? "Parcel" : `Table No.: #${tableNumber}`}
+                    </div>
                     <button onClick={closeOrderScreen} className="text-[15px] font-extrabold">
                         <IoClose size={24} />
                     </button>

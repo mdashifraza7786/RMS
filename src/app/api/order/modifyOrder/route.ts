@@ -2,7 +2,7 @@ import { dbConnect } from "@/database/database";
 import { NextResponse } from "next/server";
 
 export async function POST(request: Request): Promise<NextResponse> {
-  const { orderid, itemid }: { orderid: number; itemid: string } = await request.json();
+  const { orderid, itemid,tablenumber }: { orderid: number; itemid: string,tablenumber:number } = await request.json();
   const connection = await dbConnect();
 
   try {
@@ -28,6 +28,7 @@ export async function POST(request: Request): Promise<NextResponse> {
     if(totalAmount === 0) {
       await connection.query("DELETE FROM orders WHERE id = ?", [orderid]);
       await connection.query("DELETE FROM invoices WHERE orderid = ?", [orderid]);
+      await connection.query("UPDATE tables SET availability = 0 WHERE tablenumber = ?", [tablenumber]);
       await connection.commit();
       return NextResponse.json({ success: true, deleted:true, message: "Item removed & order deleted successfully" });
     }else{

@@ -143,15 +143,16 @@ const AdminDashboard: React.FC = () => {
             const requestBody = {
                 orderid: orderID,
                 itemid: itemId,
+                tablenumber: tableNumber
             };
 
             const response = await axios.post("/api/order/modifyOrder", requestBody);
-            if(response.data.deleted){
+            if (response.data.deleted) {
                 tableData.map((table) => {
-                        if (table.tablenumber === tableNumber) {
-                            table.availability = 0;
-                        }
-                    });
+                    if (table.tablenumber === tableNumber) {
+                        table.availability = 0;
+                    }
+                });
             }
         } catch (error: any) {
             console.error("Error posting to tables:", error.response?.data || error.message);
@@ -247,17 +248,17 @@ const AdminDashboard: React.FC = () => {
                                     />
                                 </div>
                             ) : orderedItems.length > 0 ? (
-                                    orderedItems.map((order) => (
-                                        order.tablenumber > 0 &&
-                                        <OrderQueueCard
-                                            key={order.orderid}
-                                            table={order.tablenumber.toString()}
-                                            waiter="Shyal Lal"
-                                            amount={(order.billing.subtotal + order.billing.subtotal * 0.18).toFixed(2)}
-                                            orid={order.orderid.toString()}
-                                            orderedItems={order.itemsordered}
-                                        />
-                                        
+                                orderedItems.map((order) => (
+                                    order.tablenumber > 0 &&
+                                    <OrderQueueCard
+                                        key={order.orderid}
+                                        table={order.tablenumber.toString()}
+                                        waiter="Shyal Lal"
+                                        amount={(order.billing.subtotal + order.billing.subtotal * 0.18).toFixed(2)}
+                                        orid={order.orderid.toString()}
+                                        orderedItems={order.itemsordered}
+                                    />
+
                                 ))
                             ) : (
                                 <div>No active orders</div>
@@ -280,6 +281,7 @@ const AdminDashboard: React.FC = () => {
             {selectedTable !== null && (
                 <OrderScreen tableNumber={selectedTable} orderedItem={orderedItems} setorderitemsfun={updateOrderedItems} resettable={resetTable} removeOrderedItems={removeOrderedItem} tabledata={tableData} closeOrderScreen={closeOrderScreen} />
             )}
+            
             {/* Table Booking Status Section */}
             <section className='bg-white rounded-[10px] p-[4vh] font-semibold flex flex-col gap-8 relative'>
                 <div className='flex justify-between'>
@@ -331,20 +333,8 @@ const AdminDashboard: React.FC = () => {
             </section>
 
             <section className='grid grid-cols-2 gap-[20px]'>
-                <div className='bg-white rounded-lg p-[4vh]'>
-                    <div>Sales</div>
-                    {/* <PieChart
-                        series={[
-                            {
-                                data,
-                                highlightScope: { faded: 'global', highlighted: 'item' },
-                                faded: { innerRadius: 30, additionalRadius: -30, color: 'gray' },
-                            },
-                        ]}
-                        height={350}
-                        width={700}
-                    /> */}
-                </div>
+                {/* <RecentTableOrders /> */}
+                <div>No Recent Table Orders Component Found</div>
 
                 <div className='bg-white rounded-lg p-[4vh] w-full flex flex-col gap-10'>
                     <div className='flex justify-between'>

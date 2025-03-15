@@ -154,6 +154,28 @@ export async function getMenu() {
     }
 }
 
+export async function getTableOrders() {
+    const connection = await dbConnect();
+    try {
+        // Fetch data from the 'orders' table
+        const [userRows] = await connection.query<RowDataPacket[]>(
+            'SELECT id,table_id,waiter_id,chef_id,order_items,start_time,end_time,status FROM orders'
+        );
+
+        if (userRows.length > 0) {
+            return {
+                tableOrders: userRows,
+            };
+        } else {
+            return false;
+        }
+
+    } catch (error: any) {
+        throw error;
+    } finally {
+        await connection.end();
+    }
+}
 
 export async function getPayout() {
     const connection = await dbConnect();

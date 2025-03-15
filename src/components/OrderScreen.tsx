@@ -2,6 +2,7 @@ import axios from "axios";
 import { ChangeEvent, useEffect, useMemo, useState } from "react";
 import { IoCheckmarkCircle, IoClose, IoCloseCircle } from "react-icons/io5";
 import { billingAmount, OrderedItems, Table } from "./AdminDashboard";
+import QRCode from 'react-qr-code';
 
 interface OrderScreenProps {
     tableNumber: number;
@@ -9,7 +10,7 @@ interface OrderScreenProps {
     orderedItem: { orderid: number; billing: billingAmount; tablenumber: number; itemsordered: OrderedItems[] }[];
     setorderitemsfun: (bookedItems: { orderid: number; billing: billingAmount; tablenumber: number; itemsordered: OrderedItems[]; }) => void;
     removeOrderedItems: (itemId: string, tableNumber: number, orderID: number) => void;
-    resettable: (tablenumber:any) => void; 
+    resettable: (tablenumber: any) => void;
     closeOrderScreen: () => void;
 }
 
@@ -23,13 +24,20 @@ interface MenuData {
     item_type: string;
 }
 
-const OrderScreen: React.FC<OrderScreenProps> = ({ tableNumber, orderedItem, setorderitemsfun,resettable, removeOrderedItems, tabledata, closeOrderScreen }) => {
+const OrderScreen: React.FC<OrderScreenProps> = ({ tableNumber, orderedItem, setorderitemsfun, resettable, removeOrderedItems, tabledata, closeOrderScreen }) => {
     const [menuData, setMenuData] = useState<MenuData[]>([]);
     const [searchTerm, setSearchTerm] = useState<string>('');
     const [isDropdownVisible, setIsDropdownVisible] = useState<boolean>(false);
     const [selectedItems, setSelectedItems] = useState<{ item: MenuData; quantity: number }[]>([]);
     const [modal, setModal] = useState<{ visible: boolean; message: string; success: boolean }>({ visible: false, message: "", success: false });
     const [booked, setBooked] = useState<boolean>(false);
+    const [completeOrderPopup, setCompleteOrderPopup] = useState<boolean>(false);
+    const [currentCompleteOrder, setCurrentCompleteOrder] = useState<{ tablenumber: number, orderid: number }>({} as { tablenumber: number, orderid: number });
+    const [showQR, setShowQR] = useState<boolean>(false);
+    const [paymentMethod, setPaymentMethod] = useState<string>("cash");
+    const [discountValue, setDiscountValue] = useState<string>("0");
+    const [discountType, setDiscountType] = useState<string>("flat");
+    const upiId = process.env.NEXT_PUBLIC_UPI_ID || "default-upi-id";
 
     useEffect(() => {
         document.body.style.overflow = "hidden";
@@ -44,11 +52,13 @@ const OrderScreen: React.FC<OrderScreenProps> = ({ tableNumber, orderedItem, set
     }, [tabledata, tableNumber]);
 
 
-    const completeOrder = async (tablenumber:any, orderid:any) =>{
+    const completeOrder = async (tablenumber: any, orderid: any, method: any) => {
+        setCompleteOrderPopup(false);
         try {
-            const response = await axios.post(`/api/order/completeOrder/${orderid}`,{tablenumber:tablenumber});
-            if(response.data.success){
+            const response = await axios.post(`/api/order/completeOrder/${orderid}`, { tablenumber: tablenumber, paymentmethod: method });
+            if (response.data.success) {
                 setModal({ visible: true, message: `Order Completed!`, success: true });
+                printBill(tablenumber, orderid, method);
                 tabledata.map((table) => {
                     if (table.tablenumber === tableNumber) {
                         table.availability = 0;
@@ -59,13 +69,13 @@ const OrderScreen: React.FC<OrderScreenProps> = ({ tableNumber, orderedItem, set
                 setorderitemsfun({ orderid: 0, billing: { subtotal: 0 }, tablenumber: 0, itemsordered: [] });
                 resettable(tablenumber);
 
-            }else{
+            } else {
                 setModal({ visible: true, message: response.data.message || "Order Completion failed", success: false });
 
             }
-            
+
         } catch (error) {
-            
+
         }
     }
     const fetchMenuData = async () => {
@@ -191,7 +201,7 @@ const OrderScreen: React.FC<OrderScreenProps> = ({ tableNumber, orderedItem, set
     const gst = subtotal * 0.18;
     const totalAmount = subtotal + gst;
 
-    const printBill = () => {
+    const printBill = (tablenumber: number, orderid: number, method: string) => {
         const currentOrder = orderedItem.find(table => table.tablenumber === tableNumber);
 
         if (!currentOrder) {
@@ -203,7 +213,6 @@ const OrderScreen: React.FC<OrderScreenProps> = ({ tableNumber, orderedItem, set
         const GST = subtotal * 0.18;
         const totalAmount = subtotal + GST;
         const currentDate = new Date().toLocaleString();
-        const transactionID = `TXN-${Math.floor(Math.random() * 1000000)}`; // Random Transaction ID
 
         const billContent = `
             <html>
@@ -221,14 +230,16 @@ const OrderScreen: React.FC<OrderScreenProps> = ({ tableNumber, orderedItem, set
                     .footer { text-align: center; margin-top: 10px; }
                 </style>
             </head>
-            <body>
+            <body onload="window.print(); window.onafterprint = window.close;">
                 <div class="bill-container">
                     <h2>BUSINESS NAME</h2>
                     <p style="text-align:center;">123 Main Street, Suite 567<br>City Name, State 54321<br>📞 123-456-7890</p>
                     <hr>
                     <div class="details">
-                        <p><strong>Table Number:</strong> ${tableNumber}</p>
+                        <p><strong>Table Number:</strong> ${tablenumber}</p>
                         <p><strong>Date & Time:</strong> ${currentDate}</p>
+                        <p><strong>Order ID: </strong>${orderid}</p>
+
                     </div>
                     <hr>
                     <table>
@@ -253,9 +264,8 @@ const OrderScreen: React.FC<OrderScreenProps> = ({ tableNumber, orderedItem, set
                     <p class="total">Subtotal: ₹${subtotal.toFixed(2)}</p>
                     <p class="total">GST (18%): ₹${GST.toFixed(2)}</p>
                     <p class="total"><b>TOTAL: ₹${totalAmount.toFixed(2)}</b></p>
-                    <p>Paid By: Credit</p>
+                    <p>Paid By: ${method}</p>
                     <hr>
-                    <p>Transaction ID: ${transactionID}</p>
                     <p class="footer">THANK YOU FOR YOUR PURCHASE!</p>
                 </div>
             </body>
@@ -268,6 +278,10 @@ const OrderScreen: React.FC<OrderScreenProps> = ({ tableNumber, orderedItem, set
     };
 
 
+    const completerTheOrder = async (tableNumber: any, orderId: any) => {
+        setCompleteOrderPopup(true);
+        setCurrentCompleteOrder({ tablenumber: tableNumber, orderid: orderId });
+    }
 
     return (
         <div className="fixed inset-0 bg-gray-900 bg-opacity-70 flex justify-center items-center z-50">
@@ -384,20 +398,12 @@ const OrderScreen: React.FC<OrderScreenProps> = ({ tableNumber, orderedItem, set
                         <div className="absolute bottom-0 left-0 right-0 p-5">
                             {booked && (
 
-                                <div className="grid grid-cols-2 gap-2">
-                                    <button
-                                        onClick={printBill}
-                                        className="w-[100%] bg-supporting3 text-white font-bold py-2 px-4 rounded-lg mt-4 hover:bg-[#e68c09]"
-                                    >
-                                        Print Bill
-                                    </button>
-                                    <button
-                                        onClick={() => completeOrder(tableNumber, orderedItem.find(table => table.tablenumber === tableNumber)?.orderid)}
-                                        className="w-[100%] bg-supporting2 text-white font-bold py-2 px-4 rounded-lg mt-4 hover:bg-[#8ebf11] transition"
-                                    >
-                                        Complete Order
-                                    </button>
-                                </div>
+                                <button
+                                    onClick={() => completerTheOrder(tableNumber, orderedItem.find(table => table.tablenumber === tableNumber)?.orderid)}
+                                    className="w-[100%] bg-supporting2 text-white font-bold py-2 px-4 rounded-lg mt-4 hover:bg-[#8ebf11] transition"
+                                >
+                                    Complete Order
+                                </button>
                             )}
 
                             <button
@@ -409,6 +415,92 @@ const OrderScreen: React.FC<OrderScreenProps> = ({ tableNumber, orderedItem, set
                         </div>
                     </div>
                 </div>
+
+                {completeOrderPopup && (
+                    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm">
+                        <div className="bg-white p-6 w-[90%] max-w-lg rounded-xl shadow-2xl text-center animate-fadeIn">
+
+                            <div className="flex justify-between items-center border-b pb-3">
+                                <h2 className="font-bold text-lg text-gray-800">
+                                    Order for Table #{currentCompleteOrder.tablenumber}
+                                </h2>
+                                <button
+                                    onClick={() => setCompleteOrderPopup(false)}
+                                    className="text-gray-600 hover:text-red-500 transition-all"
+                                >
+                                    <IoClose size={24} />
+                                </button>
+                            </div>
+
+                            <div className="mt-4 text-left">
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Discount</label>
+                                <div className="flex items-center gap-2">
+                                    <input
+                                        type="number"
+                                        placeholder="Enter discount"
+                                        className="w-full py-2 px-3 border rounded-md focus:ring-2 focus:ring-primary outline-none"
+                                        onChange={(e) => setDiscountValue(e.target.value)}
+                                    />
+                                    <select
+                                        className="py-2 px-3 border rounded-md focus:ring-2 focus:ring-primary outline-none"
+                                        onChange={(e) => setDiscountType(e.target.value)}
+                                    >
+                                        <option value="flat">Flat</option>
+                                        <option value="percent">%</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div className="mt-6 flex flex-col gap-3 text-left">
+                                <h3 className="text-sm font-medium text-gray-700">Select Payment Method</h3>
+                                <div className="flex gap-4">
+                                    <label className="flex items-center gap-2 border px-4 py-2 rounded-lg cursor-pointer transition hover:bg-gray-100">
+                                        <input
+                                            type="radio"
+                                            name="paymentMethod"
+                                            value="cash"
+                                            onChange={() => { setShowQR(false); setPaymentMethod("cash") }}
+                                            checked={paymentMethod === "cash"}
+                                        />
+                                        Pay with Cash
+                                    </label>
+                                    <label className="flex items-center gap-2 border px-4 py-2 rounded-lg cursor-pointer transition hover:bg-gray-100">
+                                        <input
+                                            type="radio"
+                                            name="paymentMethod"
+                                            value="upi"
+                                            onChange={() => { setShowQR(true); setPaymentMethod("upi") }}
+                                            checked={paymentMethod === "upi"}
+                                        />
+                                        Pay with UPI
+                                    </label>
+                                </div>
+                            </div>
+
+                            {showQR && (
+                                <div className="relative flex justify-center mt-4">
+                                    <div className="w-56 h-56 flex items-center justify-center p-2 border rounded-lg shadow-md bg-gray-50">
+                                        <QRCode value={`upi://pay?pa=${upiId}&pn=RMS&am=${totalAmount.toFixed(2)}&cu=INR`} size={256} />
+                                    </div>
+
+                                </div>
+                            )}
+
+                            <div className="mt-6">
+                                <h3 className="text-lg font-semibold text-gray-800">
+                                    Amount to be paid: <span className="text-primary">₹{totalAmount.toFixed(2)}</span>
+                                </h3>
+                                <button
+                                    onClick={() => completeOrder(currentCompleteOrder.tablenumber, currentCompleteOrder.orderid, paymentMethod)}
+                                    className="mt-4 w-full bg-primary text-white py-2 px-4 rounded-lg hover:bg-primaryhover transition-all"
+                                >
+                                    Confirm Payment
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
                 {modal.visible && (
                     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm">
                         <div className="bg-white p-6 w-[40%] max-w-md rounded-xl shadow-2xl text-center animate-fadeIn scale-105">
@@ -425,7 +517,7 @@ const OrderScreen: React.FC<OrderScreenProps> = ({ tableNumber, orderedItem, set
                     </div>
                 )}
             </div>
-        </div>
+        </div >
     );
 };
 

@@ -2,7 +2,7 @@ import { dbConnect } from "@/database/database";
 import { NextResponse } from "next/server";
 
 export async function POST(request: Request, { params }: { params: { orderID: string } }) {
-  const { tablenumber } = await request.json();
+  const { tablenumber,paymentmethod } = await request.json();
   const orderID = Number(params.orderID);
   const connection = await dbConnect();
 
@@ -14,12 +14,12 @@ export async function POST(request: Request, { params }: { params: { orderID: st
       [orderID]
     );
     
-    if (existingOrder.length > 0 && existingOrder[0].payment_status === "completed") {
+    if (existingOrder.length > 0 && existingOrder[0].payment_status === "paid") {
       return NextResponse.json({ success: false, message: "The invoice has already been paid." });
     }
     
-    const updateInvoiceQuery = "UPDATE invoices SET payment_status = ? WHERE orderid = ?";
-    const invoiceValues = ["completed", orderID];
+    const updateInvoiceQuery = "UPDATE invoices SET payment_status = ?, payment_method = ? WHERE orderid = ?";
+    const invoiceValues = ["paid",paymentmethod, orderID];
     await connection.query(updateInvoiceQuery, invoiceValues);
     
     const updateOrderQuery = "UPDATE orders SET status = ?, end_time = NOW() WHERE id = ?";

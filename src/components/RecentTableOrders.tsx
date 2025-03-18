@@ -14,6 +14,8 @@ interface Order {
     table_id: string;
     waiter_id: string;
     chef_id: string;
+    waiter_name: string;
+    chef_name: string;
     order_items: OrderItem[];
     start_time: string;
     end_time: string;
@@ -36,6 +38,7 @@ export default function OrdersComponent() {
                 }));
 
                 setOrders(formattedData);
+                console.log("Orders:", formattedData);
             }
         } catch (error) {
             console.error("Error fetching orders:", error);
@@ -62,7 +65,7 @@ export default function OrdersComponent() {
         <div className="bg-white rounded-lg p-[4vh] w-full flex flex-col gap-10">
             <div className='flex justify-between'>
                 <div className='font-extrabold text-[15px]'>Recent Table Orders</div>
-                <Link href={""} className='text-[15px] font-extrabold'>
+                <Link href={"/orders"} className='text-[15px] font-extrabold'>
                     <p>View More</p>
                 </Link>
             </div>
@@ -79,9 +82,9 @@ export default function OrdersComponent() {
                         <div key={order.id} className="flex justify-between items-center bg-white rounded-xl shadow-md p-4 border-l-4 border-bgred">
                             <div>
                                 <h3 className="text-lg font-semibold text-gray-900">Order #{order.id}</h3>
-                                <p className="text-gray-500 text-[13px]">Table: {order.table_id}</p>
-                                <p className="text-gray-500 text-[13px]">Waiter: {order.waiter_id}</p>
-                                <p className="text-gray-500 text-[13px]">Chef: {order.chef_id}</p>
+                                <p className="text-gray-500 text-[13px]">Table: <span className="font-semibold">{order.table_id}</span></p>
+                                <p className="text-gray-500 text-[13px]">Waiter: <span className="font-semibold">{order.waiter_name}</span></p>
+                                <p className="text-gray-500 text-[13px]">Chef: <span className="font-semibold">{order.chef_name}</span></p>
                             </div>
 
                             <div className="flex flex-col items-center space-y-4">
@@ -101,39 +104,48 @@ export default function OrdersComponent() {
             )}
 
             {selectedOrder && (
-                <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-                    <div className="bg-white rounded-lg p-6 shadow max-w-lg w-full">
-                        <h3 className="text-xl font-semibold text-gray-900">Order Details (#{selectedOrder.id})</h3>
-                        <p className="text-gray-600 text-sm">Table: {selectedOrder.table_id}</p>
-                        <p className="text-gray-600 text-sm">Waiter: {selectedOrder.waiter_id}</p>
-                        <p className="text-gray-600 text-sm">Chef: {selectedOrder.chef_id}</p>
+                <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 p-4">
+                    <div className="bg-white rounded-2xl p-6 shadow-lg max-w-md w-full">
+                        {/* Header */}
+                        <div className="flex justify-between items-center border-b pb-3">
+                            <h3 className="text-xl font-bold text-primary">Order Details <span className="text-primary">#{selectedOrder.id}</span></h3>
+                            <button
+                                onClick={() => setSelectedOrder(null)}
+                                className="text-gray-500 hover:text-red-500 transition font-bold"
+                            >
+                                ✕
+                            </button>
+                        </div>
 
-                        <div className="mt-4">
-                            <h4 className="text-sm font-semibold text-gray-700 mb-2">Items:</h4>
-                            <ul className="space-y-1">
+                        {/* Order Info */}
+                        <div className="mt-4 space-y-2 text-gray-700 text-sm">
+                            <p><span className="font-bold">Table:</span><span className="text-secondary font-semibold"> {selectedOrder.table_id}</span></p>
+                            <p><span className="font-bold">Waiter:</span> <span className="text-secondary font-semibold">{selectedOrder.waiter_id}</span></p>
+                            <p><span className="font-bold">Chef:</span><span className="text-secondary font-semibold"> {selectedOrder.chef_id}</span></p>
+                        </div>
+
+                        {/* Order Items */}
+                        <div className="mt-5">
+                            <h4 className="text-sm font-bold text-gray-700 mb-2">Items:</h4>
+                            <ul className="space-y-2 bg-gray-100 p-3 rounded-lg">
                                 {selectedOrder.order_items.map((item) => (
-                                    <li key={item.item_id} className="text-gray-700">
-                                        • {item.item_name} (x{item.quantity}) - ₹{item.price}
+                                    <li key={item.item_id} className="flex justify-between text-gray-700">
+                                        <span>{item.item_name} (x{item.quantity})</span>
+                                        <span className="font-medium">₹{item.price}</span>
                                     </li>
                                 ))}
                             </ul>
                         </div>
 
-                        <div className="mt-4 text-sm text-gray-600">
-                            <p>Start: <span className="font-medium">{selectedOrder.start_time}</span></p>
-                            <p>End: <span className="font-medium">{selectedOrder.end_time}</span></p>
+                        {/* Time Info */}
+                        <div className="mt-4 text-sm text-gray-600 space-y-1">
+                            <p><span className="font-bold">Order Start:</span> {new Date(selectedOrder.start_time).toLocaleString()}</p>
+                            <p><span className="font-bold">Order End:</span> {new Date(selectedOrder.end_time).toLocaleString()}</p>
                         </div>
 
-                        <div className="mt-6 flex justify-end">
-                            <button
-                                onClick={() => setSelectedOrder(null)}
-                                className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition"
-                            >
-                                Close
-                            </button>
-                        </div>
                     </div>
                 </div>
+
             )}
         </div>
     );

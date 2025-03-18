@@ -15,7 +15,7 @@ import { usePathname } from 'next/navigation';
 import { signOut } from 'next-auth/react';
 import { IoBarChartSharp } from "react-icons/io5";
 import { FaTableCells } from "react-icons/fa6";
-
+import { MdBorderColor } from "react-icons/md";
 
 const raleway = Raleway({
     weight: ['400', '700'],
@@ -54,6 +54,12 @@ const AdminNavbar: React.FC = () => {
                     <div className={`flex items-center gap-2 cursor-pointer ${pathName === '/' ? 'text-green-500' : ''}`}>
                         <div><GrHomeRounded /></div>
                         <div>Dashboard</div>
+                    </div>
+                </Link>
+                <Link href='/orders' passHref>
+                    <div className={`flex items-center gap-2 cursor-pointer ${pathName?.includes('/orders')  ? 'text-green-500' : ''}`}>
+                        <div><MdBorderColor /></div>
+                        <div>Orders</div>
                     </div>
                 </Link>
                 <Link href='/payout' passHref>

@@ -159,12 +159,89 @@ export async function getTableOrders() {
     try {
         // Fetch data from the 'orders' table
         const [userRows] = await connection.query<RowDataPacket[]>(
-            'SELECT id,table_id,waiter_id,chef_id,order_items,start_time,end_time,status FROM orders'
+            `SELECT 
+                o.id, 
+                o.table_id, 
+                o.waiter_id, 
+                u1.name AS waiter_name, 
+                o.chef_id, 
+                u2.name AS chef_name, 
+                o.order_items, 
+                o.start_time, 
+                o.end_time, 
+                o.status
+             FROM orders o
+             LEFT JOIN user u1 ON o.waiter_id = u1.userid
+             LEFT JOIN user u2 ON o.chef_id = u2.userid`
         );
+
 
         if (userRows.length > 0) {
             return {
                 tableOrders: userRows,
+            };
+        } else {
+            return false;
+        }
+
+    } catch (error: any) {
+        throw error;
+    } finally {
+        await connection.end();
+    }
+}
+
+export async function getRecentPayments() {
+    const connection = await dbConnect();
+
+    try {
+        // Fetch data from 'invoices', 'orders', 'users', and 'customers' tables
+        const [userRows] = await connection.query<RowDataPacket[]>(`
+            SELECT 
+                i.id,
+                i.orderid,
+                i.table_id,
+                i.subtotal,
+                i.gst,
+                i.total_amount,
+                i.payment_status,
+                i.payment_method,
+                i.discount,
+                i.generated_at,
+                u1.name AS waiter_name,
+                c.name AS customer_name,
+                c.mobile AS customer_mobile
+            FROM invoices i
+            LEFT JOIN orders o ON i.orderid = o.id
+            LEFT JOIN user u1 ON o.waiter_id = u1.userid
+            LEFT JOIN customer c ON o.id = c.order_id
+        `);
+
+        if (userRows.length > 0) {
+            return { payments: userRows };
+        } else {
+            return { payments: [] };
+        }
+
+    } catch (error: any) {
+        console.error("Error fetching recent payments:", error);
+        throw error;
+    } finally {
+        await connection.end();
+    }
+}
+
+export async function getInvoice() {
+    const connection = await dbConnect();
+    try {
+        // Fetch data from the 'invoice' table
+        const [userRows] = await connection.query<RowDataPacket[]>(
+            'SELECT id,orderid,table_id,subtotal,gst,total_amount,discount,payment_method,payment_status,generated_at FROM invoices'
+        );
+
+        if (userRows.length > 0) {
+            return {
+                invoice: userRows,
             };
         } else {
             return false;

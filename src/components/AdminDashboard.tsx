@@ -283,7 +283,7 @@ const AdminDashboard: React.FC = () => {
             {selectedTable !== null && (
                 <OrderScreen tableNumber={selectedTable} orderedItem={orderedItems} setorderitemsfun={updateOrderedItems} resettable={resetTable} removeOrderedItems={removeOrderedItem} tabledata={tableData} closeOrderScreen={closeOrderScreen} />
             )}
-            
+
             {/* Table Booking Status Section */}
             <section className='bg-white rounded-[10px] p-[4vh] font-semibold flex flex-col gap-8 relative'>
                 <div className='flex justify-between'>
@@ -336,23 +336,9 @@ const AdminDashboard: React.FC = () => {
 
             <section className='grid grid-cols-2 gap-[20px]'>
                 <RecentTableOrders />
-
-                <div className='bg-white rounded-lg p-[4vh] w-full flex flex-col gap-10'>
-                    <div className='flex justify-between'>
-                        <div className='font-extrabold text-[15px]'>Recent Payments</div>
-                        <Link href={""} className='text-[15px] font-extrabold'>
-                            <p>View More</p>
-                        </Link>
-                    </div>
-
-                    <div className='flex flex-col gap-[15px] '>
-                        <RecentPaymentCard customername='Muhammad Ashif Raza' customermobile='+91-7643088251' tablenumber='11' amount='599.76' date='02/04/2024' time='01:12PM' waiter='Rahul Roy' />
-                        <RecentPaymentCard customername='Muhammad Ashif Raza' customermobile='+91-7643088251' tablenumber='11' amount='599.76' date='02/04/2024' time='01:12PM' waiter='Rahul Roy' />
-                        <RecentPaymentCard customername='Zeeshan Sayeed' customermobile='+91-7643088251' tablenumber='11' amount='599.76' date='02/04/2024' time='01:12PM' waiter='Rahul Roy' />
-                    </div>
-                </div>
-            </section>
-        </div>
+                <RecentPaymentCard />
+            </section >
+        </div >
     );
 };
 

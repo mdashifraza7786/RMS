@@ -1,6 +1,6 @@
-import { NextResponse } from "next/server";
-import { dbConnect } from "@/database/database";
-import mysql, { RowDataPacket } from "mysql2/promise";
+import { NextResponse } from 'next/server';
+import { dbConnect } from '@/database/database';
+import { RowDataPacket } from 'mysql2';
 
 export async function GET() {
     const connection = await dbConnect();
@@ -11,10 +11,10 @@ export async function GET() {
                 u.userid, 
                 u.name, 
                 u.ratings, 
-                COUNT(o.chef_id) AS total_orders,
-                COUNT(CASE WHEN o.end_time >= NOW() - INTERVAL 1 WEEK THEN 1 END) AS total_orders_week,
-                COUNT(CASE WHEN o.end_time >= NOW() - INTERVAL 1 MONTH THEN 1 END) AS total_orders_month,
-                COUNT(CASE WHEN o.end_time >= NOW() - INTERVAL 1 YEAR THEN 1 END) AS total_orders_year
+                COALESCE(SUM(JSON_LENGTH(o.order_items)), 0) AS total_orders,
+                COALESCE(SUM(CASE WHEN o.end_time >= NOW() - INTERVAL 1 WEEK THEN JSON_LENGTH(o.order_items) END), 0) AS total_orders_week,
+                COALESCE(SUM(CASE WHEN o.end_time >= NOW() - INTERVAL 1 MONTH THEN JSON_LENGTH(o.order_items) END), 0) AS total_orders_month,
+                COALESCE(SUM(CASE WHEN o.end_time >= NOW() - INTERVAL 1 YEAR THEN JSON_LENGTH(o.order_items) END), 0) AS total_orders_year
             FROM user u
             LEFT JOIN orders o ON u.userid = o.chef_id
             WHERE u.role = 'chef'

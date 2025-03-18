@@ -124,8 +124,8 @@ const Page: React.FC = () => {
 
 
     return (
-        <div className="bg-[#e6e6e6] py-8 px-16 font-raleway flex flex-col gap-6 relative">
-            <h1 className="font-bold">Orders and Payments</h1>
+        <div className="bg-[#e6e6e6] py-[5vh] px-[8vw] font-raleway flex flex-col gap-6 relative">
+        ORDERS AND PAYMENTS
             <section className="bg-white rounded-xl p-6 font-semibold flex flex-col gap-3 relative">
                 <section className="flex justify-between items-center py-4">
                     <input
@@ -166,7 +166,7 @@ const Page: React.FC = () => {
                                             <th key={header} className="px-4 py-2 text-left font-medium w-[150px]">{header}</th>
                                         )
                                     )
-                                    : ["Order ID", "Table ID", "Subtotal", "GST", "Discount", "Total Amount", "Payment Mode", "Payment Status", "Time"].map(
+                                    : ["Order ID", "Table ID", "Subtotal", "GST", "Discount", "Total Amount", "Mode", "Status", "Time"].map(
                                         (header) => (
                                             <th key={header} className="px-4 py-2 text-left font-medium w-[150px]">{header}</th>
                                         )
@@ -203,7 +203,7 @@ const Page: React.FC = () => {
                                         <td className="border px-4 py-2">₹ {invoice.gst}</td>
                                         <td className="border px-4 py-2">₹ {invoice.discount}</td>
                                         <td className="border px-4 py-2">₹ {invoice.total_amount}</td>
-                                        <td className="border px-4 py-2">{invoice.payment_method}</td>
+                                        <td className="border px-4 py-2">{invoice.payment_method.toLocaleUpperCase()}</td>
                                         <td className="border px-4 py-2">{invoice.payment_status || "Pending"}</td>
                                         <td className="border px-4 py-2">{new Date(invoice.generated_at).toLocaleString()}</td>
                                     </tr>

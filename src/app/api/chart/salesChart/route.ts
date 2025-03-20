@@ -9,30 +9,56 @@ export async function GET() {
         // First Query: Total Sales
         const [row1] = await connection.execute<RowDataPacket[]>(`
             SELECT 
-                SUM(total_amount) AS total_sales,
-                SUM(CASE WHEN generated_at >= NOW() - INTERVAL 1 WEEK THEN total_amount ELSE 0 END) AS total_sales_week,
-                SUM(CASE WHEN generated_at >= NOW() - INTERVAL 1 MONTH THEN total_amount ELSE 0 END) AS total_sales_month,
-                SUM(CASE WHEN generated_at >= NOW() - INTERVAL 1 YEAR THEN total_amount ELSE 0 END) AS total_sales_year
-            FROM invoices
-        `);
+                -- Weekly Sales (Last 7 Days, grouped by Weekday)
+                SUM(CASE WHEN generated_at >= DATE_SUB(CURDATE(), INTERVAL 7 DAY) AND DAYOFWEEK(generated_at) = 1 THEN total_amount ELSE 0 END) AS sunday_sales,
+                SUM(CASE WHEN generated_at >= DATE_SUB(CURDATE(), INTERVAL 7 DAY) AND DAYOFWEEK(generated_at) = 2 THEN total_amount ELSE 0 END) AS monday_sales,
+                SUM(CASE WHEN generated_at >= DATE_SUB(CURDATE(), INTERVAL 7 DAY) AND DAYOFWEEK(generated_at) = 3 THEN total_amount ELSE 0 END) AS tuesday_sales,
+                SUM(CASE WHEN generated_at >= DATE_SUB(CURDATE(), INTERVAL 7 DAY) AND DAYOFWEEK(generated_at) = 4 THEN total_amount ELSE 0 END) AS wednesday_sales,
+                SUM(CASE WHEN generated_at >= DATE_SUB(CURDATE(), INTERVAL 7 DAY) AND DAYOFWEEK(generated_at) = 5 THEN total_amount ELSE 0 END) AS thursday_sales,
+                SUM(CASE WHEN generated_at >= DATE_SUB(CURDATE(), INTERVAL 7 DAY) AND DAYOFWEEK(generated_at) = 6 THEN total_amount ELSE 0 END) AS friday_sales,
+                SUM(CASE WHEN generated_at >= DATE_SUB(CURDATE(), INTERVAL 7 DAY) AND DAYOFWEEK(generated_at) = 7 THEN total_amount ELSE 0 END) AS saturday_sales,
+        
+                -- Monthly Sales (Last 30 Days, grouped by Week Number)
+                SUM(CASE WHEN generated_at >= DATE_SUB(CURDATE(), INTERVAL 1 MONTH) AND WEEK(generated_at, 1) = WEEK(CURDATE(), 1) - 3 THEN total_amount ELSE 0 END) AS week1_sales,
+                SUM(CASE WHEN generated_at >= DATE_SUB(CURDATE(), INTERVAL 1 MONTH) AND WEEK(generated_at, 1) = WEEK(CURDATE(), 1) - 2 THEN total_amount ELSE 0 END) AS week2_sales,
+                SUM(CASE WHEN generated_at >= DATE_SUB(CURDATE(), INTERVAL 1 MONTH) AND WEEK(generated_at, 1) = WEEK(CURDATE(), 1) - 1 THEN total_amount ELSE 0 END) AS week3_sales,
+                SUM(CASE WHEN generated_at >= DATE_SUB(CURDATE(), INTERVAL 1 MONTH) AND WEEK(generated_at, 1) = WEEK(CURDATE(), 1) THEN total_amount ELSE 0 END) AS week4_sales,
+        
+                -- Yearly Sales (Last 12 Months, grouped by Month)
+                SUM(CASE WHEN generated_at >= DATE_SUB(CURDATE(), INTERVAL 1 YEAR) AND MONTH(generated_at) = 1 THEN total_amount ELSE 0 END) AS jan_sales,
+                SUM(CASE WHEN generated_at >= DATE_SUB(CURDATE(), INTERVAL 1 YEAR) AND MONTH(generated_at) = 2 THEN total_amount ELSE 0 END) AS feb_sales,
+                SUM(CASE WHEN generated_at >= DATE_SUB(CURDATE(), INTERVAL 1 YEAR) AND MONTH(generated_at) = 3 THEN total_amount ELSE 0 END) AS march_sales,
+                SUM(CASE WHEN generated_at >= DATE_SUB(CURDATE(), INTERVAL 1 YEAR) AND MONTH(generated_at) = 4 THEN total_amount ELSE 0 END) AS april_sales,
+                SUM(CASE WHEN generated_at >= DATE_SUB(CURDATE(), INTERVAL 1 YEAR) AND MONTH(generated_at) = 5 THEN total_amount ELSE 0 END) AS may_sales,
+                SUM(CASE WHEN generated_at >= DATE_SUB(CURDATE(), INTERVAL 1 YEAR) AND MONTH(generated_at) = 6 THEN total_amount ELSE 0 END) AS june_sales,
+                SUM(CASE WHEN generated_at >= DATE_SUB(CURDATE(), INTERVAL 1 YEAR) AND MONTH(generated_at) = 7 THEN total_amount ELSE 0 END) AS july_sales,
+                SUM(CASE WHEN generated_at >= DATE_SUB(CURDATE(), INTERVAL 1 YEAR) AND MONTH(generated_at) = 8 THEN total_amount ELSE 0 END) AS aug_sales,
+                SUM(CASE WHEN generated_at >= DATE_SUB(CURDATE(), INTERVAL 1 YEAR) AND MONTH(generated_at) = 9 THEN total_amount ELSE 0 END) AS sept_sales,
+                SUM(CASE WHEN generated_at >= DATE_SUB(CURDATE(), INTERVAL 1 YEAR) AND MONTH(generated_at) = 10 THEN total_amount ELSE 0 END) AS oct_sales,
+                SUM(CASE WHEN generated_at >= DATE_SUB(CURDATE(), INTERVAL 1 YEAR) AND MONTH(generated_at) = 11 THEN total_amount ELSE 0 END) AS nov_sales,
+                SUM(CASE WHEN generated_at >= DATE_SUB(CURDATE(), INTERVAL 1 YEAR) AND MONTH(generated_at) = 12 THEN total_amount ELSE 0 END) AS dec_sales
+        
+            FROM invoices;
+        `);        
+        
 
-        // Second Query: Sales by Time of Day
+        // Second Query: Orders by Time of Day
         const [row2] = await connection.execute<RowDataPacket[]>(`
             SELECT 
-                SUM(CASE WHEN TIME(start_time) BETWEEN '07:00:00' AND '11:00:00' AND start_time >= NOW() - INTERVAL 1 WEEK THEN JSON_LENGTH(order_items) ELSE 0 END) AS items_count_week_breakfast,
-                SUM(CASE WHEN TIME(start_time) BETWEEN '11:00:00' AND '15:00:00' AND start_time >= NOW() - INTERVAL 1 WEEK THEN JSON_LENGTH(order_items) ELSE 0 END) AS items_count_week_lunch,
-                SUM(CASE WHEN TIME(start_time) BETWEEN '15:00:00' AND '19:00:00' AND start_time >= NOW() - INTERVAL 1 WEEK THEN JSON_LENGTH(order_items) ELSE 0 END) AS items_count_week_evening,
-                SUM(CASE WHEN TIME(start_time) BETWEEN '19:00:00' AND '23:59:59' AND start_time >= NOW() - INTERVAL 1 WEEK THEN JSON_LENGTH(order_items) ELSE 0 END) AS items_count_week_dinner,
+                SUM(CASE WHEN TIME(start_time) BETWEEN '07:00:00' AND '11:00:00' AND start_time >= NOW() - INTERVAL 1 WEEK THEN JSON_LENGTH(order_items) ELSE 0 END) AS orders_week_breakfast,
+                SUM(CASE WHEN TIME(start_time) BETWEEN '11:00:00' AND '15:00:00' AND start_time >= NOW() - INTERVAL 1 WEEK THEN JSON_LENGTH(order_items) ELSE 0 END) AS orders_week_lunch,
+                SUM(CASE WHEN TIME(start_time) BETWEEN '15:00:00' AND '19:00:00' AND start_time >= NOW() - INTERVAL 1 WEEK THEN JSON_LENGTH(order_items) ELSE 0 END) AS orders_week_evening,
+                SUM(CASE WHEN TIME(start_time) BETWEEN '19:00:00' AND '23:59:59' AND start_time >= NOW() - INTERVAL 1 WEEK THEN JSON_LENGTH(order_items) ELSE 0 END) AS orders_week_dinner,
 
-                SUM(CASE WHEN TIME(start_time) BETWEEN '07:00:00' AND '11:00:00' AND start_time >= NOW() - INTERVAL 1 MONTH THEN JSON_LENGTH(order_items) ELSE 0 END) AS items_count_month_breakfast,
-                SUM(CASE WHEN TIME(start_time) BETWEEN '11:00:00' AND '15:00:00' AND start_time >= NOW() - INTERVAL 1 MONTH THEN JSON_LENGTH(order_items) ELSE 0 END) AS items_count_month_lunch,
-                SUM(CASE WHEN TIME(start_time) BETWEEN '15:00:00' AND '19:00:00' AND start_time >= NOW() - INTERVAL 1 MONTH THEN JSON_LENGTH(order_items) ELSE 0 END) AS items_count_month_evening,
-                SUM(CASE WHEN TIME(start_time) BETWEEN '19:00:00' AND '23:59:59' AND start_time >= NOW() - INTERVAL 1 MONTH THEN JSON_LENGTH(order_items) ELSE 0 END) AS items_count_month_dinner,
+                SUM(CASE WHEN TIME(start_time) BETWEEN '07:00:00' AND '11:00:00' AND start_time >= NOW() - INTERVAL 1 MONTH THEN JSON_LENGTH(order_items) ELSE 0 END) AS orders_month_breakfast,
+                SUM(CASE WHEN TIME(start_time) BETWEEN '11:00:00' AND '15:00:00' AND start_time >= NOW() - INTERVAL 1 MONTH THEN JSON_LENGTH(order_items) ELSE 0 END) AS orders_month_lunch,
+                SUM(CASE WHEN TIME(start_time) BETWEEN '15:00:00' AND '19:00:00' AND start_time >= NOW() - INTERVAL 1 MONTH THEN JSON_LENGTH(order_items) ELSE 0 END) AS orders_month_evening,
+                SUM(CASE WHEN TIME(start_time) BETWEEN '19:00:00' AND '23:59:59' AND start_time >= NOW() - INTERVAL 1 MONTH THEN JSON_LENGTH(order_items) ELSE 0 END) AS orders_month_dinner,
 
-                SUM(CASE WHEN TIME(start_time) BETWEEN '07:00:00' AND '11:00:00' AND start_time >= NOW() - INTERVAL 1 YEAR THEN JSON_LENGTH(order_items) ELSE 0 END) AS items_count_year_breakfast,
-                SUM(CASE WHEN TIME(start_time) BETWEEN '11:00:00' AND '15:00:00' AND start_time >= NOW() - INTERVAL 1 YEAR THEN JSON_LENGTH(order_items) ELSE 0 END) AS items_count_year_lunch,
-                SUM(CASE WHEN TIME(start_time) BETWEEN '15:00:00' AND '19:00:00' AND start_time >= NOW() - INTERVAL 1 YEAR THEN JSON_LENGTH(order_items) ELSE 0 END) AS items_count_year_evening,
-                SUM(CASE WHEN TIME(start_time) BETWEEN '19:00:00' AND '23:59:59' AND start_time >= NOW() - INTERVAL 1 YEAR THEN JSON_LENGTH(order_items) ELSE 0 END) AS items_count_year_dinner
+                SUM(CASE WHEN TIME(start_time) BETWEEN '07:00:00' AND '11:00:00' AND start_time >= NOW() - INTERVAL 1 YEAR THEN JSON_LENGTH(order_items) ELSE 0 END) AS orders_year_breakfast,
+                SUM(CASE WHEN TIME(start_time) BETWEEN '11:00:00' AND '15:00:00' AND start_time >= NOW() - INTERVAL 1 YEAR THEN JSON_LENGTH(order_items) ELSE 0 END) AS orders_year_lunch,
+                SUM(CASE WHEN TIME(start_time) BETWEEN '15:00:00' AND '19:00:00' AND start_time >= NOW() - INTERVAL 1 YEAR THEN JSON_LENGTH(order_items) ELSE 0 END) AS orders_year_evening,
+                SUM(CASE WHEN TIME(start_time) BETWEEN '19:00:00' AND '23:59:59' AND start_time >= NOW() - INTERVAL 1 YEAR THEN JSON_LENGTH(order_items) ELSE 0 END) AS orders_year_dinner
             FROM orders
         `);
 

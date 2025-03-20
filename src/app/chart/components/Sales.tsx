@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from 'react';
+import axios from 'axios';
 import BarChart from '../chartConfiguration/Bar';
 import PieChart from '../chartConfiguration/Pie';
 import LineChart from '../chartConfiguration/Line';
@@ -15,11 +16,136 @@ type ChartKey =
     'age group vs sales' |
     'gender group vs sales';
 
+interface Data {
+    sunday_sales: number;
+    monday_sales: number;
+    tuesday_sales: number;
+    wednesday_sales: number;
+    thursday_sales: number;
+    friday_sales: number;
+    saturday_sales: number;
+    week1_sales: number;
+    week2_sales: number;
+    week3_sales: number;
+    week4_sales: number;
+    jan_sales: number;
+    feb_sales: number;
+    march_sales: number;
+    april_sales: number;
+    may_sales: number;
+    june_sales: number;
+    july_sales: number;
+    aug_sales: number;
+    sept_sales: number;
+    oct_sales: number;
+    nov_sales: number;
+    dec_sales: number;
+
+    orders_week_breakfast: number;
+    orders_week_lunch: number;
+    orders_week_evening: number;
+    orders_week_dinner: number;
+    orders_month_breakfast: number;
+    orders_month_lunch: number;
+    orders_month_evening: number;
+    orders_month_dinner: number;
+    orders_year_breakfast: number;
+    orders_year_lunch: number;
+    orders_year_evening: number;
+    orders_year_dinner: number;
+
+    sunday_visits_week: number;
+    monday_visits_week: number;
+    tuesday_visits_week: number;
+    wednesday_visits_week: number;
+    thursday_visits_week: number;
+    friday_visits_week: number;
+    saturday_visits_week: number;
+
+    sunday_visits_month: number;
+    monday_visits_month: number;
+    tuesday_visits_month: number;
+    wednesday_visits_month: number;
+    thursday_visits_month: number;
+    friday_visits_month: number;
+    saturday_visits_month: number;
+
+    sunday_visits_year: number;
+    monday_visits_year: number;
+    tuesday_visits_year: number;
+    wednesday_visits_year: number;
+    thursday_visits_year: number;
+    friday_visits_year: number;
+    saturday_visits_year: number;
+
+    sales_week_breakfast: number;
+    sales_week_lunch: number;
+    sales_week_evening: number;
+    sales_week_dinner: number;
+    sales_month_breakfast: number;
+    sales_month_lunch: number;
+    sales_month_evening: number;
+    sales_month_dinner: number;
+    sales_year_breakfast: number;
+    sales_year_lunch: number;
+    sales_year_evening: number;
+    sales_year_dinner: number;
+
+    cash_week: number;
+    upi_week: number;
+    debitcard_week: number;
+    creditcard_week: number;
+    others_week: number;
+
+    cash_month: number;
+    upi_month: number;
+    debitcard_month: number;
+    creditcard_month: number;
+    others_month: number;
+
+    cash_year: number;
+    upi_year: number;
+    debitcard_year: number;
+    creditcard_year: number;
+    others_year: number;
+
+    children_week: number;
+    teens_week: number;
+    adults_week: number;
+    middle_aged_week: number;
+    seniors_week: number;
+
+    children_month: number;
+    teens_month: number;
+    adults_month: number;
+    middle_aged_month: number;
+    seniors_month: number;
+
+    children_year: number;
+    teens_year: number;
+    adults_year: number;
+    middle_aged_year: number;
+    seniors_year: number;
+
+    male_week: number;
+    female_week: number;
+    other_week: number;
+
+    male_month: number;
+    female_month: number;
+    other_month: number;
+
+    male_year: number;
+    female_year: number;
+    other_year: number;
+}
+
+
 const Sales: React.FC = () => {
     const [chartXY, setChartXY] = useState<ChartKey>('week day vs sales');
     const [chartType, setChartType] = useState<'bar' | 'pie' | 'line'>('bar');
     const [timeFrame, setTimeFrame] = useState<'weekly' | 'monthly' | 'yearly'>('weekly');
-    const [comparisonMode, setComparisonMode] = useState(false);
+    const [data, setData] = useState<Data>();
 
     useEffect(() => {
         document.title = "Sales";
@@ -31,7 +157,28 @@ const Sales: React.FC = () => {
         '#90BE6D', '#43AA8B', '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0'
     ], []);
 
+    useEffect(() => {
+        const fetchDataset = async () => {
+            try {
+                const response = await axios.get("/api/chart/salesChart");
+
+                // Convert response data from string to number
+                const parsedData: Data = Object.fromEntries(
+                    Object.entries(response.data).map(([key, value]) => [key, Number(value)])
+                ) as unknown as Data;
+
+                setData(parsedData);
+                console.log(parsedData);
+            } catch (error) {
+                console.error(error);
+            }
+        };
+
+        fetchDataset();
+    }, []);
+
     const generateData = (label: string) => {
+
         if (chartXY === 'week day vs sales') {
             return {
                 labels: timeFrame === 'weekly' ? ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'] :
@@ -39,9 +186,9 @@ const Sales: React.FC = () => {
                         ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'June', 'July', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
                 datasets: [{
                     label,
-                    data: timeFrame === 'weekly' ? [500, 800, 1200, 700, 1100, 950, 1000] :
-                        timeFrame === 'monthly' ? [4000, 6000, 5500, 7000] :
-                            [15000, 20000, 18000, 22000],
+                    data: timeFrame === 'weekly' ? [data?.sunday_sales, data?.monday_sales, data?.tuesday_sales, data?.wednesday_sales, data?.thursday_sales, data?.friday_sales, data?.saturday_sales] :
+                        timeFrame === 'monthly' ? [data?.week1_sales, data?.week2_sales, data?.week3_sales, data?.week4_sales] :
+                            [data?.jan_sales, data?.feb_sales, data?.march_sales, data?.april_sales, data?.may_sales, data?.june_sales, data?.july_sales, data?.aug_sales, data?.sept_sales, data?.oct_sales, data?.nov_sales, data?.dec_sales],
                     backgroundColor: colors.slice(0, timeFrame === 'weekly' ? 7 : (timeFrame === 'monthly' ? 4 : 12)),
                     borderColor: colors.slice(0, timeFrame === 'weekly' ? 7 : (timeFrame === 'monthly' ? 4 : 12)),
                     borderWidth: 1,
@@ -55,8 +202,8 @@ const Sales: React.FC = () => {
                 labels: ['Breakfast', 'Lunch', 'Evening', 'Dinner'],
                 datasets: [{
                     label,
-                    data: timeFrame === 'weekly' ? [500, 800, 1200, 700] :
-                        timeFrame === 'monthly' ? [5000, 800, 1200, 700] : [500, 8000, 1200, 700],
+                    data: timeFrame === 'weekly' ? [data?.orders_week_breakfast, data?.orders_week_lunch, data?.orders_week_evening, data?.orders_week_dinner] :
+                        timeFrame === 'monthly' ? [data?.orders_month_breakfast, data?.orders_month_lunch, data?.orders_month_evening, data?.orders_month_dinner] : [data?.orders_year_breakfast, data?.orders_year_lunch, data?.orders_year_evening, data?.orders_year_dinner],
                     backgroundColor: colors.slice(0, 8),
                     borderColor: colors.slice(0, 8),
                     borderWidth: 1,
@@ -70,8 +217,9 @@ const Sales: React.FC = () => {
                 labels: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
                 datasets: [{
                     label,
-                    data: timeFrame === 'weekly' ? [500, 800, 1200, 700, 452, 652, 865] :
-                        timeFrame === 'monthly' ? [500, 800, 1200, 700, 452, 652, 865] : [500, 800, 1200, 700, 452, 652, 865],
+                    data: timeFrame === 'weekly' ? [data?.sunday_visits_week, data?.monday_visits_week, data?.tuesday_visits_week, data?.wednesday_visits_week, data?.thursday_visits_week, data?.friday_visits_week, data?.saturday_visits_week] :
+                        timeFrame === 'monthly' ? [data?.sunday_visits_month, data?.monday_visits_month, data?.tuesday_visits_month, data?.wednesday_visits_month, data?.thursday_visits_month, data?.friday_visits_month, data?.saturday_visits_month] :
+                            [data?.sunday_visits_year, data?.monday_visits_year, data?.tuesday_visits_year, data?.wednesday_visits_year, data?.thursday_visits_year, data?.friday_visits_year, data?.saturday_visits_year],
                     backgroundColor: colors.slice(0, 8),
                     borderColor: colors.slice(0, 8),
                     borderWidth: 1,
@@ -85,8 +233,10 @@ const Sales: React.FC = () => {
                 labels: ['Breakfast', 'Lunch', 'Evening', 'Dinner'],
                 datasets: [{
                     label,
-                    data: timeFrame === 'weekly' ? [500, 800, 1200, 700] :
-                        timeFrame === 'monthly' ? [5000, 800, 1200, 700] : [500, 8000, 1200, 700],
+                    data: timeFrame === 'weekly' ? [data?.sales_week_breakfast, data?.sales_week_lunch, data?.sales_week_evening, data?.sales_week_dinner] :
+                        timeFrame === 'monthly' ? [data?.sales_month_breakfast, data?.sales_month_lunch, data?.sales_month_evening, data?.sales_month_dinner] :
+                            [data?.sales_year_breakfast, data?.sales_year_lunch, data?.sales_year_evening, data?.sales_year_dinner],
+
                     backgroundColor: colors.slice(0, 8),
                     borderColor: colors.slice(0, 8),
                     borderWidth: 1,
@@ -97,11 +247,12 @@ const Sales: React.FC = () => {
 
         if (chartXY === 'payment method vs sales') {
             return {
-                labels: ['UPI', 'Credit Card', 'Debit Card', 'Cash'],
+                labels: ['UPI', 'Credit Card', 'Debit Card', 'Cash', 'Others'],
                 datasets: [{
                     label,
-                    data: timeFrame === 'weekly' ? [500, 800, 1200, 700] :
-                        timeFrame === 'monthly' ? [5000, 800, 1200, 700] : [500, 8000, 1200, 700],
+                    data: timeFrame === 'weekly' ? [data?.upi_week, data?.creditcard_week, data?.debitcard_week, data?.cash_week, data?.others_week] :
+                        timeFrame === 'monthly' ? [data?.upi_month, data?.creditcard_month, data?.debitcard_month, data?.cash_month, data?.others_month] :
+                            [data?.upi_year, data?.creditcard_year, data?.debitcard_year, data?.cash_year, data?.others_year],
                     backgroundColor: colors.slice(0, 8),
                     borderColor: colors.slice(0, 8),
                     borderWidth: 1,
@@ -115,8 +266,9 @@ const Sales: React.FC = () => {
                 labels: ['<10', '10-18', '18-40', '40-60', '60+'],
                 datasets: [{
                     label,
-                    data: timeFrame === 'weekly' ? [500, 800, 1200, 700, 524] :
-                        timeFrame === 'monthly' ? [5000, 800, 1200, 700, 458] : [ 8000, 1200, 700, 897, 123],
+                    data: timeFrame === 'weekly' ? [data?.children_week, data?.teens_week, data?.adults_week, data?.middle_aged_week, data?.seniors_week] :
+                        timeFrame === 'monthly' ? [data?.children_month, data?.teens_month, data?.adults_month, data?.middle_aged_month, data?.seniors_month] :
+                            [data?.children_year, data?.teens_year, data?.adults_year, data?.middle_aged_year, data?.seniors_year],
                     backgroundColor: colors.slice(0, 8),
                     borderColor: colors.slice(0, 8),
                     borderWidth: 1,
@@ -130,8 +282,9 @@ const Sales: React.FC = () => {
                 labels: ['Female', 'Male', 'Others'],
                 datasets: [{
                     label,
-                    data: timeFrame === 'weekly' ? [700, 524, 652] :
-                        timeFrame === 'monthly' ? [700, 458, 235] : [700, 897, 123],
+                    data: timeFrame === 'weekly' ? [data?.male_week, data?.female_week, data?.other_week] :
+                        timeFrame === 'monthly' ? [data?.male_month, data?.female_month, data?.other_month] :
+                            [data?.male_year, data?.female_year, data?.other_year],
                     backgroundColor: colors.slice(0, 8),
                     borderColor: colors.slice(0, 8),
                     borderWidth: 1,
@@ -143,17 +296,9 @@ const Sales: React.FC = () => {
 
 
     const chartData = useMemo(() => {
-        if (comparisonMode) {
-            return {
-                labels: generateData('Current Data').labels,
-                datasets: [
-                    ...generateData('Current Period').datasets,
-                    ...generateData('Previous Period').datasets,
-                ]
-            };
-        }
+       
         return generateData('Sales (₹)');
-    }, [chartXY, colors, timeFrame, comparisonMode]);
+    }, [chartXY, colors, timeFrame]);
 
     const chartOptions: ChartOptions<'bar'> | ChartOptions<'line'> = useMemo(() => {
         const xAxisLabels: Record<ChartKey, string> = {
@@ -213,7 +358,7 @@ const Sales: React.FC = () => {
             plugins: {
                 tooltip: {
                     callbacks: {
-                        label: function (context:any) {
+                        label: function (context: any) {
                             // Get the correct tooltip label based on chart type
                             const value = context.raw;
                             const label = tooltipLabels[chartXY] || '';  // Fetch the appropriate label
@@ -265,14 +410,6 @@ const Sales: React.FC = () => {
                     <option value="yearly">Yearly</option>
                 </select>
 
-                <div className="flex items-center">
-                    <label className="mr-2">Comparison Mode</label>
-                    <input
-                        type="checkbox"
-                        checked={comparisonMode}
-                        onChange={() => setComparisonMode(!comparisonMode)}
-                    />
-                </div>
             </section>
 
             {/* Chart */}

@@ -145,7 +145,132 @@ const Sales: React.FC = () => {
     const [chartXY, setChartXY] = useState<ChartKey>('week day vs sales');
     const [chartType, setChartType] = useState<'bar' | 'pie' | 'line'>('bar');
     const [timeFrame, setTimeFrame] = useState<'weekly' | 'monthly' | 'yearly'>('weekly');
-    const [data, setData] = useState<Data>();
+    const [data, setData] = useState<Data>({
+        sunday_sales: 0,
+        monday_sales: 0,
+        tuesday_sales: 0,
+        wednesday_sales: 0,
+        thursday_sales: 0,
+        friday_sales: 0,
+        saturday_sales: 0,
+      
+        week1_sales: 0,
+        week2_sales: 0,
+        week3_sales: 0,
+        week4_sales: 0,
+      
+        jan_sales: 0,
+        feb_sales: 0,
+        march_sales: 0,
+        april_sales: 0,
+        may_sales: 0,
+        june_sales: 0,
+        july_sales: 0,
+        aug_sales: 0,
+        sept_sales: 0,
+        oct_sales: 0,
+        nov_sales: 0,
+        dec_sales: 0,
+      
+        orders_week_breakfast: 0,
+        orders_week_lunch: 0,
+        orders_week_evening: 0,
+        orders_week_dinner: 0,
+        orders_month_breakfast: 0,
+        orders_month_lunch: 0,
+        orders_month_evening: 0,
+        orders_month_dinner: 0,
+        orders_year_breakfast: 0,
+        orders_year_lunch: 0,
+        orders_year_evening: 0,
+        orders_year_dinner: 0,
+      
+        sunday_visits_week: 0,
+        monday_visits_week: 0,
+        tuesday_visits_week: 0,
+        wednesday_visits_week: 0,
+        thursday_visits_week: 0,
+        friday_visits_week: 0,
+        saturday_visits_week: 0,
+      
+        sunday_visits_month: 0,
+        monday_visits_month: 0,
+        tuesday_visits_month: 0,
+        wednesday_visits_month: 0,
+        thursday_visits_month: 0,
+        friday_visits_month: 0,
+        saturday_visits_month: 0,
+      
+        sunday_visits_year: 0,
+        monday_visits_year: 0,
+        tuesday_visits_year: 0,
+        wednesday_visits_year: 0,
+        thursday_visits_year: 0,
+        friday_visits_year: 0,
+        saturday_visits_year: 0,
+      
+        sales_week_breakfast: 0,
+        sales_week_lunch: 0,
+        sales_week_evening: 0,
+        sales_week_dinner: 0,
+        sales_month_breakfast: 0,
+        sales_month_lunch: 0,
+        sales_month_evening: 0,
+        sales_month_dinner: 0,
+        sales_year_breakfast: 0,
+        sales_year_lunch: 0,
+        sales_year_evening: 0,
+        sales_year_dinner: 0,
+      
+        cash_week: 0,
+        upi_week: 0,
+        debitcard_week: 0,
+        creditcard_week: 0,
+        others_week: 0,
+      
+        cash_month: 0,
+        upi_month: 0,
+        debitcard_month: 0,
+        creditcard_month: 0,
+        others_month: 0,
+      
+        cash_year: 0,
+        upi_year: 0,
+        debitcard_year: 0,
+        creditcard_year: 0,
+        others_year: 0,
+      
+        children_week: 0,
+        teens_week: 0,
+        adults_week: 0,
+        middle_aged_week: 0,
+        seniors_week: 0,
+      
+        children_month: 0,
+        teens_month: 0,
+        adults_month: 0,
+        middle_aged_month: 0,
+        seniors_month: 0,
+      
+        children_year: 0,
+        teens_year: 0,
+        adults_year: 0,
+        middle_aged_year: 0,
+        seniors_year: 0,
+      
+        male_week: 0,
+        female_week: 0,
+        other_week: 0,
+      
+        male_month: 0,
+        female_month: 0,
+        other_month: 0,
+      
+        male_year: 0,
+        female_year: 0,
+        other_year: 0,
+      });
+      
 
     useEffect(() => {
         document.title = "Sales";

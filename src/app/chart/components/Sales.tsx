@@ -8,7 +8,6 @@ import { ChartOptions } from 'chart.js';
 
 type ChartKey =
     'week day vs sales' |
-    'menu item vs sales' |
     'time slot vs orders' |
     'week day vs customer' |
     'Dish category vs sales' |
@@ -45,21 +44,6 @@ const Sales: React.FC = () => {
                             [15000, 20000, 18000, 22000],
                     backgroundColor: colors.slice(0, timeFrame === 'weekly' ? 7 : (timeFrame === 'monthly' ? 4 : 12)),
                     borderColor: colors.slice(0, timeFrame === 'weekly' ? 7 : (timeFrame === 'monthly' ? 4 : 12)),
-                    borderWidth: 1,
-                    hoverOffset: 10,
-                }]
-            };
-        }
-
-        if (chartXY === 'menu item vs sales') {
-            return {
-                labels: ['Pasta', 'Biryani', 'Chilli chicken', 'Mutton Biryani', 'Paneer paratha', 'Mandi', 'Burger', 'Litti chokha'],
-                datasets: [{
-                    label,
-                    data: timeFrame === 'weekly' ? [500, 800, 1200, 700, 1100, 950, 1000, 600] :
-                        timeFrame === 'monthly' ? [5000, 800, 1200, 700, 1100, 950, 1000, 600] : [500, 8000, 1200, 700, 11000, 950, 1000, 600],
-                    backgroundColor: colors.slice(0, 8),
-                    borderColor: colors.slice(0, 8),
                     borderWidth: 1,
                     hoverOffset: 10,
                 }]
@@ -128,11 +112,11 @@ const Sales: React.FC = () => {
 
         if (chartXY === 'age group vs sales') {
             return {
-                labels: ['<10', '10-18', '18-25', '25-40', '40-60', '60+'],
+                labels: ['<10', '10-18', '18-40', '40-60', '60+'],
                 datasets: [{
                     label,
-                    data: timeFrame === 'weekly' ? [500, 800, 1200, 700, 524, 652] :
-                        timeFrame === 'monthly' ? [5000, 800, 1200, 700, 458, 235] : [500, 8000, 1200, 700, 897, 123],
+                    data: timeFrame === 'weekly' ? [500, 800, 1200, 700, 524] :
+                        timeFrame === 'monthly' ? [5000, 800, 1200, 700, 458] : [ 8000, 1200, 700, 897, 123],
                     backgroundColor: colors.slice(0, 8),
                     borderColor: colors.slice(0, 8),
                     borderWidth: 1,
@@ -174,7 +158,6 @@ const Sales: React.FC = () => {
     const chartOptions: ChartOptions<'bar'> | ChartOptions<'line'> = useMemo(() => {
         const xAxisLabels: Record<ChartKey, string> = {
             'week day vs sales': timeFrame === 'weekly' ? 'Week Days' : (timeFrame === 'monthly' ? 'Weeks' : 'Months'),
-            'menu item vs sales': 'Menu Items',
             'time slot vs orders': 'Time Slots',
             'week day vs customer': timeFrame === 'weekly' ? 'Week Days' : (timeFrame === 'monthly' ? 'Weeks' : 'Quarters'),
             'Dish category vs sales': 'Dish Category',
@@ -185,7 +168,6 @@ const Sales: React.FC = () => {
 
         const yAxisLabels: Record<ChartKey, string> = {
             'week day vs sales': 'Sales (₹)',
-            'menu item vs sales': 'Sales (₹)',
             'time slot vs orders': 'Orders',
             'week day vs customer': 'Customer Visits',
             'Dish category vs sales': 'Sales (₹)',
@@ -196,7 +178,6 @@ const Sales: React.FC = () => {
 
         const tooltipLabels: Record<ChartKey, string> = {
             'week day vs sales': 'Sales (₹)',
-            'menu item vs sales': 'Sales (₹)',
             'time slot vs orders': 'Orders',
             'week day vs customer': 'Customer Visits',
             'Dish category vs sales': 'Sales (₹)',
@@ -256,7 +237,6 @@ const Sales: React.FC = () => {
                     onChange={(e) => setChartXY(e.target.value as ChartKey)}
                 >
                     <option value="week day vs sales">Sales by timeline</option>
-                    <option value="menu item vs sales">Sales by menu item</option>
                     <option value="time slot vs orders">Orders by time of day</option>
                     <option value="week day vs customer">Customer visits by days of the week</option>
                     <option value="Dish category vs sales">Sales by dish category</option>

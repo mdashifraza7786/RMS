@@ -4,30 +4,31 @@ import React, { useState, useEffect, useMemo } from 'react';
 import BarChart from '../chartConfiguration/Bar';
 import PieChart from '../chartConfiguration/Pie';
 import LineChart from '../chartConfiguration/Line';
-import { ChartOptions } from 'chart.js';
+import { FaChartBar, FaChartPie, FaChartLine, FaCalendarAlt, FaFilter, FaPizzaSlice } from 'react-icons/fa';
 
 type ChartKey =
     'week day vs Dishes' |
     'age group vs Dishes' |
     'gender group vs Dishes' |
-    'dish type vs time of day'; // Added new chart key
+    'dish type vs time of day';
 
 const PopularDishes: React.FC = () => {
     const [chartXY, setChartXY] = useState<ChartKey>('week day vs Dishes');
     const [chartType, setChartType] = useState<'bar' | 'pie' | 'line'>('bar');
     const [timeFrame, setTimeFrame] = useState<'weekly' | 'monthly' | 'yearly'>('weekly');
-    const [comparisonMode, setComparisonMode] = useState(false);
-
-    useEffect(() => {
-        document.title = "Dishes";
-    }, []);
-
-    const colors = useMemo(() => [
-        '#00589C', '#016FC4', '#1891C3', '#3AC0DA', '#3DC6C3', '#50E3C2',
-        '#F3BA4D', '#F94144'
-    ], []);
-
-
+    const [dishType, setDishType] = useState<string>('');
+    const [loading, setLoading] = useState<boolean>(false);
+    
+    const colors = [
+        'rgba(54, 162, 235, 0.8)',
+        'rgba(255, 99, 132, 0.8)',
+        'rgba(75, 192, 192, 0.8)',
+        'rgba(255, 205, 86, 0.8)',
+        'rgba(153, 102, 255, 0.8)',
+        'rgba(255, 159, 64, 0.8)',
+        'rgba(201, 203, 207, 0.8)',
+        'rgba(110, 220, 155, 0.8)',
+    ];
 
     const generateData = (label: string) => {
         let labels = [];
@@ -55,11 +56,11 @@ const PopularDishes: React.FC = () => {
                         [700, 897, 123];
                 break;
 
-            case 'dish type vs time of day': // New case for dish type vs time of day
-                labels = ['Biryani - Breakfast', 'Biryani - Lunch', 'Biryani - Dinner', 'Kebab - Breakfast', 'Kebab - Lunch', 'Kebab - Dinner','Biryani - Breakfast', 'Biryani - Lunch', 'Biryani - Dinner', 'Kebab - Breakfast', 'Kebab - Lunch', 'Kebab - Dinner','Biryani - Breakfast', 'Biryani - Lunch', 'Biryani - Dinner', 'Kebab - Breakfast', 'Kebab - Lunch', 'Kebab - Dinner','Biryani - Breakfast', 'Biryani - Lunch', 'Biryani - Dinner', 'Kebab - Breakfast', 'Kebab - Lunch', 'Kebab - Dinner','Biryani - Breakfast', 'Biryani - Lunch', 'Biryani - Dinner', 'Kebab - Breakfast', 'Kebab - Lunch', 'Kebab - Dinner','Biryani - Breakfast', 'Biryani - Lunch', 'Biryani - Dinner', 'Kebab - Breakfast', 'Kebab - Lunch', 'Kebab - Dinner'];
-                data = timeFrame === 'weekly' ? [200, 300, 400, 150, 250, 350] :
-                    timeFrame === 'monthly' ? [800, 1200, 1000, 700, 900, 1100] :
-                        [3000, 4500, 4000, 2000, 3500, 3000];
+            case 'dish type vs time of day':
+                labels = ['Breakfast', 'Lunch', 'Evening', 'Dinner'];
+                data = timeFrame === 'weekly' ? [200, 300, 400, 150] :
+                    timeFrame === 'monthly' ? [800, 1200, 1000, 700] :
+                        [3000, 4500, 4000, 2000];
                 break;
         }
 
@@ -69,134 +70,116 @@ const PopularDishes: React.FC = () => {
                 label,
                 data,
                 backgroundColor: colors,
-                borderColor: colors,
+                borderColor: chartType === 'line' ? colors[0] : colors,
                 borderWidth: 1,
                 hoverOffset: 10,
+                fill: chartType === 'line' ? false : undefined,
+                tension: 0.4
             }]
         };
     };
 
     const chartData = useMemo(() => {
-        const label = 'Orders';
-        if (comparisonMode) {
-            return {
-                labels: generateData('Current Data').labels,
-                datasets: [
-                    ...generateData('Current Period').datasets,
-                    ...generateData('Previous Period').datasets,
-                ]
-            };
-        }
+        const label = dishType ? `${dishType} Orders` : 'Orders';
         return generateData(label);
-    }, [chartXY, colors, timeFrame, comparisonMode]);
-
-    const chartOptions: ChartOptions<'bar'> | ChartOptions<'line'> = useMemo(() => {
-        const xAxisLabels: Record<ChartKey, string> = {
-            'week day vs Dishes': 'Dishes',
-            'age group vs Dishes': 'Age Group',
-            'gender group vs Dishes': 'Gender Group',
-            'dish type vs time of day': 'Dish Type', // Added x-axis label for new chart
-        };
-
-        const yAxisLabels: Record<ChartKey, string> = {
-            'week day vs Dishes': 'Orders',
-            'age group vs Dishes': 'Orders',
-            'gender group vs Dishes': 'Orders',
-            'dish type vs time of day': 'Orders', // Added y-axis label for new chart
-        };
-
-        return {
-            responsive: true,
-            scales: {
-                x: {
-                    title: {
-                        display: true,
-                        text: xAxisLabels[chartXY],
-                        color: '#000',
-                        font: { size: 14 },
-                    },
-                },
-                y: {
-                    title: {
-                        display: true,
-                        text: yAxisLabels[chartXY],
-                        color: '#000',
-                        font: { size: 14 },
-                    },
-                },
-            },
-            plugins: {
-                tooltip: {
-                    callbacks: {
-                        label: function (context: any) {
-                            const value = context.raw;
-                            return `${value} Orders`;
-                        }
-                    }
-                },
-            },
-        };
-    }, [chartType, chartXY, timeFrame]);
+    }, [chartXY, timeFrame, dishType, chartType]);
 
     return (
         <div className="flex flex-col gap-4">
-            <section className="flex justify-between">
-                <select
-                    className="p-2 border cursor-pointer font-raleway font-bold text-[14px]"
-                    value={chartXY}
-                    onChange={(e) => setChartXY(e.target.value as ChartKey)}
-                >
-                    <option value="week day vs Dishes">Dishes popularity over time</option>
-                    <option value="age group vs Dishes">Dishes by age group</option>
-                    <option value="gender group vs Dishes">Dishes distribution by customer gender</option>
-                    <option value="dish type vs time of day">Dish Type vs Time of Day</option> {/* Added new option */}
-                </select>
-                
-                <select>
-                    <option value="">--Select Dish--</option>
-                    <option value="">Murga Bhaat</option>
-                    <option value="">Biryani</option>
-                    <option value="">Burger</option>
-                    <option value="">Egg Roll</option>
-                    <option value="">Paneer Bhurji</option>
-                    <option value="">Bevereges</option>
-                </select>
-
-                <select
-                    className="p-2 border cursor-pointer font-raleway font-bold text-[14px]"
-                    value={chartType}
-                    onChange={(e) => setChartType(e.target.value as 'bar' | 'pie' | 'line')}
-                >
-                    <option value="bar">Bar Chart</option>
-                    <option value="pie">Pie Chart</option>
-                    <option value="line">Line Chart</option>
-                </select>
-
-                <select
-                    className="p-2 border cursor-pointer font-raleway font-bold text-[14px]"
-                    value={timeFrame}
-                    onChange={(e) => setTimeFrame(e.target.value as 'weekly' | 'monthly' | 'yearly')}
-                >
-                    <option value="weekly">Weekly</option>
-                    <option value="monthly">Monthly</option>
-                    <option value="yearly">Yearly</option>
-                </select>
-
-                <div className="flex items-center">
-                    <label className="mr-2">Comparison Mode</label>
-                    <input
-                        type="checkbox"
-                        checked={comparisonMode}
-                        onChange={() => setComparisonMode(!comparisonMode)}
-                    />
+            {/* Filter controls */}
+            <div className="flex flex-col md:flex-row gap-3 p-3 bg-white rounded-lg shadow-sm">
+                <div className="flex flex-col flex-1">
+                    <label className="text-xs text-gray-500 mb-1">
+                        <FaFilter className="inline mr-1" /> Metric
+                    </label>
+                    <select
+                        className="p-2 border border-gray-200 rounded-md cursor-pointer text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                        value={chartXY}
+                        onChange={(e) => setChartXY(e.target.value as ChartKey)}
+                    >
+                        <option value="week day vs Dishes">Dishes popularity over time</option>
+                        <option value="age group vs Dishes">Dishes by age group</option>
+                        <option value="gender group vs Dishes">Dishes by customer gender</option>
+                        <option value="dish type vs time of day">Dishes by time of day</option>
+                    </select>
                 </div>
-            </section>
+                
+                <div className="flex flex-col flex-1">
+                    <label className="text-xs text-gray-500 mb-1">
+                        <FaPizzaSlice className="inline mr-1" /> Dish Type
+                    </label>
+                    <select
+                        className="p-2 border border-gray-200 rounded-md cursor-pointer text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                        value={dishType}
+                        onChange={(e) => setDishType(e.target.value)}
+                    >
+                        <option value="">All Dishes</option>
+                        <option value="Biryani">Biryani</option>
+                        <option value="Burger">Burger</option>
+                        <option value="Egg Roll">Egg Roll</option>
+                        <option value="Paneer Bhurji">Paneer Bhurji</option>
+                        <option value="Beverages">Beverages</option>
+                    </select>
+                </div>
+                
+                <div className="flex flex-col flex-1">
+                    <label className="text-xs text-gray-500 mb-1">
+                        <FaCalendarAlt className="inline mr-1" /> Time Period
+                    </label>
+                    <select
+                        className="p-2 border border-gray-200 rounded-md cursor-pointer text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                        value={timeFrame}
+                        onChange={(e) => setTimeFrame(e.target.value as 'weekly' | 'monthly' | 'yearly')}
+                    >
+                        <option value="weekly">Weekly</option>
+                        <option value="monthly">Monthly</option>
+                        <option value="yearly">Yearly</option>
+                    </select>
+                </div>
+                
+                <div className="flex-1">
+                    <label className="text-xs text-gray-500 mb-1">Chart Type</label>
+                    <div className="flex gap-2">
+                        <button 
+                            className={`flex-1 flex items-center justify-center p-2 text-sm rounded-md transition-colors ${
+                                chartType === 'bar' 
+                                ? 'bg-[#FF9B26] text-white' 
+                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                            }`}
+                            onClick={() => setChartType('bar')}
+                        >
+                            <FaChartBar className="mr-1" /> Bar
+                        </button>
+                        <button 
+                            className={`flex-1 flex items-center justify-center p-2 text-sm rounded-md transition-colors ${
+                                chartType === 'line' 
+                                ? 'bg-[#FF9B26] text-white' 
+                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                            }`}
+                            onClick={() => setChartType('line')}
+                        >
+                            <FaChartLine className="mr-1" /> Line
+                        </button>
+                        <button 
+                            className={`flex-1 flex items-center justify-center p-2 text-sm rounded-md transition-colors ${
+                                chartType === 'pie' 
+                                ? 'bg-[#FF9B26] text-white' 
+                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                            }`}
+                            onClick={() => setChartType('pie')}
+                        >
+                            <FaChartPie className="mr-1" /> Pie
+                        </button>
+                    </div>
+                </div>
+            </div>
 
-            <section className="flex justify-center items-center" style={{ width: '100%', height: '450px' }}>
-                {chartType === 'bar' && <BarChart data={chartData} options={chartOptions as ChartOptions<'bar'>} />}
+            {/* Chart container */}
+            <div className="bg-white p-4 rounded-lg shadow-sm" style={{ minHeight: '400px' }}>
+                {chartType === 'bar' && <BarChart data={chartData} />}
                 {chartType === 'pie' && <PieChart data={chartData} />}
-                {chartType === 'line' && <LineChart data={chartData} options={chartOptions as ChartOptions<'line'>} />}
-            </section>
+                {chartType === 'line' && <LineChart data={chartData} />}
+            </div>
         </div>
     );
 };

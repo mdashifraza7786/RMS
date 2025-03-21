@@ -5,6 +5,7 @@ import BarChart from '../chartConfiguration/Bar';
 import PieChart from '../chartConfiguration/Pie';
 import LineChart from '../chartConfiguration/Line';
 import { ChartOptions } from 'chart.js';
+import { FaChartBar, FaChartPie, FaChartLine, FaCalendarAlt, FaFilter, FaExchangeAlt } from 'react-icons/fa';
 
 type ChartKey =
     'Menu Item vs Demand' |
@@ -80,12 +81,12 @@ const Demand: React.FC = () => {
 
         if (chartXY === 'Orders vs Timeline') {
             return {
-                labels: timeFrame === 'weekly' ?  ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']:
-                timeFrame === 'monthly' ? ['Week 1', 'Week 2', 'Week 3', 'Week 4'] : ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'June', 'July', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                labels: timeFrame === 'weekly' ? ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'] :
+                    timeFrame === 'monthly' ? ['Week 1', 'Week 2', 'Week 3', 'Week 4'] : ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'June', 'July', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
                 datasets: [{
                     label,
                     data: timeFrame === 'weekly' ? [500, 800, 1200, 700, 452, 652, 865] :
-                    timeFrame === 'monthly' ? [500, 800, 1200, 700, 452, 652, 865] : [500, 800, 1200, 700, 452, 652, 865],
+                        timeFrame === 'monthly' ? [500, 800, 1200, 700, 452, 652, 865] : [500, 800, 1200, 700, 452, 652, 865],
                     backgroundColor: colors.slice(0, timeFrame === 'weekly' ? 7 : (timeFrame === 'monthly' ? 4 : 12)),
                     borderColor: colors.slice(0, timeFrame === 'weekly' ? 7 : (timeFrame === 'monthly' ? 4 : 12)),
                     borderWidth: 1,
@@ -115,7 +116,7 @@ const Demand: React.FC = () => {
 
     const chartData = useMemo(() => {
         const label = chartXY === 'Orders vs Timeline' || chartXY.includes('Demand') ? 'Orders' : 'Orders';
-        
+
         if (comparisonMode) {
             return {
                 labels: generateData('Current Data').labels,
@@ -127,7 +128,7 @@ const Demand: React.FC = () => {
         }
         return generateData(label);
     }, [chartXY, colors, timeFrame, comparisonMode]);
-    
+
 
     const chartOptions: ChartOptions<'bar'> | ChartOptions<'line'> = useMemo(() => {
         const xAxisLabels: Record<ChartKey, string> = {
@@ -184,7 +185,7 @@ const Demand: React.FC = () => {
             plugins: {
                 tooltip: {
                     callbacks: {
-                        label: function (context : any) {
+                        label: function (context: any) {
                             // Get the correct tooltip label based on chart type
                             const value = context.raw;
                             const label = tooltipLabels[chartXY] || '';  // Fetch the appropriate label
@@ -200,56 +201,99 @@ const Demand: React.FC = () => {
 
     return (
         <div className="flex flex-col gap-4">
-            {/* Drop-down filters */}
-            <section className="flex justify-between">
-                <select
-                    className="p-2 border cursor-pointer font-raleway font-bold text-[14px]"
-                    value={chartXY}
-                    onChange={(e) => setChartXY(e.target.value as ChartKey)}
-                >
-                    <option value="Menu Item vs Demand">Menu Item vs Demand</option>
-                    <option value="Dish Category vs Demand">Dish Category vs Demand</option>
-                    <option value="Period of Day vs Demand">Period of Day vs Demand</option>
-                    <option value="Orders vs Timeline">Orders vs Timeline</option>
-                    <option value="Orders vs Age Group">Orders vs Age Group</option>
-                </select>
-
-                <select
-                    className="p-2 border cursor-pointer font-raleway font-bold text-[14px]"
-                    value={chartType}
-                    onChange={(e) => setChartType(e.target.value as 'bar' | 'pie' | 'line')}
-                >
-                    <option value="bar">Bar Chart</option>
-                    <option value="pie">Pie Chart</option>
-                    <option value="line">Line Chart</option>
-                </select>
-
-                <select
-                    className="p-2 border cursor-pointer font-raleway font-bold text-[14px]"
-                    value={timeFrame}
-                    onChange={(e) => setTimeFrame(e.target.value as 'weekly' | 'monthly' | 'yearly')}
-                >
-                    <option value="weekly">Weekly</option>
-                    <option value="monthly">Monthly</option>
-                    <option value="yearly">Yearly</option>
-                </select>
-
-                <div className="flex items-center">
-                    <label className="mr-2">Comparison Mode</label>
-                    <input
-                        type="checkbox"
-                        checked={comparisonMode}
-                        onChange={() => setComparisonMode(!comparisonMode)}
-                    />
+            {/* Tabs row with comparison toggle */}
+            <div className="flex justify-between items-center">
+                <div>   </div>
+                <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-md shadow-sm">
+                    <span className="text-xs text-gray-500 mr-1">Compare with previous period</span>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                        <input
+                            type="checkbox"
+                            className="sr-only peer"
+                            checked={comparisonMode}
+                            onChange={() => setComparisonMode(!comparisonMode)}
+                        />
+                        <div className={`w-9 h-5 rounded-full peer ${comparisonMode ? 'bg-[#FF9B26]' : 'bg-gray-200'} peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#FF9B26]/20 transition-colors`}>
+                            <div className={`absolute top-[2px] left-[2px] bg-white rounded-full h-4 w-4 transition-transform ${comparisonMode ? 'translate-x-4' : 'translate-x-0'}`}></div>
+                        </div>
+                    </label>
                 </div>
-            </section>
+            </div>
 
-            {/* Chart */}
-            <section className="flex justify-center items-center pb-20" style={{ width: '100%', height: '550px' }}>
+            {/* Filter controls */}
+            <div className="flex flex-col md:flex-row gap-3 p-3 bg-white rounded-lg shadow-sm">
+                <div className="flex flex-col flex-1">
+                    <label className="text-xs text-gray-500 mb-1">
+                        <FaFilter className="inline mr-1" /> Metric
+                    </label>
+                    <select
+                        className="p-2 border border-gray-200 rounded-md cursor-pointer text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                        value={chartXY}
+                        onChange={(e) => setChartXY(e.target.value as ChartKey)}
+                    >
+                        <option value="Menu Item vs Demand">Menu Item vs Demand</option>
+                        <option value="Dish Category vs Demand">Dish Category vs Demand</option>
+                        <option value="Period of Day vs Demand">Period of Day vs Demand</option>
+                        <option value="Orders vs Timeline">Orders vs Timeline</option>
+                        <option value="Orders vs Age Group">Orders vs Age Group</option>
+                    </select>
+                </div>
+
+                <div className="flex flex-col flex-1">
+                    <label className="text-xs text-gray-500 mb-1">
+                        <FaCalendarAlt className="inline mr-1" /> Time Period
+                    </label>
+                    <select
+                        className="p-2 border border-gray-200 rounded-md cursor-pointer text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                        value={timeFrame}
+                        onChange={(e) => setTimeFrame(e.target.value as 'weekly' | 'monthly' | 'yearly')}
+                    >
+                        <option value="weekly">Weekly</option>
+                        <option value="monthly">Monthly</option>
+                        <option value="yearly">Yearly</option>
+                    </select>
+                </div>
+
+                <div className="flex flex-col flex-1">
+                    <label className="text-xs text-gray-500 mb-1">Chart Type</label>
+                    <div className="flex gap-2">
+                        <button
+                            className={`flex-1 flex items-center justify-center p-2 text-sm rounded-md transition-colors ${chartType === 'bar'
+                                    ? 'bg-[#FF9B26] text-white'
+                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                }`}
+                            onClick={() => setChartType('bar')}
+                        >
+                            <FaChartBar className="mr-1" /> Bar
+                        </button>
+                        <button
+                            className={`flex-1 flex items-center justify-center p-2 text-sm rounded-md transition-colors ${chartType === 'line'
+                                    ? 'bg-[#FF9B26] text-white'
+                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                }`}
+                            onClick={() => setChartType('line')}
+                        >
+                            <FaChartLine className="mr-1" /> Line
+                        </button>
+                        <button
+                            className={`flex-1 flex items-center justify-center p-2 text-sm rounded-md transition-colors ${chartType === 'pie'
+                                    ? 'bg-[#FF9B26] text-white'
+                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                }`}
+                            onClick={() => setChartType('pie')}
+                        >
+                            <FaChartPie className="mr-1" /> Pie
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            {/* Chart container */}
+            <div className="bg-white p-4 rounded-lg shadow-sm" style={{ minHeight: '400px' }}>
                 {chartType === 'bar' && <BarChart data={chartData} options={chartOptions as ChartOptions<'bar'>} />}
                 {chartType === 'pie' && <PieChart data={chartData} />}
                 {chartType === 'line' && <LineChart data={chartData} options={chartOptions as ChartOptions<'line'>} />}
-            </section>
+            </div>
         </div>
     );
 };

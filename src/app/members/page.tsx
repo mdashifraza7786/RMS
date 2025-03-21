@@ -333,7 +333,7 @@ const Page: React.FC = () => {
                     <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50 ">
                         <div className={`bg-white p-5 px-8 w-[90%] max-w-[600px] max-h-[90vh] relative ${editLoading ? 'overflow-hidden' : 'overflow-auto'}`}>
                             {editLoading && (
-                                <div className='absolute w-[88%] min-h-full z-50 flex justify-center items-center'>
+                                <div className='absolute inset-0 bg-white bg-opacity-80 z-50 flex justify-center items-center'>
                                     <div className=''>
                                         <Bars
                                             height="80"

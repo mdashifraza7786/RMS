@@ -49,7 +49,7 @@ export default function PaymentsComponent() {
             </div>
 
             {loading ? (
-                <div className="absolute w-[88%] min-h-full z-50 flex justify-center items-center">
+                <div className="relative w-full h-40 flex justify-center items-center">
                     <Bars height="80" width="80" color="#25476A" ariaLabel="bars-loading" visible={true} />
                 </div>
             ) : invoice.length === 0 ? (

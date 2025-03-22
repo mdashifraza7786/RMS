@@ -3,109 +3,152 @@ import React from 'react';
 import Link from 'next/link';
 import { BsPersonCircle } from 'react-icons/bs';
 import { Raleway } from 'next/font/google';
-import { GrHomeRounded } from 'react-icons/gr';
-import { FaDollarSign } from 'react-icons/fa';
-import { SlPeople } from 'react-icons/sl';
-import { MdOutlineInventory } from 'react-icons/md';
-import { PiChefHatThin } from 'react-icons/pi';
-import { TbReportAnalytics } from 'react-icons/tb';
 import { AiOutlineLogout } from "react-icons/ai";
-import { MdOutlineRestaurantMenu } from "react-icons/md";
 import { usePathname } from 'next/navigation';
 import { signOut } from 'next-auth/react';
+import { 
+  GrHomeRounded, 
+  GrRestaurant 
+} from "react-icons/gr";
+import { 
+  FaDollarSign,
+  FaTableCells
+} from "react-icons/fa6";
+import { SlPeople } from "react-icons/sl";
+import { MdOutlineInventory, MdBorderColor } from "react-icons/md";
+import { PiChefHatThin } from "react-icons/pi";
+import { MdOutlineRestaurantMenu } from "react-icons/md";
 import { IoBarChartSharp } from "react-icons/io5";
-import { FaTableCells } from "react-icons/fa6";
-import { MdBorderColor } from "react-icons/md";
 
 const raleway = Raleway({
-    weight: ['400', '700'],
+    weight: ['400', '500', '600'],
     subsets: ['latin'],
 });
 
 const AdminNavbar: React.FC = () => {
     const pathName = usePathname();
-    async function  handleLogout(){
+    
+    async function handleLogout() {
         await signOut({ callbackUrl: '/' });
         localStorage.removeItem('user');
     }
+    
     return (
-        <div className='shadow-lg sticky top-0 left-0 z-50'>
-            {/* upper nav */}
-            <div className={`bg-primary flex font-semibold justify-between items-center text-white px-[8vw] py-[3vh] ${raleway.className}`}>
-                <div>
-                    Restaurant Management System
+        <div className={` w-full sticky top-0 z-50 shadow-sm`}>
+            {/* Top navbar */}
+            <div className="bg-[#1e4569] text-white">
+                <div className="container mx-auto px-4 md:px-6 lg:px-8 flex justify-between items-center h-16">
+                    <div className="flex items-center">
+                        <GrRestaurant className="w-5 h-5 mr-2 text-white" />
+                        <span className="font-semibold">Restaurant Management System</span>
+                    </div>
+                    
+                    <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-2 cursor-pointer bg-[#2c5983] hover:bg-[#386890] transition-colors px-3 py-1.5 rounded">
+                            <BsPersonCircle className="w-4 h-4" />
+                            <span>Admin</span>
+                        </div>
+                        <div 
+                            onClick={handleLogout}
+                            className="flex items-center gap-2 cursor-pointer bg-[#2c5983] hover:bg-[#386890] transition-colors px-3 py-1.5 rounded"
+                        >
+                            <AiOutlineLogout className="w-4 h-4" />
+                            <span>Logout</span>
+                        </div>
+                    </div>
                 </div>
-                <div className='flex gap-4'>
-                <div className='flex items-center gap-2 cursor-pointer'>
-                    <div><BsPersonCircle /></div>
-                    <div>Admin</div>
-                </div>
-                <div className='flex items-center gap-2 cursor-pointer' onClick={handleLogout}>
-                    <div><AiOutlineLogout /></div>
-                    <div>Logout</div>
-                </div>
-                </div>
-                
             </div>
-
-            {/* lower nav */}
-            <div className='bg-white flex items-center px-[8vw] py-[3vh] gap-9 font-extrabold text-sm'>
-                <Link href='/' passHref>
-                    <div className={`flex items-center gap-2 cursor-pointer ${pathName === '/' ? 'text-green-500' : ''}`}>
-                        <div><GrHomeRounded /></div>
-                        <div>Dashboard</div>
+            
+            {/* Navigation menu */}
+            <div className="bg-white border-b">
+                <div className="container mx-auto px-4 md:px-6 lg:px-8">
+                    <div className="flex items-center h-14 overflow-x-auto no-scrollbar">
+                        <NavItem 
+                            href="/" 
+                            icon={<GrHomeRounded className="w-4 h-4" />} 
+                            label="Dashboard" 
+                            isActive={pathName === '/'} 
+                        />
+                        <NavItem 
+                            href="/orders" 
+                            icon={<MdBorderColor className="w-4 h-4" />} 
+                            label="Orders" 
+                            isActive={pathName?.includes('/orders')} 
+                        />
+                        <NavItem 
+                            href="/payout" 
+                            icon={<FaDollarSign className="w-4 h-4" />} 
+                            label="Payouts" 
+                            isActive={pathName?.includes('/payout')} 
+                        />
+                        <NavItem 
+                            href="/attendance" 
+                            icon={<SlPeople className="w-4 h-4" />} 
+                            label="Attendance" 
+                            isActive={pathName?.includes('/attendance')} 
+                        />
+                        <NavItem 
+                            href="/inventory" 
+                            icon={<MdOutlineInventory className="w-4 h-4" />} 
+                            label="Inventory" 
+                            isActive={pathName?.includes('/inventory')} 
+                        />
+                        <NavItem 
+                            href="/members" 
+                            icon={<PiChefHatThin className="w-4 h-4" />} 
+                            label="Members" 
+                            isActive={pathName?.includes('/members')} 
+                        />
+                        <NavItem 
+                            href="/menu" 
+                            icon={<MdOutlineRestaurantMenu className="w-4 h-4" />} 
+                            label="Menu" 
+                            isActive={pathName?.includes('/menu')} 
+                        />
+                        <NavItem 
+                            href="/chart" 
+                            icon={<IoBarChartSharp className="w-4 h-4" />} 
+                            label="Charts" 
+                            isActive={pathName?.includes('/chart')} 
+                        />
+                        <NavItem 
+                            href="/tables" 
+                            icon={<FaTableCells className="w-4 h-4" />} 
+                            label="Tables" 
+                            isActive={pathName?.includes('/tables')} 
+                        />
                     </div>
-                </Link>
-                <Link href='/orders' passHref>
-                    <div className={`flex items-center gap-2 cursor-pointer ${pathName?.includes('/orders')  ? 'text-green-500' : ''}`}>
-                        <div><MdBorderColor /></div>
-                        <div>Orders</div>
-                    </div>
-                </Link>
-                <Link href='/payout' passHref>
-                    <div className={`flex items-center gap-2 cursor-pointer ${pathName?.includes('/payout')  ? 'text-green-500' : ''}`}>
-                        <div><FaDollarSign /></div>
-                        <div>Payouts</div>
-                    </div>
-                </Link>
-                <Link href='/attendance' passHref>
-                    <div className={`flex items-center gap-2 cursor-pointer ${pathName?.includes('/attendance') ? 'text-green-500' : ''}`}>
-                        <div><SlPeople /></div>
-                        <div>Attendance</div>
-                    </div>
-                </Link>
-                <Link href='/inventory' passHref>
-                    <div className={`flex items-center gap-2 cursor-pointer ${pathName?.includes('/inventory') ? 'text-green-500' : ''}`}>
-                        <div><MdOutlineInventory /></div>
-                        <div>Inventory</div>
-                    </div>
-                </Link>
-                <Link href='/members' passHref>
-                    <div className={`flex items-center gap-2 cursor-pointer ${pathName?.includes( '/members') ? 'text-green-500' : ''}`}>
-                        <div><PiChefHatThin /></div>
-                        <div>Members</div>
-                    </div>
-                </Link>
-                <Link href='/menu' passHref>
-                    <div className={`flex items-center gap-2 cursor-pointer ${pathName?.includes( '/menu') ? 'text-green-500' : ''}`}>
-                        <div><MdOutlineRestaurantMenu /></div>
-                        <div>Menu</div>
-                    </div>
-                </Link>
-                <Link href='/chart' passHref>
-                    <div className={`flex items-center gap-2 cursor-pointer ${pathName?.includes( '/chart') ? 'text-green-500' : ''}`}>
-                        <div><IoBarChartSharp /></div>
-                        <div>Charts</div>
-                    </div>
-                </Link>
-                <Link href='/tables' passHref>
-                    <div className={`flex items-center gap-2 cursor-pointer ${pathName?.includes( '/tables') ? 'text-green-500' : ''}`}>
-                        <div><FaTableCells /></div>
-                        <div>Tables</div>
-                    </div>
-                </Link>
+                </div>
             </div>
+            
+            <style jsx global>{`
+                .no-scrollbar::-webkit-scrollbar {
+                    display: none;
+                }
+                .no-scrollbar {
+                    -ms-overflow-style: none;
+                    scrollbar-width: none;
+                }
+            `}</style>
         </div>
+    );
+};
+
+interface NavItemProps {
+    href: string;
+    icon: React.ReactNode;
+    label: string;
+    isActive: boolean;
+}
+
+const NavItem: React.FC<NavItemProps> = ({ href, icon, label, isActive }) => {
+    return (
+        <Link href={href} className="px-4">
+            <div className="flex items-center gap-2 py-4 text-sm" style={{ color: isActive ? '#1e4569' : '#666' }}>
+                <div>{icon}</div>
+                <span className={`whitespace-nowrap ${isActive ? 'font-bold' : 'font-medium'}`}>{label}</span>
+            </div>
+        </Link>
     );
 };
 

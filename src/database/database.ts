@@ -215,6 +215,7 @@ export async function getRecentPayments() {
             LEFT JOIN orders o ON i.orderid = o.id
             LEFT JOIN user u1 ON o.waiter_id = u1.userid
             LEFT JOIN customer c ON o.id = c.order_id
+            WHERE i.payment_status = 'paid'
         `);
 
         if (userRows.length > 0) {
@@ -565,4 +566,143 @@ export async function updateRecentOrders(data: any) {
         // Ensure the connection is closed
         await connection.end();
     }
+}
+
+// Financial Overview Functions
+
+export async function getTotalRevenue(startDate: string, endDate: string) {
+    const connection = await dbConnect();
+    
+    try {
+        // Convert string dates to MySQL date format with proper timestamps
+        const startDateTime = `${startDate} 00:00:00`;
+        const endDateTime = `${endDate} 23:59:59`;
+                
+        // Get revenue from invoices table with paid status
+        const [rows] = await connection.execute<RowDataPacket[]>(
+            `SELECT COALESCE(SUM(total_amount), 0) as total_revenue
+             FROM invoices
+             WHERE payment_status = 'paid' 
+             AND generated_at >= ? 
+             AND generated_at <= ?`,
+            [startDateTime, endDateTime]
+        );
+        
+        const revenue = rows[0]?.total_revenue;
+        return revenue !== null ? Number(revenue) : 0;
+    } finally {
+        await connection.end();
+    }
+}
+
+export async function getOrdersCount(startDate: string, endDate: string) {
+    const connection = await dbConnect();
+    
+    try {
+        // Convert string dates to MySQL date format with proper timestamps
+        const startDateTime = `${startDate} 00:00:00`;
+        const endDateTime = `${endDate} 23:59:59`;
+                
+        // Count completed orders from invoices with paid status
+        const [rows] = await connection.execute<RowDataPacket[]>(
+            `SELECT COUNT(*) as count 
+             FROM invoices 
+             WHERE payment_status = 'paid' 
+             AND generated_at >= ? 
+             AND generated_at <= ?`,
+            [startDateTime, endDateTime]
+        );
+        
+        // Ensure we're returning a number
+        return rows[0]?.count !== null ? Number(rows[0].count) : 0;
+    } finally {
+        await connection.end();
+    }
+}
+
+export async function getFinancialOverview(period: string) {
+    // Calculate date range based on period
+    const endDate = new Date();
+    let startDate = new Date();
+    
+    switch (period) {
+        case '7days':
+            startDate.setDate(endDate.getDate() - 7);
+            break;
+        case '30days':
+            startDate.setDate(endDate.getDate() - 30);
+            break;
+        case 'month':
+            startDate = new Date(endDate.getFullYear(), endDate.getMonth(), 1);
+            break;
+        default:
+            startDate.setDate(endDate.getDate() - 7);
+    }
+    
+    // Format dates for MySQL queries
+    const formatDate = (date: Date) => date.toISOString().split('T')[0];
+    const startDateStr = formatDate(startDate);
+    const endDateStr = formatDate(endDate);
+    
+    // Get current period data
+    const revenue = await getTotalRevenue(startDateStr, endDateStr);
+    const ordersCount = await getOrdersCount(startDateStr, endDateStr);
+    const averageOrderValue = ordersCount > 0 ? revenue / ordersCount : 0;
+    
+    // Calculate previous period
+    const prevEndDate = new Date(startDate);
+    let prevStartDate = new Date();
+    
+    switch (period) {
+        case '7days':
+            prevStartDate.setDate(prevEndDate.getDate() - 7);
+            break;
+        case '30days':
+            prevStartDate.setDate(prevEndDate.getDate() - 30);
+            break;
+        case 'month':
+            prevStartDate = new Date(prevEndDate.getFullYear(), prevEndDate.getMonth() - 1, 1);
+            prevEndDate.setDate(0); // Last day of previous month
+            break;
+        default:
+            prevStartDate.setDate(prevEndDate.getDate() - 7);
+    }
+    
+    const prevStartDateStr = formatDate(prevStartDate);
+    const prevEndDateStr = formatDate(prevEndDate);
+    
+    // Get previous period data
+    const prevRevenue = await getTotalRevenue(prevStartDateStr, prevEndDateStr);
+    const prevOrdersCount = await getOrdersCount(prevStartDateStr, prevEndDateStr);
+    const prevAverageOrderValue = prevOrdersCount > 0 ? prevRevenue / prevOrdersCount : 0;
+    
+    // Calculate percentage changes
+    const revenueChange = prevRevenue > 0
+        ? ((revenue - prevRevenue) / prevRevenue) * 100
+        : 0;
+    
+    const ordersChange = prevOrdersCount > 0
+        ? ((ordersCount - prevOrdersCount) / prevOrdersCount) * 100
+        : 0;
+    
+    const avgOrderValueChange = prevAverageOrderValue > 0
+        ? ((averageOrderValue - prevAverageOrderValue) / prevAverageOrderValue) * 100
+        : 0;
+    
+    // Format results
+    return {
+        revenue: {
+            value: revenue,
+            change: Math.round(revenueChange)
+        },
+        orders: {
+            value: ordersCount,
+            change: Math.round(ordersChange)
+        },
+        averageOrderValue: {
+            value: averageOrderValue,
+            change: Math.round(avgOrderValueChange)
+        },
+        period
+    };
 }

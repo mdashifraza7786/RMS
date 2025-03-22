@@ -1,6 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { OrderedItems } from './AdminDashboard';
 import { IoClose } from 'react-icons/io5';
+import { MdTableBar, MdPerson, MdOutlinePayments } from 'react-icons/md';
+import { BiTimer } from 'react-icons/bi';
 
 interface OrderQueueCardProps {
     table: string;
@@ -18,17 +20,46 @@ const OrderQueueCard: React.FC<OrderQueueCardProps> = ({ table, waiter, amount, 
     
     return (
         <>
-            <div className='min-w-[22rem] h-[6rem] border border-[#25476A] rounded-[10px] relative'>
-                <div className='w-[20px] h-[20px] bg-[#FF0000] rounded-full absolute -right-[7px] -top-[7px]'></div>
-                <div className='grid grid-cols-2 px-3 py-4'>
-                    <div className='flex flex-col gap-[5px]'>
-                        <h1 className='text-[17px]'>Table: <span className='text-secondary'>#{table}</span></h1>
-                        <p className='text-[14px]'>Waiter: <span className='text-secondary'>{waiter}</span></p>
+            <div className="min-w-[260px] max-w-[280px] bg-white border border-gray-100 shadow-sm rounded-xl overflow-hidden hover:shadow-md transition-all duration-200">
+                <div className="relative">
+                    <div className="absolute right-2 top-2 flex items-center justify-center w-2 h-2">
+                        <span className="animate-ping absolute w-full h-full rounded-full bg-red-400 opacity-75"></span>
+                        <span className="relative rounded-full w-2 h-2 bg-red-500"></span>
                     </div>
-                    <div className='flex flex-col gap-[5px]'>
-                        <h1 className='text-[17px]'>Amount: <span className='text-secondary'>₹{amount}</span></h1>
+                </div>
+                
+                <div className="p-4">
+                    <div className="flex items-center mb-3">
+                        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary mr-3">
+                            <MdTableBar size={20} />
+                        </div>
+                        <div>
+                            <h3 className="font-semibold text-gray-800">Table #{table}</h3>
+                            <p className="text-xs text-gray-500">Order #{orid}</p>
+                        </div>
+                    </div>
+                    
+                    <div className="flex items-center text-sm text-gray-600 mb-3">
+                        <MdPerson className="mr-2 text-gray-400" />
+                        <span>{waiter}</span>
+                    </div>
+                    
+                    <div className="flex items-center text-sm text-gray-600 mb-3">
+                        <BiTimer className="mr-2 text-gray-400" />
+                        <span>Just now</span>
+                    </div>
+                    
+                    <div className="flex items-center text-sm font-medium text-gray-900 mb-4">
+                        <MdOutlinePayments className="mr-2 text-gray-600" />
+                        <span>₹{amount}</span>
+                    </div>
+                    
+                    <div className="flex items-center justify-between border-t pt-3">
+                        <div className="text-xs text-gray-500">
+                            {orderedItems.length} item{orderedItems.length !== 1 ? 's' : ''}
+                        </div>
                         <button
-                            className='bg-supporting2 rounded-[10px] py-[3px] text-white text-[14px]'
+                            className="px-3 py-1.5 text-xs font-medium bg-primary/10 text-primary rounded-lg hover:bg-primary/20 transition-colors"
                             onClick={() => setIsModalOpen(true)}
                         >
                             View Details
@@ -39,49 +70,62 @@ const OrderQueueCard: React.FC<OrderQueueCardProps> = ({ table, waiter, amount, 
 
             {isModalOpen && (
                <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-               <div className="bg-white rounded-2xl w-[420px] shadow-2xl relative p-6 transform scale-100 transition-all duration-300">
-                   {/* Header */}
-                   <div className="flex justify-between items-center border-b pb-3">
-                       <h2 className="text-2xl font-semibold text-primary">Order Details</h2>
-                       <button
-                           className="text-gray-500 hover:text-gray-800 transition"
-                           onClick={() => setIsModalOpen(false)}
-                       >
-                           <IoClose className="text-red-600 font-bold" size={28} />
-                       </button>
-                   </div>
+                    <div className="bg-white rounded-xl w-[420px] shadow-xl relative p-6 transform scale-100 transition-all duration-300 max-h-[90vh] overflow-hidden flex flex-col">
+                        {/* Header */}
+                        <div className="flex justify-between items-center border-b pb-3">
+                            <h2 className="text-xl font-semibold text-gray-800 flex items-center">
+                                <MdTableBar className="text-primary mr-2" size={22} />
+                                Order Details
+                            </h2>
+                            <button
+                                className="text-gray-400 hover:text-gray-600 transition"
+                                onClick={() => setIsModalOpen(false)}
+                            >
+                                <IoClose size={24} />
+                            </button>
+                        </div>
    
-                   {/* Order Info */}
-                   <div className="mt-3 text-gray-700 text-sm">
-                       <p><strong>Table:</strong> <span className='text-secondary font-bold'>#{table}</span></p>
-                       <p><strong>Order ID:</strong><span className='text-secondary font-bold'> {orid}</span></p>
-                   </div>
+                        {/* Order Info */}
+                        <div className="mt-3 text-gray-700 text-sm grid grid-cols-2 gap-2">
+                            <p className="flex items-center"><span className="font-medium mr-1">Table:</span> <span className="text-primary font-medium">#{table}</span></p>
+                            <p className="flex items-center"><span className="font-medium mr-1">Order ID:</span> <span className="text-gray-900">{orid}</span></p>
+                            <p className="flex items-center"><span className="font-medium mr-1">Waiter:</span> <span className="text-gray-900">{waiter}</span></p>
+                            <p className="flex items-center"><span className="font-medium mr-1">Time:</span> <span className="text-gray-900">Just now</span></p>
+                        </div>
    
-                   {/* Ordered Items */}
-                   <ul className="mt-4 max-h-[220px] overflow-auto border-t pt-2 space-y-3">
-                       {orderedItems.length > 0 ? (
-                           orderedItems.map((item) => (
-                               <li key={item.item_id} className="flex bg-gray-200 rounded-md justify-between items-center border-b py-2 px-2 text-gray-700">
-                                   <span className="font-medium">{item.item_name}</span>
-                                   <span className="text-gray-900 font-semibold">{item.quantity} x ₹{item.price.toFixed(2)}</span>
-                               </li>
-                           ))
-                       ) : (
-                           <p className="text-center text-gray-500">No items found.</p>
-                       )}
-                   </ul>
+                        {/* Ordered Items */}
+                        <div className="mt-4 flex-grow overflow-hidden flex flex-col">
+                            <h3 className="font-medium text-gray-800 mb-2">Ordered Items</h3>
+                            <ul className="overflow-y-auto space-y-2 flex-grow pr-1">
+                                {orderedItems.length > 0 ? (
+                                    orderedItems.map((item) => (
+                                        <li key={item.item_id} className="flex justify-between items-center bg-gray-50 rounded-lg py-2 px-3 text-gray-700">
+                                            <div className="flex flex-col">
+                                                <span className="font-medium text-gray-800">{item.item_name}</span>
+                                                <span className="text-xs text-gray-500">₹{item.price.toFixed(2)} per item</span>
+                                            </div>
+                                            <span className="bg-primary/10 text-primary px-2 py-1 rounded text-sm font-medium">
+                                                {item.quantity}x
+                                            </span>
+                                        </li>
+                                    ))
+                                ) : (
+                                    <p className="text-center text-gray-500 py-4">No items found.</p>
+                                )}
+                            </ul>
+                        </div>
    
-                   {/* Pricing Details */}
-                   <div className="mt-4 border-t pt-3 text-gray-900 text-sm">
-                       <p className="flex justify-between"><span className='text-primary'>Subtotal:</span> <span>₹{subtotal.toFixed(2)}</span></p>
-                       <p className="flex justify-between"><span className='text-primary'>GST (18%):</span> <span>₹{gst.toFixed(2)}</span></p>
-                       <p className="flex justify-between font-bold text-lg mt-2">
-                           <span>Total:</span>
-                           <span className="text-black font-bold">₹{totalAmount.toFixed(2)}</span>
-                       </p>
-                   </div>
-               </div>
-           </div>
+                        {/* Pricing Details */}
+                        <div className="mt-4 pt-3 border-t text-gray-700 space-y-1">
+                            <p className="flex justify-between"><span className="text-gray-600">Subtotal:</span> <span>₹{subtotal.toFixed(2)}</span></p>
+                            <p className="flex justify-between"><span className="text-gray-600">GST (18%):</span> <span>₹{gst.toFixed(2)}</span></p>
+                            <p className="flex justify-between font-medium text-lg mt-2">
+                                <span>Total:</span>
+                                <span className="text-primary">₹{totalAmount.toFixed(2)}</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
             )}
         </>
     );

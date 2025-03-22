@@ -5,6 +5,7 @@ import BarChart from '../chartConfiguration/Bar';
 import PieChart from '../chartConfiguration/Pie';
 import LineChart from '../chartConfiguration/Line';
 import { ChartOptions, TooltipItem, ChartData } from 'chart.js';
+import { FaChartBar, FaChartPie, FaChartLine, FaCalendarAlt, FaFilter, FaExchangeAlt } from 'react-icons/fa';
 
 // Define types for ChartKey and other possible values
 type ChartKey =
@@ -16,6 +17,21 @@ type ChartKey =
     'chef vs profit' |
     'waiter vs profit' |
     'timeline vs profit growth percentage';
+
+// Helper function for color manipulation
+function lightenColor(color: string, percent: number = 30): string {
+    const num = parseInt(color.slice(1), 16),
+        amt = Math.round(2.55 * percent),
+        R = (num >> 16) + amt,
+        G = (num >> 8 & 0x00FF) + amt,
+        B = (num & 0x0000FF) + amt;
+
+    return `#${(0x1000000 +
+        (R < 255 ? R < 1 ? 0 : R : 255) * 0x10000 +
+        (G < 255 ? G < 1 ? 0 : G : 255) * 0x100 +
+        (B < 255 ? B < 1 ? 0 : B : 255))
+        .toString(16).slice(1).toUpperCase()}`;
+}
 
 const ProfitLoss: React.FC = () => {
     const [chartXY, setChartXY] = useState<ChartKey>('timeline vs profit');
@@ -84,11 +100,11 @@ const ProfitLoss: React.FC = () => {
 
         if (chartXY === 'specific period of day vs profit of period') {
             return {
-                labels: ['8 AM','9 AM','10 AM','11 AM','12 PM','1 PM','2 PM','3 PM','4 PM','5 PM','6 PM','7 PM','8 PM','9 PM','10 PM','11 PM'],
+                labels: ['8 AM', '9 AM', '10 AM', '11 AM', '12 PM', '1 PM', '2 PM', '3 PM', '4 PM', '5 PM', '6 PM', '7 PM', '8 PM', '9 PM', '10 PM', '11 PM'],
                 datasets: [{
                     label,
-                    data: timeFrame === 'weekly' ? [500, 800, 1200, 700, 452, 652, 865,500, 800, 1200, 700, 452, 652, 865,500, 800, 1200, 700, 452, 652, 865] :
-                        timeFrame === 'monthly' ? [500, 800, 1200, 700, 452, 652, 5,500, 800, 1200, 700, 452, 652, 5,500, 800, 1200, 700, 452, 652, 5] : [500, 800, 1200, 700, 452, 652, 5,500, 800, 1200, 700, 452, 652, 5,500, 800, 1200, 700, 452, 652, 865],
+                    data: timeFrame === 'weekly' ? [500, 800, 1200, 700, 452, 652, 865, 500, 800, 1200, 700, 452, 652, 865, 500, 800, 1200, 700, 452, 652, 865] :
+                        timeFrame === 'monthly' ? [500, 800, 1200, 700, 452, 652, 5, 500, 800, 1200, 700, 452, 652, 5, 500, 800, 1200, 700, 452, 652, 5] : [500, 800, 1200, 700, 452, 652, 5, 500, 800, 1200, 700, 452, 652, 5, 500, 800, 1200, 700, 452, 652, 865],
                     backgroundColor: colors.slice(0, 8),
                     borderColor: colors.slice(0, 8),
                     borderWidth: 1,
@@ -144,33 +160,19 @@ const ProfitLoss: React.FC = () => {
 
         else {
             const labels = timeFrame === 'weekly' ? ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'] :
-                           timeFrame === 'monthly' ? ['Week 1', 'Week 2', 'Week 3', 'Week 4'] :
-                           ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'June', 'July', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-        
+                timeFrame === 'monthly' ? ['Week 1', 'Week 2', 'Week 3', 'Week 4'] :
+                    ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'June', 'July', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
             const profitValues = timeFrame === 'weekly' ? [7, 800, 1200, 700, 1100, 950, -1000] :
-                                 timeFrame === 'monthly' ? [4000, 6000, 5500, 7000] :
-                                 [15000, 20000, 18000, 22000];
-        
+                timeFrame === 'monthly' ? [4000, 6000, 5500, 7000] :
+                    [15000, 20000, 18000, 22000];
+
             const profitGrowth = profitValues.map((profit, index) =>
                 index === 0 ? undefined : ((profit - profitValues[index - 1]) / profitValues[index - 1]) * 100
             );
-        
-            function lightenColor(color, percent = 30) {
-                const num = parseInt(color.slice(1), 16),
-                      amt = Math.round(2.55 * percent),
-                      R = (num >> 16) + amt,
-                      G = (num >> 8 & 0x00FF) + amt,
-                      B = (num & 0x0000FF) + amt;
-        
-                return `#${(0x1000000 + 
-                            (R < 255 ? R < 1 ? 0 : R : 255) * 0x10000 + 
-                            (G < 255 ? G < 1 ? 0 : G : 255) * 0x100 + 
-                            (B < 255 ? B < 1 ? 0 : B : 255))
-                            .toString(16).slice(1).toUpperCase()}`;
-            }
-        
+
             const colorsSlice = colors.slice(0, labels.length);
-        
+
             return {
                 labels,
                 datasets: [
@@ -193,8 +195,6 @@ const ProfitLoss: React.FC = () => {
                 ]
             };
         }
-        
-
     };
 
     const chartData = useMemo(() => {
@@ -288,70 +288,109 @@ const ProfitLoss: React.FC = () => {
 
     return (
         <div className="flex flex-col gap-4">
-            {/* Drop-down filters */}
-            <section className="flex justify-between">
-                <select
-                    className="p-2 border cursor-pointer font-raleway font-bold text-[14px]"
-                    value={chartXY}
-                    onChange={(e) => setChartXY(e.target.value as ChartKey)}
-                >
-                    <option value="timeline vs profit">Timeline vs Net Profit</option>
-                    <option value="menu item vs profit">Profit by Menu Item</option>
-                    <option value="timeline vs revenue/expenses">Timeline vs Revenue/Expenses</option>
-                    <option value="specific period of day vs profit of period">Profit by period of day</option>
-                    <option value="timeline vs profit by menu category"> Profit by menu category</option>
-                    <option value="chef vs profit">Chef Performance vs Profit</option>
-                    <option value="waiter vs profit">Waiter Performance vs Profit</option>
-                    <option value="timeline vs profit growth percentage">Timeline vs Net Profit Growth (%)</option>
-                </select>
-
-                <select
-                    className="p-2 border cursor-pointer font-raleway font-bold text-[14px]"
-                    value={chartType}
-                    onChange={(e) => setChartType(e.target.value as 'bar' | 'pie' | 'line')}
-                >
-                    <option value="bar">Bar Chart</option>
-                    <option value="pie">Pie Chart</option>
-                    <option value="line">Line Chart</option>
-                </select>
-
-                <select
-                    className="p-2 border cursor-pointer font-raleway font-bold text-[14px]"
-                    value={timeFrame}
-                    onChange={(e) => setTimeFrame(e.target.value as 'weekly' | 'monthly' | 'yearly')}
-                >
-                    <option value="weekly">Weekly</option>
-                    <option value="monthly">Monthly</option>
-                    <option value="yearly">Yearly</option>
-                </select>
-                <label className="font-raleway font-bold text-[14px] text-gray-600 flex items-center">
-                    <input
-                        type="checkbox"
-                        className="mr-2 cursor-pointer"
-                        checked={comparisonMode}
-                        onChange={() => setComparisonMode(!comparisonMode)}
-                    />
-                    Comparison mode
-                </label>
-            </section>
-
-            {/* Chart display */}
-            <div className="flex justify-center items-center h-[400px]">
-                {chartType === 'bar' ? (
-                    <BarChart data={chartData} options={chartOptions as ChartOptions<'bar'>} />
-                ) : chartType === 'pie' ? (
-                    <PieChart data={chartData} />
-                ) : (
-                    <LineChart data={chartData} options={chartOptions as ChartOptions<'line'>} />
-                )}
+            {/* Tabs row with comparison toggle */}
+            <div className="flex justify-between items-center">
+                <div>   </div>
+                <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-md shadow-sm">
+                    <span className="text-xs text-gray-500 mr-1">Compare with previous period</span>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                        <input
+                            type="checkbox"
+                            className="sr-only peer"
+                            checked={comparisonMode}
+                            onChange={() => setComparisonMode(!comparisonMode)}
+                        />
+                        <div className={`w-9 h-5 rounded-full peer ${comparisonMode ? 'bg-[#FF9B26]' : 'bg-gray-200'} peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#FF9B26]/20 transition-colors`}>
+                            <div className={`absolute top-[2px] left-[2px] bg-white rounded-full h-4 w-4 transition-transform ${comparisonMode ? 'translate-x-4' : 'translate-x-0'}`}></div>
+                        </div>
+                    </label>
+                </div>
             </div>
 
-            {/* Warning for negative values */}
-            {containsNegativeValues && (
-                <p className="text-red-600 font-bold text-center">
-                    Warning: Chart contains negative values.
-                </p>
-            )}
+            {/* Filter controls */}
+            <div className="flex flex-col md:flex-row gap-3 p-3 bg-white rounded-lg shadow-sm">
+                <div className="flex flex-col flex-1">
+                    <label className="text-xs text-gray-500 mb-1">
+                        <FaFilter className="inline mr-1" /> Metric
+                    </label>
+                    <select
+                        className="p-2 border border-gray-200 rounded-md cursor-pointer text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                        value={chartXY}
+                        onChange={(e) => setChartXY(e.target.value as ChartKey)}
+                    >
+                        <option value="timeline vs profit">Timeline vs Net Profit</option>
+                        <option value="menu item vs profit">Profit by Menu Item</option>
+                        <option value="timeline vs revenue/expenses">Timeline vs Revenue/Expenses</option>
+                        <option value="specific period of day vs profit of period">Profit by period of day</option>
+                        <option value="timeline vs profit by menu category">Profit by menu category</option>
+                        <option value="chef vs profit">Chef Performance vs Profit</option>
+                        <option value="waiter vs profit">Waiter Performance vs Profit</option>
+                        <option value="timeline vs profit growth percentage">Timeline vs Net Profit Growth (%)</option>
+                    </select>
+                </div>
+
+                <div className="flex flex-col flex-1">
+                    <label className="text-xs text-gray-500 mb-1">
+                        <FaCalendarAlt className="inline mr-1" /> Time Period
+                    </label>
+                    <select
+                        className="p-2 border border-gray-200 rounded-md cursor-pointer text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                        value={timeFrame}
+                        onChange={(e) => setTimeFrame(e.target.value as 'weekly' | 'monthly' | 'yearly')}
+                    >
+                        <option value="weekly">Weekly</option>
+                        <option value="monthly">Monthly</option>
+                        <option value="yearly">Yearly</option>
+                    </select>
+                </div>
+
+                <div className="flex flex-col flex-1">
+                    <label className="text-xs text-gray-500 mb-1">Chart Type</label>
+                    <div className="flex gap-2">
+                        <button
+                            className={`flex-1 flex items-center justify-center p-2 text-sm rounded-md transition-colors ${chartType === 'bar'
+                                    ? 'bg-[#FF9B26] text-white'
+                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                }`}
+                            onClick={() => setChartType('bar')}
+                        >
+                            <FaChartBar className="mr-1" /> Bar
+                        </button>
+                        <button
+                            className={`flex-1 flex items-center justify-center p-2 text-sm rounded-md transition-colors ${chartType === 'line'
+                                    ? 'bg-[#FF9B26] text-white'
+                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                }`}
+                            onClick={() => setChartType('line')}
+                        >
+                            <FaChartLine className="mr-1" /> Line
+                        </button>
+                        <button
+                            className={`flex-1 flex items-center justify-center p-2 text-sm rounded-md transition-colors ${chartType === 'pie'
+                                    ? 'bg-[#FF9B26] text-white'
+                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                }`}
+                            onClick={() => setChartType('pie')}
+                        >
+                            <FaChartPie className="mr-1" /> Pie
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            {/* Chart container */}
+            <div className="bg-white p-4 rounded-lg shadow-sm" style={{ minHeight: '400px' }}>
+                {chartType === 'bar' && <BarChart data={chartData} options={chartOptions as ChartOptions<'bar'>} />}
+                {chartType === 'pie' && <PieChart data={chartData} />}
+                {chartType === 'line' && <LineChart data={chartData} options={chartOptions as ChartOptions<'line'>} />}
+
+                {/* Warning for negative values */}
+                {containsNegativeValues && (
+                    <p className="text-red-600 font-bold text-center mt-2">
+                        Warning: Chart contains negative values.
+                    </p>
+                )}
+            </div>
         </div>
     );
 };

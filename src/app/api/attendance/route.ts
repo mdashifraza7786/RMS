@@ -9,6 +9,7 @@ export async function GET() {
         const currentDate = new Date();
         const date = currentDate.toISOString().split('T')[0]; 
 
+        // Get today's attendance records
         const [records] = await connection.query<RowDataPacket[]>(
             `SELECT 
                 userid, name, role, status, date, time,
@@ -19,15 +20,26 @@ export async function GET() {
             [date]
         );
 
+        // Get all distinct dates for which attendance exists
+        const [dateRecords] = await connection.query<RowDataPacket[]>(
+            `SELECT DISTINCT date FROM attendance ORDER BY date`
+        );
+        
+        const availableDates = dateRecords.map((record: any) => {
+            // Format the date as YYYY-MM-DD
+            return new Date(record.date).toISOString().split('T')[0];
+        });
+
         // Extract minDate and maxDate from the first record
         const minDate = records.length > 0 ? records[0].minDate : null;
-        const maxDate = records.length > 0 ? records[0].maxDate : null;
+        const maxDate = date; // Today's date is the max date
 
         return NextResponse.json({
             message: 'Attendance Fetched Successfully',
             data: records,
             minDate,
-            maxDate
+            maxDate,
+            availableDates
         });
     } catch (error) {
         console.error('Error fetching attendance records:', error);

@@ -25,8 +25,10 @@ interface Order {
 export default function OrdersComponent() {
     const [orders, setOrders] = useState<Order[]>([]);
     const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+    const [loading, setLoading] = useState<boolean>(true);
 
     async function getRecentOrders() {
+        setLoading(true);
         try {
             const response = await fetch("/api/order");
             const data = await response.json();
@@ -42,6 +44,8 @@ export default function OrdersComponent() {
             }
         } catch (error) {
             console.error("Error fetching orders:", error);
+        } finally {
+            setLoading(false);
         }
     }
 
@@ -70,8 +74,8 @@ export default function OrdersComponent() {
                 </Link>
             </div>
 
-            {orders.length === 0 ? (
-                <div className='absolute w-[88%] min-h-full z-50 flex justify-center items-center'>
+            {loading ? (
+                <div className='relative w-full h-40 flex justify-center items-center'>
                     <Bars height="80" width="80" color="#25476A" ariaLabel="bars-loading" visible={true} />
                 </div>
             ) : completedOrders.length === 0 ? (

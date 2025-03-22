@@ -34,6 +34,9 @@ const Page: React.FC = () => {
         minDate: '',
         maxDate: ''
     });
+    const [availableDates, setAvailableDates] = useState<string[]>([]);
+    const [showCalendar, setShowCalendar] = useState<boolean>(false);
+    const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
 
 
     const giveAttendance = async (id: string, status: string, type: string) => {
@@ -139,6 +142,12 @@ const Page: React.FC = () => {
                     };
         
                     setAvaiableDate(dates);
+                    
+                    // Set available dates from API response
+                    if (response.data.availableDates) {
+                        setAvailableDates(response.data.availableDates);
+                    }
+                    
                     console.warn("Updated AvailableDate:", dates); // Debugging
                 }
             } catch (error) {
@@ -152,6 +161,189 @@ const Page: React.FC = () => {
 
     }, []);
 
+    // Function to check if a date has attendance records
+    const hasAttendanceRecords = (date: string) => {
+        return availableDates.includes(date);
+    };
+
+    // Custom date picker with calendar
+    const renderCalendar = () => {
+        // Get current month and year
+        const year = currentMonth.getFullYear();
+        const month = currentMonth.getMonth();
+        
+        // Create a date for the first day of the month
+        const firstDay = new Date(year, month, 1);
+        const lastDay = new Date(year, month + 1, 0);
+        
+        // Get the day of the week for the first day (0 = Sunday, 6 = Saturday)
+        const startingDay = firstDay.getDay();
+        
+        // Calculate the number of days in the month
+        const monthLength = lastDay.getDate();
+        
+        // Calculate the number of rows needed
+        const numRows = Math.ceil((startingDay + monthLength) / 7);
+        
+        // Generate days for the calendar
+        const days = [];
+        let day = 1;
+        
+        // Parse min and max dates
+        const minDateObj = availableDate.minDate ? new Date(availableDate.minDate) : new Date(2000, 0, 1);
+        const maxDateObj = availableDate.maxDate ? new Date(availableDate.maxDate) : new Date();
+        
+        // Ensure we always have 6 rows to keep height consistent
+        const totalRows = 6;
+        
+        for (let i = 0; i < totalRows; i++) {
+            const row = [];
+            for (let j = 0; j < 7; j++) {
+                if ((i === 0 && j < startingDay) || day > monthLength) {
+                    // Empty cell
+                    row.push(null);
+                } else {
+                    // Date cell
+                    const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                    const cellDate = new Date(dateStr);
+                    
+                    // Check if date is between min and max
+                    const isInRange = cellDate >= minDateObj && cellDate <= maxDateObj;
+                    
+                    // Check if the date has attendance records
+                    const hasRecords = hasAttendanceRecords(dateStr);
+                    
+                    row.push({
+                        day,
+                        dateStr,
+                        isToday: dateStr === today,
+                        isSelected: dateStr === getdate,
+                        isInRange,
+                        hasRecords
+                    });
+                    day++;
+                }
+            }
+            days.push(row);
+        }
+        
+        return (
+            <div className="bg-white border border-gray-200 shadow-lg rounded-lg w-[320px] h-[380px] flex flex-col">
+                {/* Header with month/year and navigation */}
+                <div className="bg-primary text-white px-4 py-3 rounded-t-lg flex justify-between items-center">
+                    <button 
+                        className="p-1 hover:bg-primary-dark rounded text-white"
+                        onClick={() => {
+                            const newDate = new Date(currentMonth);
+                            newDate.setMonth(newDate.getMonth() - 1);
+                            setCurrentMonth(newDate);
+                        }}
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                        </svg>
+                    </button>
+                    <div className="font-medium text-center">
+                        {currentMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                    </div>
+                    <button 
+                        className="p-1 hover:bg-primary-dark rounded text-white"
+                        onClick={() => {
+                            const newDate = new Date(currentMonth);
+                            newDate.setMonth(newDate.getMonth() + 1);
+                            setCurrentMonth(newDate);
+                        }}
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                    </button>
+                </div>
+                
+                {/* Calendar body */}
+                <div className="flex-1 p-3 flex flex-col">
+                    {/* Day headers */}
+                    <div className="grid grid-cols-7 gap-1 mb-1">
+                        {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, i) => (
+                            <div key={i} className="text-xs font-semibold text-gray-500 h-8 flex items-center justify-center">
+                                {day}
+                            </div>
+                        ))}
+                    </div>
+                    
+                    {/* Calendar grid */}
+                    <div className="grid grid-cols-7 gap-1 flex-1">
+                        {days.flat().map((cell, i) => (
+                            <div key={i} className="flex items-center justify-center">
+                                {cell ? (
+                                    <button
+                                        className={`w-8 h-8 rounded-full flex items-center justify-center text-sm transition
+                                            ${cell.isSelected ? 'bg-primary text-white shadow-md' : ''}
+                                            ${cell.isToday && !cell.isSelected ? 'border-2 border-primary' : ''}
+                                            ${!cell.isInRange ? 'text-gray-300 cursor-not-allowed' : cell.hasRecords ? 'hover:bg-gray-100 cursor-pointer' : 'text-gray-400 cursor-not-allowed'}
+                                            ${cell.hasRecords && !cell.isSelected ? 'font-bold text-blue-600' : ''}
+                                        `}
+                                        disabled={!cell.isInRange || !cell.hasRecords}
+                                        onClick={() => {
+                                            if (cell.hasRecords) {
+                                                setGetdate(cell.dateStr);
+                                                setShowCalendar(false); // Hide calendar after selecting a date
+                                            }
+                                        }}
+                                    >
+                                        {cell.day}
+                                    </button>
+                                ) : (
+                                    <div className="w-8 h-8"></div>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                </div>
+                
+                {/* Footer */}
+                <div className="border-t border-gray-200 p-3 flex justify-between">
+                    <button 
+                        className="text-xs text-primary hover:underline font-medium"
+                        onClick={() => {
+                            setGetdate(today);
+                            setCurrentMonth(new Date());
+                        }}
+                    >
+                        Today
+                    </button>
+                    <button 
+                        className="text-xs bg-gray-200 hover:bg-gray-300 text-gray-700 py-1 px-3 rounded font-medium"
+                        onClick={() => setShowCalendar(false)}
+                    >
+                        Close
+                    </button>
+                </div>
+            </div>
+        );
+    };
+
+    // Calendar Modal
+    const CalendarModal = () => {
+        if (!showCalendar) return null;
+        
+        return (
+            <div className="fixed inset-0 z-50 overflow-auto bg-black bg-opacity-50 flex items-center justify-center p-4" 
+                 onClick={() => setShowCalendar(false)}>
+                <div className="relative" onClick={e => e.stopPropagation()}>
+                    {renderCalendar()}
+                </div>
+            </div>
+        );
+    };
+
+    // Initialize currentMonth based on selected date during mount
+    useEffect(() => {
+        if (getdate) {
+            setCurrentMonth(new Date(getdate));
+        }
+    }, []);
+
     return (
         <div className='bg-[#e6e6e6] py-[5vh] px-[8vw] font-raleway flex flex-col gap-[6vh]'>
             <h1 className="font-bold">Attendance</h1>
@@ -159,107 +351,102 @@ const Page: React.FC = () => {
                 
                 {attendanceData && attendanceData.length > 0 && (
                     <>
-                        <section className='flex justify-between items-center py-4'>
-                            <div className="flex gap-2">
-                                <div>Date: </div>
-                                <div className="flex gap-2 text-[#222121] underline">
-                                    <input
-                                        type="date"
-                                        name="attend_date"
-                                        value={getdate}
-                                        min={availableDate.minDate}
-                                        max={availableDate.maxDate}
-                                        onChange={(e) => setGetdate(e.target.value)}
-                                    />
+                        <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
+                            <div className="flex items-center gap-4">
+                                <div className="text-[#222121] font-medium">
+                                    Date: <span className="text-primary font-bold ml-2">{new Date(getdate).toLocaleDateString()}</span>
+                                </div>
+                                <button
+                                    onClick={() => setShowCalendar(true)}
+                                    className="flex items-center gap-2 bg-primary text-white px-3 py-2 rounded-md hover:bg-primary/90 transition"
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                    </svg>
+                                    Calendar
+                                </button>
+                            </div>
 
+                            <div className="flex items-center gap-3">
+                                <input
+                                    type='search'
+                                    placeholder='Search Name, ID...'
+                                    className='border border-[#807c7c] rounded-md px-4 py-1 w-[220px] h-[40px] outline-none'
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                />
+                                
+                                <div
+                                    className={`px-4 py-1 rounded-md cursor-pointer text-center min-w-[60px] h-[40px] flex items-center justify-center ${selectedRole === 'All' ? 'font-medium bg-[#FA9F1B70] text-[#fc9802e3]' : 'hover:bg-gray-100'}`}
+                                    onClick={() => setSelectedRole('All')}
+                                >
+                                    All
+                                </div>
+                                <div
+                                    className={`px-4 py-1 rounded-md cursor-pointer text-center min-w-[60px] h-[40px] flex items-center justify-center ${selectedRole === 'chef' ? 'font-medium bg-[#FA9F1B70] text-[#fc9802e3]' : 'hover:bg-gray-100'}`}
+                                    onClick={() => setSelectedRole('chef')}
+                                >
+                                    Chef
+                                </div>
+                                <div
+                                    className={`px-4 py-1 rounded-md cursor-pointer text-center min-w-[60px] h-[40px] flex items-center justify-center ${selectedRole === 'waiter' ? 'font-medium bg-[#FA9F1B70] text-[#fc9802e3]' : 'hover:bg-gray-100'}`}
+                                    onClick={() => setSelectedRole('waiter')}
+                                >
+                                    Waiter
                                 </div>
                             </div>
-
-                            <input
-                                type='search'
-                                placeholder='Search Name, ID...'
-                                className='border border-[#807c7c] rounded-xl px-4 py-1'
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                            />
-                        </section>
-                        <section className='flex gap-4'>
-                            <div
-                                className={`px-4 py-2 rounded-xl cursor-pointer ${selectedRole === 'All' ? 'font-bold bg-[#FA9F1B70] text-[#fc9802e3]' : ''}`}
-                                onClick={() => setSelectedRole('All')}
-                            >
-                                All
-                            </div>
-                            <div
-                                className={`px-4 py-2 rounded-xl cursor-pointer ${selectedRole === 'chef' ? 'font-bold bg-[#FA9F1B70] text-[#fc9802e3]' : ''}`}
-                                onClick={() => setSelectedRole('chef')}
-                            >
-                                Chef
-                            </div>
-                            <div
-                                className={`px-4 py-2 rounded-xl cursor-pointer ${selectedRole === 'waiter' ? 'font-bold bg-[#FA9F1B70] text-[#fc9802e3]' : ''}`}
-                                onClick={() => setSelectedRole('waiter')}
-                            >
-                                Waiter
-                            </div>
-                        </section>
-
+                        </div>
                     </>
                 )}
 
+                {/* Calendar Modal */}
+                <CalendarModal />
 
                 {attendanceData && attendanceData.length > 0 ? (
-                    <table className="table-auto w-full">
+                    <table className="table-fixed w-full border-collapse">
                         <thead>
                             <tr className='bg-primary text-white font-light'>
-                                <th className="px-4 py-2 text-left w-[200px]">ID</th>
-                                <th className="px-4 py-2 text-left">Full Name</th>
-                                <th className="px-4 py-2 text-left">Role</th>
-                                <th className="px-4 py-2 text-left w-[15rem]">Action</th>
+                                <th className="px-4 py-2 text-left w-[9.375rem]">ID</th>
+                                <th className="px-4 py-2 text-left w-[15.625rem]">Full Name</th>
+                                <th className="px-4 py-2 text-left w-[9.375rem]">Role</th>
+                                <th className="px-4 py-2 text-left w-[6.25rem]">Action</th>
                             </tr>
                         </thead>
 
                         <tbody>
                             {filteredData.map((item, index) => (
                                 <tr key={index} className='text-[14px] font-medium font-montserrat'>
-                                    <td className="border px-4 py-4 transition-colors duration-300">{item.userid}</td>
-                                    <td className="border px-4 py-4 transition-colors duration-300">{item.name}</td>
-                                    <td className="border px-4 py-4 transition-colors duration-300">{item.role.toUpperCase()}</td>
-                                    <td className="border px-4 py-4 transition-colors duration-300">
-                                        {new Date(item.date).getTime() < new Date().setHours(0, 0, 0, 0) ? (
-                                            // If date is in the past, show the result
-                                            <span className={`text-[12px] font-bold ${item.status === 'present' ? 'text-green-600' : item.status === 'absent' ? 'text-red-600' : 'text-gray-500'}`}>
-                                                {item.status === 'present' ? 'PRESENT' : item.status === 'absent' ? 'ABSENT' : 'NA'}
-                                            </span>
-                                        ) : item.status === 'present' ? (
+                                    <td className="border px-4 py-4 transition-colors duration-300 w-[9.375rem] truncate">{item.userid}</td>
+                                    <td className="border px-4 py-4 transition-colors duration-300 w-[15.625rem] truncate">{item.name}</td>
+                                    <td className="border px-4 py-4 transition-colors duration-300 w-[9.375rem] truncate">{item.role.toUpperCase()}</td>
+                                    <td className="border px-4 py-4 transition-colors duration-300 w-[6.25rem]">
+                                        {item.status === 'present' ? (
                                             <button
                                                 onClick={() => giveAttendance(item.userid, 'present', "reset")}
-                                                className="bg-supporting2 text-white px-4 py-2 rounded text-[12px] w-[18rem] flex items-center justify-between">
+                                                className="bg-supporting2 text-white px-4 py-2 rounded text-[0.75rem] w-full flex items-center justify-between">
                                                 <div>PRESENT</div> <FaCheck />
                                             </button>
                                         ) : item.status === 'absent' ? (
                                             <button
                                                 onClick={() => giveAttendance(item.userid, 'absent', "reset")}
-                                                className="bg-bgred text-white px-4 py-2 rounded text-[12px] w-[18rem] flex items-center justify-between">
+                                                className="bg-bgred text-white px-4 py-2 rounded text-[0.75rem] w-full flex items-center justify-between">
                                                 <div>ABSENT</div> <RxCross2 />
                                             </button>
                                         ) : (
-                                            <div className='flex gap-4 w-full'>
+                                            <div className='flex gap-2'>
                                                 <button
                                                     onClick={() => giveAttendance(item.userid, 'absent', "update")}
-                                                    className="bg-bgred text-white px-4 py-2 rounded text-[12px] flex items-center gap-10">
+                                                    className="bg-bgred text-white px-3 py-2 rounded text-[0.75rem] w-[6.875rem] flex items-center justify-between">
                                                     <div>ABSENT</div> <RxCross2 />
                                                 </button>
                                                 <button
                                                     onClick={() => giveAttendance(item.userid, 'present', "update")}
-                                                    className="bg-supporting2 text-white px-4 py-2 rounded mr-2 text-[12px] flex items-center gap-10">
+                                                    className="bg-supporting2 text-white px-3 py-2 rounded text-[0.75rem] w-[6.875rem] flex items-center justify-between">
                                                     <div>PRESENT</div> <FaCheck />
                                                 </button>
                                             </div>
                                         )}
                                     </td>
-
-
                                 </tr>
                             ))}
                         </tbody>

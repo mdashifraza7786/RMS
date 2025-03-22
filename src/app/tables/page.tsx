@@ -34,9 +34,9 @@ const TableManagement = () => {
     const fetchTables = async () => {
         try {
             setLoading(true);
-            const response = await fetch("/api/tables");
-            const data = await response.json();
-            setTables(data.tables);
+        const response = await fetch("/api/tables");
+        const data = await response.json();
+        setTables(data.tables);
         } catch (error) {
             console.error("Error fetching tables:", error);
         } finally {
@@ -96,21 +96,21 @@ const TableManagement = () => {
             setDeleteLoading(true);
             const response = await fetch(`/api/tables/${deleteTableId}`, { method: "DELETE" });
 
-            if (response.ok) {
+        if (response.ok) {
                 await fetchTables();
                 setDeleteModalVisible(false);
-            } else {
-                console.error("Failed to delete table");
-            }
-        } catch (error) {
-            console.error("Error:", error);
+        } else {
+            console.error("Failed to delete table");
+        }
+    } catch (error) {
+        console.error("Error:", error);
         } finally {
             setDeleteLoading(false);
             setDeleteTableId(null);
             setDeleteTableNumber("");
             setDeleteConfirmText("");
-        }
-    };
+    }
+};
 
     return (
         <div className='bg-[#e6e6e6] py-[5vh] px-[8vw] font-raleway flex flex-col gap-[4vh]'>
@@ -148,15 +148,15 @@ const TableManagement = () => {
                 ) : tables && tables.length > 0 ? (
                     <div className="overflow-x-auto">
                         <table className="table-fixed w-full border-collapse">
-                            <thead>
+                        <thead>
                                 <tr className='bg-primary text-white font-light'>
                                     <th className="px-4 py-3 text-left w-[40%]">Table Number</th>
                                     <th className="px-4 py-3 text-left w-[40%]">Status</th>
                                     <th className="px-4 py-3 text-left w-[20%]">Action</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {tables.map((item) => (
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {tables.map((item) => (
                                     <tr key={item.id} className="text-[14px] font-medium font-montserrat hover:bg-gray-50 transition-colors duration-200">
                                         <td className="border border-gray-200 px-4 py-4 transition-colors duration-300">
                                             <div className="flex items-center gap-2">
@@ -172,17 +172,17 @@ const TableManagement = () => {
                                             )}
                                         </td>
                                         <td className="border border-gray-200 px-4 py-4 transition-colors duration-300">
-                                            <button
+                                        <button
                                                 className="bg-red-500 hover:bg-red-600 text-white px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1.5"
                                                 onClick={() => openDeleteModal(item.id, item.tablenumber)}
-                                            >
+                                        >
                                                 <FaTrash size={12} /> Delete
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
                     </div>
                 ) : (
                     <div className='flex flex-col justify-center items-center py-10 text-gray-500'>
@@ -227,19 +227,19 @@ const TableManagement = () => {
                                 <label className="text-sm font-medium text-gray-700">
                                     Table Number
                                 </label>
-                                <input
-                                    type='text'
+                        <input
+                            type='text'
                                     placeholder='Enter table number (e.g. 1, 2, 3)'
                                     className='w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all'
-                                    value={tableNumber}
-                                    onChange={(e) => { 
-                                        error && setError(null);
-                                        setTableNumber(e.target.value);
-                                    }}
-                                />
+                            value={tableNumber}
+                            onChange={(e) => { 
+                                error && setError(null);
+                                setTableNumber(e.target.value);
+                            }}
+                        />
                             </div>
 
-                            {/* Error Message */}
+                        {/* Error Message */}
                             {error && (
                                 <div className="bg-red-50 text-red-500 text-sm p-3 rounded-lg flex items-start">
                                     <div className="mr-2 mt-0.5">⚠️</div>
@@ -322,7 +322,7 @@ const TableManagement = () => {
                                 disabled={deleteConfirmText !== "delete" || deleteLoading}
                             >
                                 Delete Table
-                            </button>
+                        </button>
                         </div>
                     </div>
                 </div>

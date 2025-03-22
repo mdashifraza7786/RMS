@@ -65,9 +65,9 @@ function generateMockData() {
     return {
         chefs: mockChefs,
         ratings: {
-            weekly: mockChefs.map(() => (Math.random() * 5).toFixed(1)),
-            monthly: mockChefs.map(() => (Math.random() * 5).toFixed(1)),
-            yearly: mockChefs.map(() => (Math.random() * 5).toFixed(1))
+            weekly: mockChefs.map(() => Number((Math.random() * 5).toFixed(1))),
+            monthly: mockChefs.map(() => Number((Math.random() * 5).toFixed(1))),
+            yearly: mockChefs.map(() => Number((Math.random() * 5).toFixed(1)))
         },
         orders: {
             weekly: mockChefs.map(() => Math.floor(Math.random() * 50) + 10),

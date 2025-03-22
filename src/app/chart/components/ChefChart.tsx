@@ -36,30 +36,43 @@ const ChefChart: React.FC = () => {
                 setLoading(true);
                 const response = await axios.get('/api/chart/chefChart');
                 
-                // Transform the data for chart display
-                const chefNames = response.data.map((chef: any) => chef.name);
-                
-                const transformedData = {
-                    chefs: chefNames,
-                    ratings: {
-                        weekly: response.data.map((chef: any) => Number(chef.ratings) || 0),
-                        monthly: response.data.map((chef: any) => Number(chef.ratings) || 0),
-                        yearly: response.data.map((chef: any) => Number(chef.ratings) || 0)
-                    },
-                    orders: {
-                        weekly: response.data.map((chef: any) => Number(chef.total_orders_week) || 0),
-                        monthly: response.data.map((chef: any) => Number(chef.total_orders_month) || 0),
-                        yearly: response.data.map((chef: any) => Number(chef.total_orders_year) || 0)
-                    },
-                    speed: {
-                        // Mock data for speed if not available
-                        weekly: response.data.map(() => Math.floor(Math.random() * 15) + 5),
-                        monthly: response.data.map(() => Math.floor(Math.random() * 15) + 5),
-                        yearly: response.data.map(() => Math.floor(Math.random() * 15) + 5)
-                    }
-                };
-                
-                setData(transformedData);
+                // Check if the API already returns the correct format
+                if (response.data && response.data.chefs && response.data.ratings) {
+                    console.log("API returned formatted data:", response.data);
+                    setData(response.data);
+                } 
+                // Handle case where API returns array of chef objects
+                else if (Array.isArray(response.data)) {
+                    console.log("API returned array, transforming data:", response.data);
+                    
+                    // Transform the data for chart display
+                    const chefNames = response.data.map((chef: any) => chef.name);
+                    
+                    const transformedData = {
+                        chefs: chefNames,
+                        ratings: {
+                            weekly: response.data.map((chef: any) => Number(chef.ratings) || 0),
+                            monthly: response.data.map((chef: any) => Number(chef.ratings) || 0),
+                            yearly: response.data.map((chef: any) => Number(chef.ratings) || 0)
+                        },
+                        orders: {
+                            weekly: response.data.map((chef: any) => Number(chef.total_orders_week) || 0),
+                            monthly: response.data.map((chef: any) => Number(chef.total_orders_month) || 0),
+                            yearly: response.data.map((chef: any) => Number(chef.total_orders_year) || 0)
+                        },
+                        speed: {
+                            // Mock data for speed if not available
+                            weekly: response.data.map(() => Math.floor(Math.random() * 15) + 5),
+                            monthly: response.data.map(() => Math.floor(Math.random() * 15) + 5),
+                            yearly: response.data.map(() => Math.floor(Math.random() * 15) + 5)
+                        }
+                    };
+                    
+                    setData(transformedData);
+                }
+                else {
+                    throw new Error("Invalid data format from API");
+                }
                 setLoading(false);
             } catch (error) {
                 console.error('Error fetching chef data:', error);
@@ -69,9 +82,9 @@ const ChefChart: React.FC = () => {
                 const mockData = {
                     chefs: mockChefs,
                     ratings: {
-                        weekly: mockChefs.map(() => (Math.random() * 5).toFixed(1)),
-                        monthly: mockChefs.map(() => (Math.random() * 5).toFixed(1)),
-                        yearly: mockChefs.map(() => (Math.random() * 5).toFixed(1))
+                        weekly: mockChefs.map(() => Number((Math.random() * 5).toFixed(1))),
+                        monthly: mockChefs.map(() => Number((Math.random() * 5).toFixed(1))),
+                        yearly: mockChefs.map(() => Number((Math.random() * 5).toFixed(1)))
                     },
                     orders: {
                         weekly: mockChefs.map(() => Math.floor(Math.random() * 50) + 10),
@@ -116,11 +129,11 @@ const ChefChart: React.FC = () => {
             chartLabels = data.chefs.map((chef: string) => chef);
             
             if (timeFrame === 'weekly') {
-                chartData = data.orders.weekly;
+                chartData = data.orders.weekly.map((val: any) => Number(val) || 0);
             } else if (timeFrame === 'monthly') {
-                chartData = data.orders.monthly;
+                chartData = data.orders.monthly.map((val: any) => Number(val) || 0);
             } else {
-                chartData = data.orders.yearly;
+                chartData = data.orders.yearly.map((val: any) => Number(val) || 0);
             }
         } 
         else if (chartXY === 'Chef vs Speed') {
@@ -156,7 +169,17 @@ const ChefChart: React.FC = () => {
             'Chef vs Speed': 'Average Preparation Time (mins)'
         };
         
-        return generateData(labels[chartXY]);
+        const result = generateData(labels[chartXY]);
+        
+        // Debug logging
+        console.log("Chart data generated:", {
+            chartXY,
+            timeFrame,
+            labels: result.labels,
+            data: result.datasets?.[0]?.data,
+        });
+        
+        return result;
     }, [chartXY, timeFrame, data, chartType]);
 
     if (loading) {

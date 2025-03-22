@@ -30,11 +30,9 @@ const Demand: React.FC = () => {
     ], []);
 
     const generateData = (label: string) => {
-        if (chartXY === 'Menu Item vs Demand') {
+        if (chartXY === 'Dish Category vs Demand') {
             return {
-                labels: timeFrame === 'weekly' ? ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'] :
-                    timeFrame === 'monthly' ? ['Week 1', 'Week 2', 'Week 3', 'Week 4'] :
-                        ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'June', 'July', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                labels: ['Main Course', 'Starter', 'Desserts', 'Beverages'],
                 datasets: [{
                     label,
                     data: timeFrame === 'weekly' ? [500, 800, 1200, 700, 1100, 950, 1000] :
@@ -48,7 +46,7 @@ const Demand: React.FC = () => {
             };
         }
 
-        if (chartXY === 'Dish Category vs Demand') {
+        if (chartXY === 'Menu Item vs Demand') {
             return {
                 labels: ['Pasta', 'Biryani', 'Murga Bhaat', 'Mutton Biryani', 'Paneer paratha', 'Mandi', 'Burger', 'Litti chokha'],
                 datasets: [{

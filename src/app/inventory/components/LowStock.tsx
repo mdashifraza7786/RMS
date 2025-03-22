@@ -53,38 +53,70 @@ const LowStock: React.FC<LowStockCardProps> = ({ item_id, item_name, current_sto
     };
 
     return (
-        <div className="min-w-[22rem] border border-gray-700 rounded-md relative p-3 flex flex-col gap-3 items-center text-sm tracking-wide">
-            <div className="w-[20px] h-[20px] bg-[#FF0000] rounded-full absolute -right-[7px] -top-[7px] z-10"></div>
-            <div className="grid grid-cols-2 gap-4 px-3 py-3">
-                <div className="flex flex-col gap-2">
-                    <h1 className="text-[14px]">
-                        Current Stock: <span className="text-secondary">{current_stock} {unit}</span>
-                    </h1>
-                    <p className="text-[14px]">
-                        Lower Limit: <span className="text-secondary">{low_limit} {unit}</span>
-                    </p>
-                </div>
-                <div className="flex flex-col gap-2">
-                    <h1 className="text-[14px]">
-                        Item: <span className="text-secondary">{item_name}</span>
-                    </h1>
-                    <button onClick={handleOrderClick} className="bg-supporting2 rounded-[10px] py-[3px] text-white text-[14px]">
-                        ORDER
+        <div className="min-w-[22rem] bg-white border border-gray-200 rounded-2xl shadow-lg relative p-6 hover:shadow-2xl transition-all duration-300 group">
+            {/* Status Indicator */}
+            <div className="w-4 h-4 bg-gradient-to-br from-red-500 to-red-600 rounded-full absolute -right-1.5 -top-1.5 shadow-lg animate-pulse ring-4 ring-white"></div>
+            
+            {/* Main Content */}
+            <div className="space-y-6">
+                {/* Header */}
+                <div className="flex items-center justify-between pb-4 border-b border-gray-100">
+                    <div>
+                        <h2 className="text-xl font-bold text-gray-800 group-hover:text-primary transition-colors duration-300">{item_name}</h2>
+                        <p className="text-sm text-gray-500 mt-1">Inventory Status</p>
+                    </div>
+                    <button 
+                        onClick={handleOrderClick}
+                        className="px-5 py-2.5 bg-gradient-to-r from-supporting2 to-[#9ed84b] text-white rounded-xl hover:shadow-lg hover:scale-105 active:scale-95 transition-all duration-300 font-medium"
+                    >
+                        Place Order
                     </button>
+                </div>
+
+                {/* Stock Information */}
+                <div className="grid grid-cols-2 gap-6">
+                    <div className="transform transition-all duration-300 hover:scale-105">
+                        <div className="bg-gradient-to-br from-gray-50 to-gray-100 p-4 rounded-xl border border-gray-200">
+                            <p className="text-sm font-medium text-gray-600 mb-2">Current Stock</p>
+                            <div className="flex items-baseline">
+                                <span className="text-2xl font-bold text-primary">{current_stock}</span>
+                                <span className="text-sm font-medium text-gray-500 ml-1">{unit}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="transform transition-all duration-300 hover:scale-105">
+                        <div className="bg-gradient-to-br from-red-50 to-red-100 p-4 rounded-xl border border-red-200">
+                            <p className="text-sm font-medium text-red-600 mb-2">Lower Limit</p>
+                            <div className="flex items-baseline">
+                                <span className="text-2xl font-bold text-red-500">{low_limit}</span>
+                                <span className="text-sm font-medium text-red-400 ml-1">{unit}</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
             {/* Order Modal */}
             {modalOpen && (
-                <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50">
-                    <div className="bg-white p-8 rounded-lg w-96 max-w-full">
-                        <h1 className="text-xl font-semibold mb-4 text-primary">Order Box</h1>
+                <div className="fixed inset-0 flex items-center justify-center bg-gray-900/70 backdrop-blur-sm z-50">
+                    <div className="bg-white p-8 rounded-2xl w-[32rem] max-w-full shadow-2xl transform transition-all scale-100 animate-fadeIn">
+                        <div className="flex justify-between items-center mb-8">
+                            <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-supporting2 bg-clip-text text-transparent">Create Order</h1>
+                            <button 
+                                onClick={() => setModalOpen(false)}
+                                className="text-gray-400 hover:text-gray-600 transition-colors"
+                            >
+                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
 
                         {loading ? (
-                            <div className="flex justify-center items-center py-4">
+                            <div className="flex justify-center items-center py-12">
                                 <Bars
-                                    height="50"
-                                    width="50"
+                                    height="60"
+                                    width="60"
                                     color="#25476A"
                                     ariaLabel="bars-loading"
                                     visible={true}
@@ -92,56 +124,54 @@ const LowStock: React.FC<LowStockCardProps> = ({ item_id, item_name, current_sto
                             </div>
                         ) : (
                             <>
-                                {/* Order Form */}
-                                <div className="flex flex-col gap-4">
-                                    <div>
-                                        <label className="block font-medium text-gray-800">Item Name:</label>
+                                <div className="space-y-6">
+                                    <div className="group">
+                                        <label className="block text-sm font-semibold text-gray-700 mb-2 group-hover:text-primary transition-colors">Item Name</label>
                                         <input
                                             disabled
                                             type="text"
                                             value={data.item_name}
-                                            className="border border-gray-300 rounded-md px-3 py-2 w-full"
+                                            className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-500 font-medium"
                                         />
                                     </div>
 
-                                    <div>
-                                        <label className="block font-medium text-gray-800">
-                                            Quantity (in {unit}):
+                                    <div className="group">
+                                        <label className="block text-sm font-semibold text-gray-700 mb-2 group-hover:text-primary transition-colors">
+                                            Quantity ({unit})
                                         </label>
                                         <input
                                             type="number"
                                             value={data.quantity}
-                                            onChange={(e) =>
-                                                setData({ ...data, quantity: parseInt(e.target.value, 10) || 0 })
-                                            }
-                                            className="border border-gray-300 rounded-md px-3 py-2 font-semibold w-full"
+                                            onChange={(e) => setData({ ...data, quantity: parseInt(e.target.value, 10) || 0 })}
+                                            className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-supporting2 focus:border-transparent transition-shadow hover:shadow-md"
+                                            min="0"
                                         />
                                     </div>
 
-                                    <div>
-                                        <label className="block font-medium text-gray-800">Remarks:</label>
+                                    <div className="group">
+                                        <label className="block text-sm font-semibold text-gray-700 mb-2 group-hover:text-primary transition-colors">Remarks</label>
                                         <textarea
                                             value={data.remarks}
                                             onChange={(e) => setData({ ...data, remarks: e.target.value })}
-                                            className="border border-gray-300 rounded-md px-3 py-2 w-full h-16 resize-none"
+                                            className="w-full px-4 py-3 border border-gray-200 rounded-xl h-32 resize-none focus:ring-2 focus:ring-supporting2 focus:border-transparent transition-shadow hover:shadow-md"
+                                            placeholder="Add any additional notes..."
                                         ></textarea>
                                     </div>
                                 </div>
 
-                                {/* Buttons */}
-                                <div className="flex justify-end mt-4">
+                                <div className="flex justify-end gap-4 mt-8">
                                     <button
                                         onClick={() => setModalOpen(false)}
-                                        className="bg-bgred text-white hover:bg-red-600 rounded-md px-4 py-2 mr-2"
+                                        className="px-6 py-3 text-gray-700 bg-gray-100 rounded-xl hover:bg-gray-200 hover:shadow-md active:scale-95 transition-all duration-300 font-medium"
                                     >
                                         Cancel
                                     </button>
                                     <button
                                         onClick={handleGenerateOrder}
-                                        className="bg-supporting2 text-white hover:bg-[#8bbf3b] rounded-md px-4 py-2"
+                                        className="px-8 py-3 bg-gradient-to-r from-supporting2 to-[#9ed84b] text-white rounded-xl hover:shadow-lg active:scale-95 transition-all duration-300 disabled:opacity-50 disabled:hover:shadow-none disabled:active:scale-100 font-medium"
                                         disabled={loading}
                                     >
-                                        Order
+                                        Confirm Order
                                     </button>
                                 </div>
                             </>
@@ -150,13 +180,24 @@ const LowStock: React.FC<LowStockCardProps> = ({ item_id, item_name, current_sto
                 </div>
             )}
 
-            {/* pdf Modal */}
+            {/* PDF Modal */}
             {pdfModalOpen && (
-                <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50">
-                    <GeneratedOrderPage inventoryOrder={[data]} onClose={() => setPdfModalOpen(false)} />
+                <div className="fixed inset-0 flex items-center justify-center bg-gray-900/70 backdrop-blur-sm z-50">
+                    <div className="animate-fadeIn">
+                        <GeneratedOrderPage inventoryOrder={[data]} onClose={() => setPdfModalOpen(false)} />
+                    </div>
                 </div>
             )}
 
+            <style jsx global>{`
+                @keyframes fadeIn {
+                    from { opacity: 0; transform: scale(0.95); }
+                    to { opacity: 1; transform: scale(1); }
+                }
+                .animate-fadeIn {
+                    animation: fadeIn 0.3s ease-out;
+                }
+            `}</style>
         </div>
     );
 };

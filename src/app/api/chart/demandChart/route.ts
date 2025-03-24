@@ -43,22 +43,82 @@ export async function GET() {
         
         // Second Query: Orders by Dish Category
         const [row2] = await connection.execute<RowDataPacket[]>(`
+            WITH RECURSIVE extracted_items AS (
+                SELECT 
+                    o.id AS order_id,
+                    TRIM(JSON_UNQUOTE(JSON_EXTRACT(o.order_items, '$[0].item_id'))) AS item_id,
+                    0 AS json_index
+                FROM orders o
+                WHERE o.start_time >= DATE_SUB(CURDATE(), INTERVAL 1 YEAR)
+                AND JSON_VALID(o.order_items) -- Ensure JSON is valid
+                
+                UNION ALL
+                
+                SELECT 
+                    ei.order_id,
+                    TRIM(JSON_UNQUOTE(JSON_EXTRACT(o.order_items, CONCAT('$[', ei.json_index + 1, '].item_id')))) AS item_id,
+                    ei.json_index + 1
+                FROM extracted_items ei
+                JOIN orders o ON ei.order_id = o.id
+                WHERE JSON_EXTRACT(o.order_items, CONCAT('$[', ei.json_index + 1, '].item_id')) IS NOT NULL
+            )
             SELECT 
-                SUM(CASE WHEN TIME(start_time) BETWEEN '07:00:00' AND '11:00:00' AND start_time >= NOW() - INTERVAL 1 WEEK THEN JSON_LENGTH(order_items) ELSE 0 END) AS orders_week_breakfast,
-                SUM(CASE WHEN TIME(start_time) BETWEEN '11:00:00' AND '15:00:00' AND start_time >= NOW() - INTERVAL 1 WEEK THEN JSON_LENGTH(order_items) ELSE 0 END) AS orders_week_lunch,
-                SUM(CASE WHEN TIME(start_time) BETWEEN '15:00:00' AND '19:00:00' AND start_time >= NOW() - INTERVAL 1 WEEK THEN JSON_LENGTH(order_items) ELSE 0 END) AS orders_week_evening,
-                SUM(CASE WHEN TIME(start_time) BETWEEN '19:00:00' AND '23:59:59' AND start_time >= NOW() - INTERVAL 1 WEEK THEN JSON_LENGTH(order_items) ELSE 0 END) AS orders_week_dinner,
+                -- Weekly orders by category (last 7 days)
+                SUM(CASE 
+                    WHEN o.start_time >= DATE_SUB(CURDATE(), INTERVAL 7 DAY) 
+                    AND m.item_type = 'Main Course' 
+                    THEN 1 ELSE 0 END) AS orders_week_maincourse,
+                SUM(CASE 
+                    WHEN o.start_time >= DATE_SUB(CURDATE(), INTERVAL 7 DAY) 
+                    AND m.item_type = 'Beverages' 
+                    THEN 1 ELSE 0 END) AS orders_week_beverages,
+                SUM(CASE 
+                    WHEN o.start_time >= DATE_SUB(CURDATE(), INTERVAL 7 DAY) 
+                    AND m.item_type = 'Starter' 
+                    THEN 1 ELSE 0 END) AS orders_week_starter,
+                SUM(CASE 
+                    WHEN o.start_time >= DATE_SUB(CURDATE(), INTERVAL 7 DAY) 
+                    AND m.item_type = 'Dessert' 
+                    THEN 1 ELSE 0 END) AS orders_week_dessert,
 
-                SUM(CASE WHEN TIME(start_time) BETWEEN '07:00:00' AND '11:00:00' AND start_time >= NOW() - INTERVAL 1 MONTH THEN JSON_LENGTH(order_items) ELSE 0 END) AS orders_month_breakfast,
-                SUM(CASE WHEN TIME(start_time) BETWEEN '11:00:00' AND '15:00:00' AND start_time >= NOW() - INTERVAL 1 MONTH THEN JSON_LENGTH(order_items) ELSE 0 END) AS orders_month_lunch,
-                SUM(CASE WHEN TIME(start_time) BETWEEN '15:00:00' AND '19:00:00' AND start_time >= NOW() - INTERVAL 1 MONTH THEN JSON_LENGTH(order_items) ELSE 0 END) AS orders_month_evening,
-                SUM(CASE WHEN TIME(start_time) BETWEEN '19:00:00' AND '23:59:59' AND start_time >= NOW() - INTERVAL 1 MONTH THEN JSON_LENGTH(order_items) ELSE 0 END) AS orders_month_dinner,
+                -- Monthly orders by category (last 30 days)
+                SUM(CASE 
+                    WHEN o.start_time >= DATE_SUB(CURDATE(), INTERVAL 1 MONTH) 
+                    AND m.item_type = 'Main Course' 
+                    THEN 1 ELSE 0 END) AS orders_month_maincourse,
+                SUM(CASE 
+                    WHEN o.start_time >= DATE_SUB(CURDATE(), INTERVAL 1 MONTH) 
+                    AND m.item_type = 'Beverages' 
+                    THEN 1 ELSE 0 END) AS orders_month_beverages,
+                SUM(CASE 
+                    WHEN o.start_time >= DATE_SUB(CURDATE(), INTERVAL 1 MONTH) 
+                    AND m.item_type = 'Starter' 
+                    THEN 1 ELSE 0 END) AS orders_month_starter,
+                SUM(CASE 
+                    WHEN o.start_time >= DATE_SUB(CURDATE(), INTERVAL 1 MONTH) 
+                    AND m.item_type = 'Dessert' 
+                    THEN 1 ELSE 0 END) AS orders_month_dessert,
 
-                SUM(CASE WHEN TIME(start_time) BETWEEN '07:00:00' AND '11:00:00' AND start_time >= NOW() - INTERVAL 1 YEAR THEN JSON_LENGTH(order_items) ELSE 0 END) AS orders_year_breakfast,
-                SUM(CASE WHEN TIME(start_time) BETWEEN '11:00:00' AND '15:00:00' AND start_time >= NOW() - INTERVAL 1 YEAR THEN JSON_LENGTH(order_items) ELSE 0 END) AS orders_year_lunch,
-                SUM(CASE WHEN TIME(start_time) BETWEEN '15:00:00' AND '19:00:00' AND start_time >= NOW() - INTERVAL 1 YEAR THEN JSON_LENGTH(order_items) ELSE 0 END) AS orders_year_evening,
-                SUM(CASE WHEN TIME(start_time) BETWEEN '19:00:00' AND '23:59:59' AND start_time >= NOW() - INTERVAL 1 YEAR THEN JSON_LENGTH(order_items) ELSE 0 END) AS orders_year_dinner
-            FROM orders
+                -- Yearly orders by category (last 12 months)
+                SUM(CASE 
+                    WHEN o.start_time >= DATE_SUB(CURDATE(), INTERVAL 1 YEAR) 
+                    AND m.item_type = 'Main Course' 
+                    THEN 1 ELSE 0 END) AS orders_year_maincourse,
+                SUM(CASE 
+                    WHEN o.start_time >= DATE_SUB(CURDATE(), INTERVAL 1 YEAR) 
+                    AND m.item_type = 'Beverages' 
+                    THEN 1 ELSE 0 END) AS orders_year_beverages,
+                SUM(CASE 
+                    WHEN o.start_time >= DATE_SUB(CURDATE(), INTERVAL 1 YEAR) 
+                    AND m.item_type = 'Starter' 
+                    THEN 1 ELSE 0 END) AS orders_year_starter,
+                SUM(CASE 
+                    WHEN o.start_time >= DATE_SUB(CURDATE(), INTERVAL 1 YEAR) 
+                    AND m.item_type = 'Dessert' 
+                    THEN 1 ELSE 0 END) AS orders_year_dessert
+            FROM extracted_items ei
+            JOIN menu m ON ei.item_id = m.id
+            JOIN orders o ON ei.order_id = o.id
         `);
 
         // Third Query: Orders by Period of day
@@ -119,36 +179,38 @@ export async function GET() {
 
         // Fifth Query: Orders by Age Group
         const [row5] = await connection.execute<RowDataPacket[]>(`
-            SELECT 
-                -- Weekly orders
-                SUM(CASE WHEN payment_method = 'cash' AND generated_at >= DATE_SUB(NOW(), INTERVAL 1 WEEK) THEN total_amount ELSE 0 END) AS cash_week,
-                SUM(CASE WHEN payment_method = 'upi' AND generated_at >= DATE_SUB(NOW(), INTERVAL 1 WEEK) THEN total_amount ELSE 0 END) AS upi_week,
-                SUM(CASE WHEN payment_method = 'debit_card' AND generated_at >= DATE_SUB(NOW(), INTERVAL 1 WEEK) THEN total_amount ELSE 0 END) AS debitcard_week,
-                SUM(CASE WHEN payment_method = 'credit_card' AND generated_at >= DATE_SUB(NOW(), INTERVAL 1 WEEK) THEN total_amount ELSE 0 END) AS creditcard_week,
-                SUM(CASE WHEN payment_method = 'others' AND generated_at >= DATE_SUB(NOW(), INTERVAL 1 WEEK) THEN total_amount ELSE 0 END) AS others_week,
+             SELECT 
+                -- Weekly Orders
+                SUM(CASE WHEN c.age < 10 AND o.end_time >= DATE_SUB(NOW(), INTERVAL 1 WEEK) THEN JSON_LENGTH(o.order_items) ELSE 0 END) AS children_week,
+                SUM(CASE WHEN c.age BETWEEN 10 AND 18 AND o.end_time >= DATE_SUB(NOW(), INTERVAL 1 WEEK) THEN JSON_LENGTH(o.order_items) ELSE 0 END) AS teens_week,
+                SUM(CASE WHEN c.age BETWEEN 18 AND 40 AND o.end_time >= DATE_SUB(NOW(), INTERVAL 1 WEEK) THEN JSON_LENGTH(o.order_items) ELSE 0 END) AS adults_week,
+                SUM(CASE WHEN c.age BETWEEN 40 AND 60 AND o.end_time >= DATE_SUB(NOW(), INTERVAL 1 WEEK) THEN JSON_LENGTH(o.order_items) ELSE 0 END) AS middle_aged_week,
+                SUM(CASE WHEN c.age > 60 AND o.end_time >= DATE_SUB(NOW(), INTERVAL 1 WEEK) THEN JSON_LENGTH(o.order_items) ELSE 0 END) AS seniors_week,
 
-                -- Monthly orders
-                SUM(CASE WHEN payment_method = 'cash' AND generated_at >= DATE_SUB(NOW(), INTERVAL 1 MONTH) THEN total_amount ELSE 0 END) AS cash_month,
-                SUM(CASE WHEN payment_method = 'upi' AND generated_at >= DATE_SUB(NOW(), INTERVAL 1 MONTH) THEN total_amount ELSE 0 END) AS upi_month,
-                SUM(CASE WHEN payment_method = 'debit_card' AND generated_at >= DATE_SUB(NOW(), INTERVAL 1 MONTH) THEN total_amount ELSE 0 END) AS debitcard_month,
-                SUM(CASE WHEN payment_method = 'credit_card' AND generated_at >= DATE_SUB(NOW(), INTERVAL 1 MONTH) THEN total_amount ELSE 0 END) AS creditcard_month,
-                SUM(CASE WHEN payment_method = 'others' AND generated_at >= DATE_SUB(NOW(), INTERVAL 1 MONTH) THEN total_amount ELSE 0 END) AS others_month,
+                -- Monthly Orders
+                SUM(CASE WHEN c.age < 10 AND o.end_time >= DATE_SUB(NOW(), INTERVAL 1 MONTH) THEN JSON_LENGTH(o.order_items) ELSE 0 END) AS children_month,
+                SUM(CASE WHEN c.age BETWEEN 10 AND 18 AND o.end_time >= DATE_SUB(NOW(), INTERVAL 1 MONTH) THEN JSON_LENGTH(o.order_items) ELSE 0 END) AS teens_month,
+                SUM(CASE WHEN c.age BETWEEN 18 AND 40 AND o.end_time >= DATE_SUB(NOW(), INTERVAL 1 MONTH) THEN JSON_LENGTH(o.order_items) ELSE 0 END) AS adults_month,
+                SUM(CASE WHEN c.age BETWEEN 40 AND 60 AND o.end_time >= DATE_SUB(NOW(), INTERVAL 1 MONTH) THEN JSON_LENGTH(o.order_items) ELSE 0 END) AS middle_aged_month,
+                SUM(CASE WHEN c.age > 60 AND o.end_time >= DATE_SUB(NOW(), INTERVAL 1 MONTH) THEN JSON_LENGTH(o.order_items) ELSE 0 END) AS seniors_month,
 
-                -- Yearly orders
-                SUM(CASE WHEN payment_method = 'cash' AND generated_at >= DATE_SUB(NOW(), INTERVAL 1 YEAR) THEN total_amount ELSE 0 END) AS cash_year,
-                SUM(CASE WHEN payment_method = 'upi' AND generated_at >= DATE_SUB(NOW(), INTERVAL 1 YEAR) THEN total_amount ELSE 0 END) AS upi_year,
-                SUM(CASE WHEN payment_method = 'debit_card' AND generated_at >= DATE_SUB(NOW(), INTERVAL 1 YEAR) THEN total_amount ELSE 0 END) AS debitcard_year,
-                SUM(CASE WHEN payment_method = 'credit_card' AND generated_at >= DATE_SUB(NOW(), INTERVAL 1 YEAR) THEN total_amount ELSE 0 END) AS creditcard_year,
-                SUM(CASE WHEN payment_method = 'others' AND generated_at >= DATE_SUB(NOW(), INTERVAL 1 YEAR) THEN total_amount ELSE 0 END) AS others_year
-            FROM invoices
+                -- Yearly Orders
+                SUM(CASE WHEN c.age < 10 AND o.end_time >= DATE_SUB(NOW(), INTERVAL 1 YEAR) THEN JSON_LENGTH(o.order_items) ELSE 0 END) AS children_year,
+                SUM(CASE WHEN c.age BETWEEN 10 AND 18 AND o.end_time >= DATE_SUB(NOW(), INTERVAL 1 YEAR) THEN JSON_LENGTH(o.order_items) ELSE 0 END) AS teens_year,
+                SUM(CASE WHEN c.age BETWEEN 18 AND 40 AND o.end_time >= DATE_SUB(NOW(), INTERVAL 1 YEAR) THEN JSON_LENGTH(o.order_items) ELSE 0 END) AS adults_year,
+                SUM(CASE WHEN c.age BETWEEN 40 AND 60 AND o.end_time >= DATE_SUB(NOW(), INTERVAL 1 YEAR) THEN JSON_LENGTH(o.order_items) ELSE 0 END) AS middle_aged_year,
+                SUM(CASE WHEN c.age > 60 AND o.end_time >= DATE_SUB(NOW(), INTERVAL 1 YEAR) THEN JSON_LENGTH(o.order_items) ELSE 0 END) AS seniors_year
+            FROM orders o 
+            JOIN customer c ON o.id = c.order_id
         `);
 
+
         return NextResponse.json({
-            ...row1[0], 
+            // ...row1[0], 
             ...row2[0],
-            ...row3[0],
-            ...row4[0],
-            ...row5[0],
+            // ...row3[0],
+            // ...row4[0],
+            // ...row5[0],
         });
 
     } catch (error) {

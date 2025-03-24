@@ -40,7 +40,6 @@ export async function GET() {
         
             FROM invoices;
         `);        
-        
 
         // Second Query: Orders by Time of Day
         const [row2] = await connection.execute<RowDataPacket[]>(`

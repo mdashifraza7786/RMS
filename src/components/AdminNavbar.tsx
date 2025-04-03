@@ -34,10 +34,10 @@ const AdminNavbar: React.FC = () => {
     }
     
     return (
-        <div className={` w-full sticky top-0 z-50 shadow-sm`}>
+        <div className={` w-full sticky top-0 z-50 shadow-sm `}>
             {/* Top navbar */}
-            <div className="bg-[#1e4569] text-white">
-                <div className="container mx-auto px-4 md:px-6 lg:px-8 flex justify-between items-center h-16">
+            <div className="bg-[#1e4569] text-white px-[8vw]">
+                <div className="container mx-auto px-4  flex justify-between items-center h-16">
                     <div className="flex items-center">
                         <GrRestaurant className="w-5 h-5 mr-2 text-white" />
                         <span className="font-semibold">Restaurant Management System</span>
@@ -60,8 +60,8 @@ const AdminNavbar: React.FC = () => {
             </div>
             
             {/* Navigation menu */}
-            <div className="bg-white border-b">
-                <div className="container mx-auto px-4 md:px-6 lg:px-8">
+            <div className="bg-white border-b px-[8vw]">
+                <div className="container mx-auto">
                     <div className="flex items-center h-14 overflow-x-auto no-scrollbar">
                         <NavItem 
                             href="/" 

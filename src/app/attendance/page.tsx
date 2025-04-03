@@ -1,12 +1,14 @@
 "use client";
 import React, { useState, useEffect } from 'react';
-import { FaCheck } from "react-icons/fa6";
+import { FaCheck, FaCalendarAlt, FaUserCheck } from "react-icons/fa";
 import { RxCross2 } from "react-icons/rx";
 import { FiRefreshCcw } from "react-icons/fi";
+import { HiOutlineChevronLeft, HiOutlineChevronRight } from "react-icons/hi";
+import { IoMdClose } from "react-icons/io";
 import axios from 'axios';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { Bars } from 'react-loader-spinner'
+import { Bars } from 'react-loader-spinner';
 
 interface AttendanceItem {
     userid: string;
@@ -52,11 +54,16 @@ const Page: React.FC = () => {
             });
         });
         if (type === "update") {
+            try {
             await axios.post("/api/attendance/updateAttendence", {
                 userid: id,
                 status: status,
                 date: today
             });
+                toast.success(`Attendance ${status === 'present' ? 'marked as present' : 'marked as absent'}`);
+            } catch (error) {
+                toast.error('Failed to update attendance');
+            }
         }
     };
 
@@ -131,8 +138,6 @@ const Page: React.FC = () => {
                     const data = response.data.data || [];
                     setAttendanceData(data);
         
-                    console.warn(response.data); // Check API response
-        
                     const formatDate = (date: string | null | undefined) => 
                         date ? new Date(date).toISOString().split('T')[0] : formattedDate;
         
@@ -144,26 +149,50 @@ const Page: React.FC = () => {
                     setAvaiableDate(dates);
                     
                     // Set available dates from API response
-                    if (response.data.availableDates) {
-                        setAvailableDates(response.data.availableDates);
+                    if (response.data.availableDates && Array.isArray(response.data.availableDates)) {
+                        // Make sure all dates are in YYYY-MM-DD format
+                        const formattedDates = response.data.availableDates.map((date: string) => {
+                            // If already in YYYY-MM-DD format, return as is
+                            if (/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+                                return date;
+                            }
+                            // Otherwise, format it
+                            return new Date(date).toISOString().split('T')[0];
+                        });
+                        
+                        console.log("Formatted available dates:", formattedDates);
+                        setAvailableDates(formattedDates);
+                    } else {
+                        console.warn("No available dates in response or not an array:", response.data);
                     }
-                    
-                    console.warn("Updated AvailableDate:", dates); // Debugging
                 }
             } catch (error) {
                 toast.error('Failed to fetch attendance.');
+                console.error("Attendance fetch error:", error);
             } finally {
                 setAttendanceloading(false);
             }
         };
         
         fetchTodayAttendance();
-
+        document.title = "Staff Attendance";
     }, []);
 
     // Function to check if a date has attendance records
     const hasAttendanceRecords = (date: string) => {
-        return availableDates.includes(date);
+        // Make sure format matches what comes from API
+        return Array.isArray(availableDates) && availableDates.some(d => d === date);
+    };
+
+    // Format date for display
+    const formatDisplayDate = (dateString: string) => {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('en-US', { 
+            weekday: 'short', 
+            day: 'numeric', 
+            month: 'short', 
+            year: 'numeric' 
+        });
     };
 
     // Custom date picker with calendar
@@ -213,6 +242,11 @@ const Page: React.FC = () => {
                     // Check if the date has attendance records
                     const hasRecords = hasAttendanceRecords(dateStr);
                     
+                    // Debug for specific dates
+                    if (hasRecords || dateStr === today) {
+                        console.log(`Calendar date ${dateStr} - hasRecords: ${hasRecords}, isToday: ${dateStr === today}`);
+                    }
+                    
                     row.push({
                         day,
                         dateStr,
@@ -230,81 +264,97 @@ const Page: React.FC = () => {
         return (
             <div className="bg-white border border-gray-200 shadow-lg rounded-lg w-[320px] h-[380px] flex flex-col">
                 {/* Header with month/year and navigation */}
-                <div className="bg-primary text-white px-4 py-3 rounded-t-lg flex justify-between items-center">
+                <div className="bg-[#1e4569] text-white px-4 py-3 rounded-t-lg flex justify-between items-center">
                     <button 
-                        className="p-1 hover:bg-primary-dark rounded text-white"
+                        className="p-1 hover:bg-[#2c5983] rounded text-white transition-colors"
                         onClick={() => {
                             const newDate = new Date(currentMonth);
                             newDate.setMonth(newDate.getMonth() - 1);
                             setCurrentMonth(newDate);
                         }}
                     >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                        </svg>
+                        <HiOutlineChevronLeft className="h-5 w-5" />
                     </button>
                     <div className="font-medium text-center">
                         {currentMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
                     </div>
                     <button 
-                        className="p-1 hover:bg-primary-dark rounded text-white"
+                        className="p-1 hover:bg-[#2c5983] rounded text-white transition-colors"
                         onClick={() => {
                             const newDate = new Date(currentMonth);
                             newDate.setMonth(newDate.getMonth() + 1);
                             setCurrentMonth(newDate);
                         }}
                     >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                        </svg>
+                        <HiOutlineChevronRight className="h-5 w-5" />
                     </button>
                 </div>
                 
                 {/* Calendar body */}
-                <div className="flex-1 p-3 flex flex-col">
+                <div className="flex-1 overflow-hidden">
                     {/* Day headers */}
-                    <div className="grid grid-cols-7 gap-1 mb-1">
-                        {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, i) => (
-                            <div key={i} className="text-xs font-semibold text-gray-500 h-8 flex items-center justify-center">
-                                {day}
+                    <div className="grid grid-cols-7 border-b">
+                        {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map((dayName, i) => (
+                            <div key={i} className="h-8 flex items-center justify-center text-sm font-medium text-gray-500">
+                                {dayName}
                             </div>
                         ))}
                     </div>
                     
                     {/* Calendar grid */}
-                    <div className="grid grid-cols-7 gap-1 flex-1">
-                        {days.flat().map((cell, i) => (
-                            <div key={i} className="flex items-center justify-center">
-                                {cell ? (
-                                    <button
-                                        className={`w-8 h-8 rounded-full flex items-center justify-center text-sm transition
-                                            ${cell.isSelected ? 'bg-primary text-white shadow-md' : ''}
-                                            ${cell.isToday && !cell.isSelected ? 'border-2 border-primary' : ''}
-                                            ${!cell.isInRange ? 'text-gray-300 cursor-not-allowed' : cell.hasRecords ? 'hover:bg-gray-100 cursor-pointer' : 'text-gray-400 cursor-not-allowed'}
-                                            ${cell.hasRecords && !cell.isSelected ? 'font-bold text-blue-600' : ''}
-                                        `}
-                                        disabled={!cell.isInRange || !cell.hasRecords}
+                    <div className="flex-1">
+                        {days.map((row, rowIndex) => (
+                            <div key={rowIndex} className="grid grid-cols-7 h-[52px]">
+                                {row.map((cell, cellIndex) => {
+                                    if (!cell) {
+                                        return <div key={cellIndex} className="border-r border-b last:border-r-0 bg-gray-50"></div>;
+                                    }
+                                    
+                                    let cellClasses = "border-r border-b last:border-r-0 p-1 flex flex-col items-center justify-start relative";
+                                    
+                                    // Determine if cell should be clickable based on attendance records or if it's today
+                                    const isClickable = cell.hasRecords || cell.dateStr === today;
+                                    console.log(`Cell date: ${cell.dateStr}, hasRecords: ${cell.hasRecords}, isToday: ${cell.dateStr === today}, isClickable: ${isClickable}`);
+                                    
+                                    if (cell.isSelected) {
+                                        cellClasses += " bg-[#1e4569] text-white";
+                                    } else if (cell.isToday) {
+                                        cellClasses += " bg-blue-50";
+                                    } else if (!cell.isInRange) {
+                                        cellClasses += " bg-gray-100 text-gray-400 cursor-not-allowed";
+                                    } else if (isClickable) {
+                                        cellClasses += " hover:bg-blue-50 cursor-pointer";
+                                    } else {
+                                        cellClasses += " text-gray-400 cursor-not-allowed";
+                                    }
+                                    
+                                    return (
+                                        <div 
+                                            key={cellIndex}
+                                            className={cellClasses}
                                         onClick={() => {
-                                            if (cell.hasRecords) {
+                                                if (cell.isInRange && isClickable) {
                                                 setGetdate(cell.dateStr);
-                                                setShowCalendar(false); // Hide calendar after selecting a date
-                                            }
-                                        }}
-                                    >
-                                        {cell.day}
-                                    </button>
-                                ) : (
-                                    <div className="w-8 h-8"></div>
-                                )}
+                                                    setShowCalendar(false);
+                                                }
+                                            }}
+                                        >
+                                            <span className="text-sm">{cell.day}</span>
+                                            {cell.hasRecords && (
+                                                <div className="w-1.5 h-1.5 rounded-full bg-green-500 mt-1"></div>
+                                            )}
+                                        </div>
+                                    );
+                                })}
                             </div>
                         ))}
                     </div>
                 </div>
                 
                 {/* Footer */}
-                <div className="border-t border-gray-200 p-3 flex justify-between">
+                <div className="p-3 border-t flex justify-between items-center">
                     <button 
-                        className="text-xs text-primary hover:underline font-medium"
+                        className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-medium rounded transition-colors"
                         onClick={() => {
                             setGetdate(today);
                             setCurrentMonth(new Date());
@@ -313,7 +363,7 @@ const Page: React.FC = () => {
                         Today
                     </button>
                     <button 
-                        className="text-xs bg-gray-200 hover:bg-gray-300 text-gray-700 py-1 px-3 rounded font-medium"
+                        className="px-3 py-1.5 bg-[#1e4569] hover:bg-[#2c5983] text-white text-xs font-medium rounded transition-colors"
                         onClick={() => setShowCalendar(false)}
                     >
                         Close
@@ -323,164 +373,238 @@ const Page: React.FC = () => {
         );
     };
 
-    // Calendar Modal
+    // Modal for calendar
     const CalendarModal = () => {
         if (!showCalendar) return null;
         
         return (
-            <div className="fixed inset-0 z-50 overflow-auto bg-black bg-opacity-50 flex items-center justify-center p-4" 
-                 onClick={() => setShowCalendar(false)}>
-                <div className="relative" onClick={e => e.stopPropagation()}>
+            <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50 animate-fadeIn">
+                <div className="relative animate-scaleIn">
                     {renderCalendar()}
                 </div>
             </div>
         );
     };
 
-    // Initialize currentMonth based on selected date during mount
-    useEffect(() => {
-        if (getdate) {
-            setCurrentMonth(new Date(getdate));
-        }
-    }, []);
-
     return (
-        <div className='bg-[#e6e6e6] py-[5vh] px-[8vw] font-raleway flex flex-col gap-[6vh]'>
-            <h1 className="font-bold">Attendance</h1>
-            <section className='bg-white rounded-[10px] p-[4vh] font-semibold flex flex-col gap-3 relative'>
-                
-                {attendanceData && attendanceData.length > 0 && (
-                    <>
+        <>
+            <ToastContainer position="top-right" autoClose={3000} />
+            <div className="container mx-auto px-4 md:px-6 lg:px-8 xl:max-w-[1320px] 2xl:max-w-[1400px] py-8 font-sans">
+                {/* Page Header */}
+                <div className="flex items-center mb-6">
+                    <div className="h-10 w-10 rounded-lg bg-[#1e4569]/10 flex items-center justify-center mr-3">
+                        <FaUserCheck className="text-[#1e4569]" size={20} />
+                    </div>
+                    <h1 className="text-2xl font-bold text-gray-800">Staff Attendance</h1>
+                </div>
+
+                {/* Main Content */}
+                <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                    {/* Header with date picker, search and filters */}
+                    <div className="p-6 border-b border-gray-100">
                         <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
-                            <div className="flex items-center gap-4">
-                                <div className="text-[#222121] font-medium">
-                                    Date: <span className="text-primary font-bold ml-2">{new Date(getdate).toLocaleDateString()}</span>
-                                </div>
+                            <div className="flex flex-wrap gap-4 items-center">
+                                {/* Date selector */}
                                 <button
+                                    className="inline-flex items-center px-4 py-2 bg-[#1e4569]/10 hover:bg-[#1e4569]/15 text-[#1e4569] rounded-lg transition-colors"
                                     onClick={() => setShowCalendar(true)}
-                                    className="flex items-center gap-2 bg-primary text-white px-3 py-2 rounded-md hover:bg-primary/90 transition"
                                 >
-                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                    </svg>
-                                    Calendar
+                                    <FaCalendarAlt className="mr-2" />
+                                    <span className="font-medium">{formatDisplayDate(getdate)}</span>
+                                </button>
+
+                                {/* Generate attendance button */}
+                                <button 
+                                    className={`inline-flex items-center px-4 py-2 rounded-lg font-medium transition-colors ${
+                                        getdate === today 
+                                            ? 'bg-green-600 hover:bg-green-700 text-white' 
+                                            : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                                    }`}
+                                    onClick={handleGenerateAttendance}
+                                    disabled={getdate !== today || loading}
+                                >
+                                    <FiRefreshCcw className={`mr-2 ${loading ? 'animate-spin' : ''}`} />
+                                    {loading ? 'Generating...' : 'Generate Attendance'}
                                 </button>
                             </div>
 
-                            <div className="flex items-center gap-3">
+                            <div className="flex flex-wrap gap-4 items-center">
+                                {/* Search */}
+                                <div className="relative">
+                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <svg className="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                            <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
+                                        </svg>
+                                    </div>
                                 <input
-                                    type='search'
-                                    placeholder='Search Name, ID...'
-                                    className='border border-[#807c7c] rounded-md px-4 py-1 w-[220px] h-[40px] outline-none'
+                                        type="text"
+                                        placeholder="Search by ID or name"
+                                        className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-[#1e4569] focus:border-[#1e4569] w-full md:w-64"
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
                                 />
-                                
-                                <div
-                                    className={`px-4 py-1 rounded-md cursor-pointer text-center min-w-[60px] h-[40px] flex items-center justify-center ${selectedRole === 'All' ? 'font-medium bg-[#FA9F1B70] text-[#fc9802e3]' : 'hover:bg-gray-100'}`}
-                                    onClick={() => setSelectedRole('All')}
-                                >
-                                    All
                                 </div>
-                                <div
-                                    className={`px-4 py-1 rounded-md cursor-pointer text-center min-w-[60px] h-[40px] flex items-center justify-center ${selectedRole === 'chef' ? 'font-medium bg-[#FA9F1B70] text-[#fc9802e3]' : 'hover:bg-gray-100'}`}
-                                    onClick={() => setSelectedRole('chef')}
-                                >
-                                    Chef
-                                </div>
-                                <div
-                                    className={`px-4 py-1 rounded-md cursor-pointer text-center min-w-[60px] h-[40px] flex items-center justify-center ${selectedRole === 'waiter' ? 'font-medium bg-[#FA9F1B70] text-[#fc9802e3]' : 'hover:bg-gray-100'}`}
-                                    onClick={() => setSelectedRole('waiter')}
-                                >
-                                    Waiter
+
+                                {/* Role filter */}
+                                <div className="flex space-x-2">
+                                    {['All', 'Manager', 'Chef', 'Waiter', 'Cashier'].map((role) => (
+                                        <button
+                                            key={role}
+                                            onClick={() => setSelectedRole(role)}
+                                            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                                                selectedRole === role 
+                                                ? 'bg-[#1e4569] text-white' 
+                                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                            }`}
+                                        >
+                                            {role}
+                                        </button>
+                                    ))}
                                 </div>
                             </div>
                         </div>
-                    </>
-                )}
+                    </div>
 
-                {/* Calendar Modal */}
-                <CalendarModal />
-
-                {attendanceData && attendanceData.length > 0 ? (
-                    <table className="table-fixed w-full border-collapse">
-                        <thead>
-                            <tr className='bg-primary text-white font-light'>
-                                <th className="px-4 py-2 text-left w-[9.375rem]">ID</th>
-                                <th className="px-4 py-2 text-left w-[15.625rem]">Full Name</th>
-                                <th className="px-4 py-2 text-left w-[9.375rem]">Role</th>
-                                <th className="px-4 py-2 text-left w-[6.25rem]">Action</th>
+                    {/* Table */}
+                    <div className="overflow-x-auto">
+                        {attendanceloading ? (
+                            <div className="flex justify-center items-center py-12">
+                                <Bars height="50" width="50" color="#1e4569" ariaLabel="bars-loading" />
+                            </div>
+                        ) : (
+                            <table className="min-w-full divide-y divide-gray-200 table-fixed">
+                                <thead className="bg-gray-50">
+                                    <tr>
+                                        <th className="w-24 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            ID
+                                        </th>
+                                        <th className="w-48 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Name
+                                        </th>
+                                        <th className="w-32 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Role
+                                        </th>
+                                        <th className="w-48 px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Status
+                                        </th>
+                                        <th className="w-36 px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Action
+                                        </th>
                             </tr>
                         </thead>
-
-                        <tbody>
-                            {filteredData.map((item, index) => (
-                                <tr key={index} className='text-[14px] font-medium font-montserrat'>
-                                    <td className="border px-4 py-4 transition-colors duration-300 w-[9.375rem] truncate">{item.userid}</td>
-                                    <td className="border px-4 py-4 transition-colors duration-300 w-[15.625rem] truncate">{item.name}</td>
-                                    <td className="border px-4 py-4 transition-colors duration-300 w-[9.375rem] truncate">{item.role.toUpperCase()}</td>
-                                    <td className="border px-4 py-4 transition-colors duration-300 w-[6.25rem]">
+                                <tbody className="bg-white divide-y divide-gray-200">
+                                    {filteredData.length > 0 ? (
+                                        filteredData.map((item, index) => (
+                                            <tr key={index} className="hover:bg-gray-50 transition duration-150">
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                                    {item.userid}
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                    {item.name}
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                    {item.role}
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-center">
                                         {item.status === 'present' ? (
-                                            <button
-                                                onClick={() => giveAttendance(item.userid, 'present', "reset")}
-                                                className="bg-supporting2 text-white px-4 py-2 rounded text-[0.75rem] w-full flex items-center justify-between">
-                                                <div>PRESENT</div> <FaCheck />
-                                            </button>
+                                                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                            PRESENT
+                                                        </span>
                                         ) : item.status === 'absent' ? (
-                                            <button
-                                                onClick={() => giveAttendance(item.userid, 'absent', "reset")}
-                                                className="bg-bgred text-white px-4 py-2 rounded text-[0.75rem] w-full flex items-center justify-between">
-                                                <div>ABSENT</div> <RxCross2 />
-                                            </button>
-                                        ) : (
-                                            <div className='flex gap-2'>
+                                                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                                            ABSENT
+                                                        </span>
+                                                    ) : (
+                                                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
+                                                            NOT MARKED
+                                                        </span>
+                                                    )}
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
+                                                    <div className="flex justify-center gap-2">
                                                 <button
-                                                    onClick={() => giveAttendance(item.userid, 'absent', "update")}
-                                                    className="bg-bgred text-white px-3 py-2 rounded text-[0.75rem] w-[6.875rem] flex items-center justify-between">
-                                                    <div>ABSENT</div> <RxCross2 />
+                                                            disabled={getdate !== today}
+                                                            onClick={() => giveAttendance(item.userid, 'present', 'update')}
+                                                            className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium ${
+                                                                item.status === 'present'
+                                                                    ? 'bg-green-600 text-white'
+                                                                    : getdate !== today
+                                                                    ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                                                                    : 'bg-green-100 text-green-800 hover:bg-green-200'
+                                                            } transition-colors`}
+                                                        >
+                                                            <FaCheck className="mr-1" />
+                                                            Present
                                                 </button>
                                                 <button
-                                                    onClick={() => giveAttendance(item.userid, 'present', "update")}
-                                                    className="bg-supporting2 text-white px-3 py-2 rounded text-[0.75rem] w-[6.875rem] flex items-center justify-between">
-                                                    <div>PRESENT</div> <FaCheck />
+                                                            disabled={getdate !== today}
+                                                            onClick={() => giveAttendance(item.userid, 'absent', 'update')}
+                                                            className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium ${
+                                                                item.status === 'absent'
+                                                                    ? 'bg-red-600 text-white'
+                                                                    : getdate !== today
+                                                                    ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                                                                    : 'bg-red-100 text-red-800 hover:bg-red-200'
+                                                            } transition-colors`}
+                                                        >
+                                                            <RxCross2 className="mr-1" />
+                                                            Absent
                                                 </button>
                                             </div>
-                                        )}
+                                                </td>
+                                            </tr>
+                                        ))
+                                    ) : (
+                                        <tr>
+                                            <td colSpan={5} className="py-12 text-center">
+                                                <div className="flex flex-col items-center justify-center text-gray-500">
+                                                    <svg 
+                                                        xmlns="http://www.w3.org/2000/svg"
+                                                        fill="none" 
+                                                        viewBox="0 0 24 24" 
+                                                        stroke="currentColor" 
+                                                        className="w-16 h-16 mb-4 text-gray-300"
+                                                    >
+                                                        <path 
+                                                            strokeLinecap="round" 
+                                                            strokeLinejoin="round" 
+                                                            strokeWidth="1" 
+                                                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                                                        />
+                                                    </svg>
+                                                    <p className="text-lg font-medium">No attendance records found</p>
+                                                    <p className="mt-1 text-sm">Try adjusting your search criteria or generate attendance for today.</p>
+                                                </div>
                                     </td>
                                 </tr>
-                            ))}
+                                    )}
                         </tbody>
                     </table>
-                 ) : attendanceloading ? (
-                    <div className='flex items-center justify-center h-[30vh]'>
-                        <Bars
-                            height="80"
-                            width="80"
-                            color="#25476A"
-                            ariaLabel="bars-loading"
-                            wrapperStyle={{}}
-                            wrapperClass=""
-                            visible={true}
-                        />
+                        )}
                     </div>
-                ) : (
-                    // generate div
-                    <div className='flex flex-col gap-5 items-center justify-center h-[30vh]'>
-                        <p className='text-[18px] font-bold font-montserrat'>Please Generate Attendance for today.</p>
-                        <button
-                            onClick={handleGenerateAttendance}
-                            className="bg-primary text-white px-4 py-2 rounded flex items-center gap-2"
-                            disabled={loading}
-                        >
-                            <FiRefreshCcw className={loading ? 'animate-spin' : ''} />
-                            <span>{loading ? 'Generating...' : 'Generate Attendance'}</span>
-                        </button>
                     </div>
-                )}
-
-            </section>
-            <ToastContainer />
         </div>
+
+            {/* Calendar Modal */}
+            <CalendarModal />
+
+            <style jsx global>{`
+                @keyframes fadeIn {
+                    from { opacity: 0; }
+                    to { opacity: 1; }
+                }
+                @keyframes scaleIn {
+                    from { transform: scale(0.95); opacity: 0; }
+                    to { transform: scale(1); opacity: 1; }
+                }
+                .animate-fadeIn {
+                    animation: fadeIn 0.2s ease-out;
+                }
+                .animate-scaleIn {
+                    animation: scaleIn 0.3s ease-out;
+                }
+            `}</style>
+        </>
     );
 };
 

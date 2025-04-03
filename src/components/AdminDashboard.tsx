@@ -417,7 +417,7 @@ const AdminDashboard: React.FC = () => {
     };
 
     return (
-        <div className="min-h-screen">
+        <div className="min-h-screen py-[5vh] px-[8vw]">
             {/* Dashboard Header */}
             <div className="">
                 <div className="container mx-auto px-6 py-4">

@@ -6,6 +6,7 @@ import PieChart from '../chartConfiguration/Pie';
 import LineChart from '../chartConfiguration/Line';
 import { ChartOptions } from 'chart.js';
 import { FaChartBar, FaChartPie, FaChartLine, FaCalendarAlt, FaFilter, FaExchangeAlt } from 'react-icons/fa';
+import axios from 'axios';
 
 type ChartKey =
     'Menu Item vs Demand' |
@@ -14,15 +15,81 @@ type ChartKey =
     'Orders vs Timeline' |
     'Orders vs Age Group';
 
+interface Data {
+    orders_week_breakfast: string;
+    orders_week_lunch: string;
+    orders_week_evening: string;
+    orders_week_dinner: string;
+    orders_month_breakfast: string;
+    orders_month_lunch: string;
+    orders_month_evening: string;
+    orders_month_dinner: string;
+    orders_year_breakfast: string;
+    orders_year_lunch: string;
+    orders_year_evening: string;
+    orders_year_dinner: string;
+    sunday_orders: string;
+    monday_orders: string;
+    tuesday_orders: string;
+    wednesday_orders: string;
+    thursday_orders: string;
+    friday_orders: string;
+    saturday_orders: string;
+    week1_orders: string;
+    week2_orders: string;
+    week3_orders: string;
+    week4_orders: string;
+    jan_orders: string;
+    feb_orders: string;
+    march_orders: string;
+    april_orders: string;
+    may_orders: string;
+    june_orders: string;
+    july_orders: string;
+    aug_orders: string;
+    sept_orders: string;
+    oct_orders: string;
+    nov_orders: string;
+    dec_orders: string;
+    children_week: string;
+    teens_week: string;
+    adults_week: string;
+    middle_aged_week: string;
+    seniors_week: string;
+    children_month: string;
+    teens_month: string;
+    adults_month: string;
+    middle_aged_month: string;
+    seniors_month: string;
+    children_year: string;
+    teens_year: string;
+    adults_year: string;
+    middle_aged_year: string;
+    seniors_year: string;
+    menuItems: Array<{ item_name: string; orders_last_week: number; orders_last_month: number; orders_last_year: number }>;
+    dishCategories: {
+        orders_week_maincourse: number;
+        orders_week_beverages: number;
+        orders_week_starter: number;
+        orders_week_dessert: number;
+        orders_month_maincourse: number;
+        orders_month_beverages: number;
+        orders_month_starter: number;
+        orders_month_dessert: number;
+        orders_year_maincourse: number;
+        orders_year_beverages: number;
+        orders_year_starter: number;
+        orders_year_dessert: number;
+    };
+}
+
 const Demand: React.FC = () => {
     const [chartXY, setChartXY] = useState<ChartKey>('Menu Item vs Demand');
     const [chartType, setChartType] = useState<'bar' | 'pie' | 'line'>('bar');
     const [timeFrame, setTimeFrame] = useState<'weekly' | 'monthly' | 'yearly'>('weekly');
+    const [loading, setLoading] = useState(true);
+    const [data, setData] = useState<Data | null>(null);
     const [comparisonMode, setComparisonMode] = useState(false);
-
-    useEffect(() => {
-        document.title = "Sales";
-    }, []);
 
     const colors = useMemo(() => [
         '#00589C', '#016FC4', '#1891C3', '#3AC0DA', '#3DC6C3', '#50E3C2',
@@ -30,7 +97,38 @@ const Demand: React.FC = () => {
         '#90BE6D', '#43AA8B', '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0'
     ], []);
 
+    // Fetch data
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                setLoading(true);
+                const response = await axios.get('/api/chart/demandChart');
+                setData(response.data);
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchData();
+    }, []);
+
     const generateData = (label: string) => {
+        if (!data) {
+            return {
+                labels: ['No Data'],
+                datasets: [{
+                    label,
+                    data: [0],
+                    backgroundColor: ['#CCCCCC'],
+                    borderColor: ['#AAAAAA'],
+                    borderWidth: 1,
+                    hoverOffset: 10,
+                }]
+            };
+        }
+
         if (chartXY === 'Dish Category vs Demand') {
             return {
                 labels: ['Main Course', 'Starter', 'Desserts', 'Beverages'],
@@ -67,10 +165,13 @@ const Demand: React.FC = () => {
                 labels: ['Breakfast', 'Lunch', 'Evening', 'Dinner'],
                 datasets: [{
                     label,
-                    data: timeFrame === 'weekly' ? [500, 800, 1200, 700] :
-                        timeFrame === 'monthly' ? [5000, 800, 1200, 700] : [500, 8000, 1200, 700],
-                    backgroundColor: colors.slice(0, 8),
-                    borderColor: colors.slice(0, 8),
+                    data: timeFrame === 'weekly'
+                        ? [data.orders_week_breakfast, data.orders_week_lunch, data.orders_week_evening, data.orders_week_dinner]
+                        : timeFrame === 'monthly'
+                        ? [data.orders_month_breakfast, data.orders_month_lunch, data.orders_month_evening, data.orders_month_dinner]
+                        : [data.orders_year_breakfast, data.orders_year_lunch, data.orders_year_evening, data.orders_year_dinner],
+                    backgroundColor: colors.slice(0, 4),
+                    borderColor: colors.slice(0, 4),
                     borderWidth: 1,
                     hoverOffset: 10,
                 }]
@@ -79,12 +180,25 @@ const Demand: React.FC = () => {
 
         if (chartXY === 'Orders vs Timeline') {
             return {
-                labels: timeFrame === 'weekly' ? ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'] :
-                    timeFrame === 'monthly' ? ['Week 1', 'Week 2', 'Week 3', 'Week 4'] : ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'June', 'July', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                labels: timeFrame === 'weekly'
+                    ? ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+                    : timeFrame === 'monthly'
+                    ? ['Week 1', 'Week 2', 'Week 3', 'Week 4']
+                    : ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'June', 'July', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
                 datasets: [{
                     label,
-                    data: timeFrame === 'weekly' ? [500, 800, 1200, 700, 452, 652, 865] :
-                        timeFrame === 'monthly' ? [500, 800, 1200, 700, 452, 652, 865] : [500, 800, 1200, 700, 452, 652, 865],
+                    data: timeFrame === 'weekly'
+                        ? [
+                            data.sunday_orders, data.monday_orders, data.tuesday_orders,
+                            data.wednesday_orders, data.thursday_orders, data.friday_orders, data.saturday_orders
+                        ]
+                        : timeFrame === 'monthly'
+                        ? [data.week1_orders, data.week2_orders, data.week3_orders, data.week4_orders]
+                        : [
+                            data.jan_orders, data.feb_orders, data.march_orders, data.april_orders,
+                            data.may_orders, data.june_orders, data.july_orders, data.aug_orders,
+                            data.sept_orders, data.oct_orders, data.nov_orders, data.dec_orders
+                        ],
                     backgroundColor: colors.slice(0, timeFrame === 'weekly' ? 7 : (timeFrame === 'monthly' ? 4 : 12)),
                     borderColor: colors.slice(0, timeFrame === 'weekly' ? 7 : (timeFrame === 'monthly' ? 4 : 12)),
                     borderWidth: 1,
@@ -93,24 +207,36 @@ const Demand: React.FC = () => {
             };
         }
 
-        else {
+        if (chartXY === 'Orders vs Age Group') {
             return {
-                labels: ['<10', '10-18', '18-25', '25-40', '40-60', '60+'],
+                labels: ['<10', '10-18', '18-40', '40-60', '60+'],
                 datasets: [{
                     label,
-                    data: timeFrame === 'weekly' ? [500, 800, 1200, 700] :
-                        timeFrame === 'monthly' ? [5000, 800, 1200, 700] : [500, 8000, 1200, 700],
-                    backgroundColor: colors.slice(0, 8),
-                    borderColor: colors.slice(0, 8),
+                    data: timeFrame === 'weekly'
+                        ? [data.children_week, data.teens_week, data.adults_week, data.middle_aged_week, data.seniors_week]
+                        : timeFrame === 'monthly'
+                        ? [data.children_month, data.teens_month, data.adults_month, data.middle_aged_month, data.seniors_month]
+                        : [data.children_year, data.teens_year, data.adults_year, data.middle_aged_year, data.seniors_year],
+                    backgroundColor: colors.slice(0, 5),
+                    borderColor: colors.slice(0, 5),
                     borderWidth: 1,
                     hoverOffset: 10,
                 }]
             };
         }
 
-
+        return {
+            labels: ['No Data'],
+            datasets: [{
+                label,
+                data: [0],
+                backgroundColor: ['#CCCCCC'],
+                borderColor: ['#AAAAAA'],
+                borderWidth: 1,
+                hoverOffset: 10,
+            }]
+        };
     };
-
 
     const chartData = useMemo(() => {
         const label = chartXY === 'Orders vs Timeline' || chartXY.includes('Demand') ? 'Orders' : 'Orders';
@@ -126,7 +252,6 @@ const Demand: React.FC = () => {
         }
         return generateData(label);
     }, [chartXY, colors, timeFrame, comparisonMode]);
-
 
     const chartOptions: ChartOptions<'bar'> | ChartOptions<'line'> = useMemo(() => {
         const xAxisLabels: Record<ChartKey, string> = {
@@ -184,18 +309,15 @@ const Demand: React.FC = () => {
                 tooltip: {
                     callbacks: {
                         label: function (context: any) {
-                            // Get the correct tooltip label based on chart type
                             const value = context.raw;
-                            const label = tooltipLabels[chartXY] || '';  // Fetch the appropriate label
-                            return `${value} ${label}`;  // Return only the value and correct label
+                            const label = tooltipLabels[chartXY] || '';
+                            return `${value} ${label}`;
                         }
                     }
                 },
             },
         };
     }, [chartType, chartXY, timeFrame]);
-
-
 
     return (
         <div className="flex flex-col gap-4">
@@ -257,8 +379,8 @@ const Demand: React.FC = () => {
                     <div className="flex gap-2">
                         <button
                             className={`flex-1 flex items-center justify-center p-2 text-sm rounded-md transition-colors ${chartType === 'bar'
-                                    ? 'bg-[#FF9B26] text-white'
-                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                ? 'bg-[#FF9B26] text-white'
+                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                                 }`}
                             onClick={() => setChartType('bar')}
                         >
@@ -266,8 +388,8 @@ const Demand: React.FC = () => {
                         </button>
                         <button
                             className={`flex-1 flex items-center justify-center p-2 text-sm rounded-md transition-colors ${chartType === 'line'
-                                    ? 'bg-[#FF9B26] text-white'
-                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                ? 'bg-[#FF9B26] text-white'
+                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                                 }`}
                             onClick={() => setChartType('line')}
                         >
@@ -275,8 +397,8 @@ const Demand: React.FC = () => {
                         </button>
                         <button
                             className={`flex-1 flex items-center justify-center p-2 text-sm rounded-md transition-colors ${chartType === 'pie'
-                                    ? 'bg-[#FF9B26] text-white'
-                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                ? 'bg-[#FF9B26] text-white'
+                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                                 }`}
                             onClick={() => setChartType('pie')}
                         >

@@ -38,7 +38,7 @@ const ChefChart: React.FC = () => {
                 
                 // Check if the API already returns the correct format
                 if (response.data && response.data.chefs && response.data.ratings) {
-                    console.log("API returned formatted data:", response.data);
+                    // console.log("API returned formatted data:", response.data);
                     setData(response.data);
                 } 
                 // Handle case where API returns array of chef objects
@@ -172,12 +172,12 @@ const ChefChart: React.FC = () => {
         const result = generateData(labels[chartXY]);
         
         // Debug logging
-        console.log("Chart data generated:", {
-            chartXY,
-            timeFrame,
-            labels: result.labels,
-            data: result.datasets?.[0]?.data,
-        });
+        // console.log("Chart data generated:", {
+        //     chartXY,
+        //     timeFrame,
+        //     labels: result.labels,
+        //     data: result.datasets?.[0]?.data,
+        // });
         
         return result;
     }, [chartXY, timeFrame, data, chartType]);

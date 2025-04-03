@@ -161,6 +161,7 @@ const Sales: React.FC = () => {
             try {
                 setLoading(true);
                 const response = await axios.get('/api/chart/salesChart');
+                // console.log('API response:', response.data); // Log the API response
                 setData(response.data);
             } catch (error) {
                 console.error('Error fetching data:', error);
@@ -173,6 +174,7 @@ const Sales: React.FC = () => {
 
         fetchData();
     }, []);
+
 
     // Generate mock data for testing or when API fails
     const generateMockData = (): Data => {

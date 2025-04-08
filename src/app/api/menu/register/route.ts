@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 
 export async function POST(request: Request) {
     const data = await request.json();
-    const { item_name, item_description, item_foodtype, item_price, item_type , item_thumbnail } = data;
+    const { item_name, item_description, item_foodtype, item_price,making_cost, item_type , item_thumbnail } = data;
 
     let foodType: string;
     switch (item_foodtype) {
@@ -41,14 +41,15 @@ export async function POST(request: Request) {
 
         // Insert into menu table
         const [userResult] = await connection.query(`
-            INSERT INTO menu (item_id, item_description, item_name, item_foodtype, item_price, item_thumbnail, item_type) 
-            VALUES (?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO menu (item_id, item_description, item_name, item_foodtype, item_price,making_cost, item_thumbnail, item_type) 
+            VALUES (?, ?, ?, ?, ?,?, ?, ?)
         `, [
             uniqueID, 
             item_description, 
             item_name, 
             item_foodtype, 
             item_price, 
+            making_cost,
             item_thumbnail, 
             item_type
         ]);

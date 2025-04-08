@@ -6,12 +6,12 @@ import PieChart from '../chartConfiguration/Pie';
 import LineChart from '../chartConfiguration/Line';
 import { ChartOptions, TooltipItem, ChartData } from 'chart.js';
 import { FaChartBar, FaChartPie, FaChartLine, FaCalendarAlt, FaFilter, FaExchangeAlt } from 'react-icons/fa';
+import axios from 'axios';
 
 // Define types for ChartKey and other possible values
 type ChartKey =
     'timeline vs profit' |
     'menu item vs profit' |
-    'timeline vs revenue/expenses' |
     'specific period of day vs profit of period' |
     'timeline vs profit by menu category' |
     'chef vs profit' |
@@ -33,11 +33,24 @@ function lightenColor(color: string, percent: number = 30): string {
         .toString(16).slice(1).toUpperCase()}`;
 }
 
+interface ProfitLossData {
+    row1: {
+        weeklyProfitLoss: Record<string, number>;
+        monthlyProfitLoss: Record<string, number>;
+        yearlyProfitLoss: Record<string, number>;
+    };
+    row3: {
+        data: Record<string, Record<string, { profit_loss: number }>>;
+    };
+}
+
 const ProfitLoss: React.FC = () => {
     const [chartXY, setChartXY] = useState<ChartKey>('timeline vs profit');
     const [chartType, setChartType] = useState<'bar' | 'pie' | 'line'>('bar');
     const [timeFrame, setTimeFrame] = useState<'weekly' | 'monthly' | 'yearly'>('weekly');
     const [comparisonMode, setComparisonMode] = useState(false);
+    const [profitLossData, setProfitLossData] = useState<ProfitLossData | null>(null);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         document.title = "Profit";
@@ -49,6 +62,24 @@ const ProfitLoss: React.FC = () => {
         '#90BE6D', '#43AA8B', '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0'
     ], []);
 
+    // Fetch data
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                setLoading(true);
+                const response = await axios.get('/api/chart/profitLossChart');
+                console.log('API response:', response.data); // Log the API response
+                setProfitLossData(response.data);
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchData();
+    }, []);
+
     const generateData = (label: string) => {
         if (chartXY === 'timeline vs profit') {
             return {
@@ -57,9 +88,9 @@ const ProfitLoss: React.FC = () => {
                         ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'June', 'July', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
                 datasets: [{
                     label,
-                    data: timeFrame === 'weekly' ? [500, 800, 1200, 700, 1100, 950, -1000] :
-                        timeFrame === 'monthly' ? [4000, 6000, 5500, 7000] :
-                            [15000, 20000, 18000, 22000],
+                    data: timeFrame === 'weekly' ? [profitLossData?.row1.weeklyProfitLoss.sunday_pl, profitLossData?.row1.weeklyProfitLoss.monday_pl, profitLossData?.row1.weeklyProfitLoss.tuesday_pl, profitLossData?.row1.weeklyProfitLoss.wednesday_pl, profitLossData?.row1.weeklyProfitLoss.thursday_pl, profitLossData?.row1.weeklyProfitLoss.friday_pl, profitLossData?.row1.weeklyProfitLoss.saturday_pl] :
+                        timeFrame === 'monthly' ? [profitLossData?.row1.monthlyProfitLoss.week1_pl, profitLossData?.row1.monthlyProfitLoss.week2_pl, profitLossData?.row1.monthlyProfitLoss.week3_pl, profitLossData?.row1.monthlyProfitLoss.week4_pl] :
+                            [profitLossData?.row1.yearlyProfitLoss.jan_pl, profitLossData?.row1.yearlyProfitLoss.feb_pl, profitLossData?.row1.yearlyProfitLoss.mar_pl, profitLossData?.row1.yearlyProfitLoss.apr_pl, profitLossData?.row1.yearlyProfitLoss.may_pl, profitLossData?.row1.yearlyProfitLoss.june_pl, profitLossData?.row1.yearlyProfitLoss.july_pl, profitLossData?.row1.yearlyProfitLoss.aug_pl, profitLossData?.row1.yearlyProfitLoss.sep_pl, profitLossData?.row1.yearlyProfitLoss.oct_pl, profitLossData?.row1.yearlyProfitLoss.nov_pl, profitLossData?.row1.yearlyProfitLoss.dec_pl],
                     backgroundColor: colors.slice(0, timeFrame === 'weekly' ? 7 : (timeFrame === 'monthly' ? 4 : 12)),
                     borderColor: colors.slice(0, timeFrame === 'weekly' ? 7 : (timeFrame === 'monthly' ? 4 : 12)),
                     borderWidth: 1,
@@ -83,28 +114,15 @@ const ProfitLoss: React.FC = () => {
             };
         }
 
-        if (chartXY === 'timeline vs revenue/expenses') {
-            return {
-                labels: ['Breakfast', 'Lunch', 'Evening', 'Dinner', 'Overall'],
-                datasets: [{
-                    label,
-                    data: timeFrame === 'weekly' ? [500, -800, 1200, 700, 256] :
-                        timeFrame === 'monthly' ? [5000, -800, 1200, -700, 456] : [-500, 8000, -1200, , 487, 700],
-                    backgroundColor: colors.slice(0, 8),
-                    borderColor: colors.slice(0, 8),
-                    borderWidth: 1,
-                    hoverOffset: 10,
-                }]
-            };
-        }
-
         if (chartXY === 'specific period of day vs profit of period') {
             return {
-                labels: ['8 AM', '9 AM', '10 AM', '11 AM', '12 PM', '1 PM', '2 PM', '3 PM', '4 PM', '5 PM', '6 PM', '7 PM', '8 PM', '9 PM', '10 PM', '11 PM'],
+                labels: ['Breakfast', 'Lunch', 'Evening', 'Dinner'],
                 datasets: [{
                     label,
-                    data: timeFrame === 'weekly' ? [500, 800, 1200, 700, 452, 652, 865, 500, 800, 1200, 700, 452, 652, 865, 500, 800, 1200, 700, 452, 652, 865] :
-                        timeFrame === 'monthly' ? [500, 800, 1200, 700, 452, 652, 5, 500, 800, 1200, 700, 452, 652, 5, 500, 800, 1200, 700, 452, 652, 5] : [500, 800, 1200, 700, 452, 652, 5, 500, 800, 1200, 700, 452, 652, 5, 500, 800, 1200, 700, 452, 652, 865],
+                    data: timeFrame === 'weekly' ? [profitLossData?.row3.data.breakfast.week.profit_loss, profitLossData?.row3.data.lunch.week.profit_loss, profitLossData?.row3.data.evening.week.profit_loss, profitLossData?.row3.data.dinner.week.profit_loss] :
+                        timeFrame === 'monthly' ? [profitLossData?.row3.data.breakfast.month.profit_loss, profitLossData?.row3.data.lunch.month.profit_loss, profitLossData?.row3.data.evening.month.profit_loss, profitLossData?.row3.data.dinner.month.profit_loss] :
+                         [profitLossData?.row3.data.breakfast.year.profit_loss, profitLossData?.row3.data.lunch.year.profit_loss, profitLossData?.row3.data.evening.year.profit_loss, profitLossData?.row3.data.dinner.year.profit_loss],
+                        
                     backgroundColor: colors.slice(0, 8),
                     borderColor: colors.slice(0, 8),
                     borderWidth: 1,
@@ -163,13 +181,16 @@ const ProfitLoss: React.FC = () => {
                 timeFrame === 'monthly' ? ['Week 1', 'Week 2', 'Week 3', 'Week 4'] :
                     ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'June', 'July', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-            const profitValues = timeFrame === 'weekly' ? [7, 800, 1200, 700, 1100, 950, -1000] :
-                timeFrame === 'monthly' ? [4000, 6000, 5500, 7000] :
-                    [15000, 20000, 18000, 22000];
+            const profitValues = timeFrame === 'weekly' ? [profitLossData?.row1.weeklyProfitLoss.sunday_pl, profitLossData?.row1.weeklyProfitLoss.monday_pl, profitLossData?.row1.weeklyProfitLoss.tuesday_pl, profitLossData?.row1.weeklyProfitLoss.wednesday_pl, profitLossData?.row1.weeklyProfitLoss.thursday_pl, profitLossData?.row1.weeklyProfitLoss.friday_pl, profitLossData?.row1.weeklyProfitLoss.saturday_pl] :
+                timeFrame === 'monthly' ? [profitLossData?.row1.monthlyProfitLoss.week1_pl, profitLossData?.row1.monthlyProfitLoss.week2_pl, profitLossData?.row1.monthlyProfitLoss.week3_pl, profitLossData?.row1.monthlyProfitLoss.week4_pl] :
+                [profitLossData?.row1.yearlyProfitLoss.jan_pl, profitLossData?.row1.yearlyProfitLoss.feb_pl, profitLossData?.row1.yearlyProfitLoss.mar_pl, profitLossData?.row1.yearlyProfitLoss.apr_pl, profitLossData?.row1.yearlyProfitLoss.may_pl, profitLossData?.row1.yearlyProfitLoss.june_pl, profitLossData?.row1.yearlyProfitLoss.july_pl, profitLossData?.row1.yearlyProfitLoss.aug_pl, profitLossData?.row1.yearlyProfitLoss.sep_pl, profitLossData?.row1.yearlyProfitLoss.oct_pl, profitLossData?.row1.yearlyProfitLoss.nov_pl, profitLossData?.row1.yearlyProfitLoss.dec_pl];
 
-            const profitGrowth = profitValues.map((profit, index) =>
-                index === 0 ? undefined : ((profit - profitValues[index - 1]) / profitValues[index - 1]) * 100
-            );
+            const profitGrowth = profitValues.map((profit, index) => {
+                if (index === 0) return undefined; // No growth for the first index
+                const previousProfit = profitValues[index - 1] ?? 0;
+                if (previousProfit === 0) return null; // Handle division by zero explicitly
+                return ((profit ?? 0) - previousProfit) / previousProfit * 100;
+            });
 
             const colorsSlice = colors.slice(0, labels.length);
 
@@ -214,7 +235,6 @@ const ProfitLoss: React.FC = () => {
         const xAxisLabels: Record<ChartKey, string> = {
             'timeline vs profit': timeFrame === 'weekly' ? 'Week Days' : (timeFrame === 'monthly' ? 'Weeks' : 'Months'),
             'menu item vs profit': 'Menu Items',
-            'timeline vs revenue/expenses': timeFrame === 'weekly' ? 'Week Days' : (timeFrame === 'monthly' ? 'Weeks' : 'Months'),
             'specific period of day vs profit of period': 'Period of Day',
             'timeline vs profit by menu category': 'Menu Category',
             'chef vs profit': 'Chef',
@@ -225,7 +245,6 @@ const ProfitLoss: React.FC = () => {
         const yAxisLabels: Record<ChartKey, string> = {
             'timeline vs profit': 'Net Profit (₹)',
             'menu item vs profit': 'Profit (₹)',
-            'timeline vs revenue/expenses': 'Revenue to expenses',
             'specific period of day vs profit of period': 'Profit (₹)',
             'timeline vs profit by menu category': 'Profit (₹)',
             'chef vs profit': 'Profit (₹)',
@@ -236,7 +255,6 @@ const ProfitLoss: React.FC = () => {
         const tooltipLabels: Record<ChartKey, string> = {
             'timeline vs profit': 'Profit (₹)',
             'menu item vs profit': 'Profit (₹)',
-            'timeline vs revenue/expenses': 'Revenue to expenses',
             'specific period of day vs profit of period': 'Profit (₹)',
             'timeline vs profit by menu category': 'Profit (₹)',
             'chef vs profit': 'Profit (₹)',
@@ -283,7 +301,7 @@ const ProfitLoss: React.FC = () => {
     }, [chartType, chartXY, timeFrame]);
 
     const containsNegativeValues = chartData.datasets.some(dataset =>
-        dataset.data.some((value) => value !== undefined && value < 0)
+        dataset.data.some((value) => value !== undefined && value !== null && value < 0)
     );
 
     return (
@@ -320,7 +338,6 @@ const ProfitLoss: React.FC = () => {
                     >
                         <option value="timeline vs profit">Timeline vs Net Profit</option>
                         <option value="menu item vs profit">Profit by Menu Item</option>
-                        <option value="timeline vs revenue/expenses">Timeline vs Revenue/Expenses</option>
                         <option value="specific period of day vs profit of period">Profit by period of day</option>
                         <option value="timeline vs profit by menu category">Profit by menu category</option>
                         <option value="chef vs profit">Chef Performance vs Profit</option>
@@ -349,8 +366,8 @@ const ProfitLoss: React.FC = () => {
                     <div className="flex gap-2">
                         <button
                             className={`flex-1 flex items-center justify-center p-2 text-sm rounded-md transition-colors ${chartType === 'bar'
-                                    ? 'bg-[#FF9B26] text-white'
-                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                ? 'bg-[#FF9B26] text-white'
+                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                                 }`}
                             onClick={() => setChartType('bar')}
                         >
@@ -358,8 +375,8 @@ const ProfitLoss: React.FC = () => {
                         </button>
                         <button
                             className={`flex-1 flex items-center justify-center p-2 text-sm rounded-md transition-colors ${chartType === 'line'
-                                    ? 'bg-[#FF9B26] text-white'
-                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                ? 'bg-[#FF9B26] text-white'
+                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                                 }`}
                             onClick={() => setChartType('line')}
                         >
@@ -367,8 +384,8 @@ const ProfitLoss: React.FC = () => {
                         </button>
                         <button
                             className={`flex-1 flex items-center justify-center p-2 text-sm rounded-md transition-colors ${chartType === 'pie'
-                                    ? 'bg-[#FF9B26] text-white'
-                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                ? 'bg-[#FF9B26] text-white'
+                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                                 }`}
                             onClick={() => setChartType('pie')}
                         >

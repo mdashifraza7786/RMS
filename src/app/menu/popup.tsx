@@ -25,6 +25,7 @@ const AddMenu: React.FC<AddMenuProps> = ({ popuphandle }) => {
         item_description: '',
         item_foodtype: 'veg',
         item_price: '',
+        making_cost: '', // Renamed field
     });
 
     const handleCategoryChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -82,6 +83,7 @@ const AddMenu: React.FC<AddMenuProps> = ({ popuphandle }) => {
             item_description: formValues.item_description,
             item_foodtype: formValues.item_foodtype,
             item_price: formValues.item_price,
+            making_cost: formValues.making_cost, // Added field
             item_type: selectedCategory,
             item_thumbnail: imagePreviewUrl,
         };
@@ -199,6 +201,21 @@ const AddMenu: React.FC<AddMenuProps> = ({ popuphandle }) => {
                                             placeholder="Enter price"
                                             className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all"
                                             value={formValues.item_price}
+                                            onChange={handleInputChange}
+                                            required
+                                        />
+                                    </div>
+                    
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-medium text-gray-700 flex items-center gap-1.5">
+                                            <MdOutlineAttachMoney /> Making Cost
+                                        </label>
+                                        <input
+                                            name="other_cost" // Added field
+                                            type="number"
+                                            placeholder="Enter cost"
+                                            className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all"
+                                            value={formValues.making_cost} // Added value
                                             onChange={handleInputChange}
                                             required
                                         />

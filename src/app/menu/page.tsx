@@ -14,6 +14,7 @@ interface EditData {
     item_name: string;
     item_foodtype: string;
     item_price: number;
+    making_cost?: number;
     item_type: string;
     item_thumbnail?: string;
 }
@@ -33,6 +34,7 @@ const Page: React.FC = () => {
         item_name: '',
         item_foodtype: '',
         item_price: 0,
+        making_cost: 0,
         item_thumbnail: '',
         item_type: ''
     });
@@ -41,7 +43,6 @@ const Page: React.FC = () => {
     const [deleteMenuId, setDeleteMenuId] = useState("");
     const [deleteMenuBoxValue, setDeleteMenuBoxValue] = useState("");
     const [deletePopupVisible, setDeletePopupVisible] = useState(false);
-
     const [menuData, setMenuData] = useState<EditData[]>([]);
     const [editLoading, setEditLoading] = useState<boolean>(false);
     const [newThumbnail, setNewThumbnail] = useState<string | null>(null);
@@ -138,6 +139,7 @@ const Page: React.FC = () => {
             setDeleteLoading(true);
             await axios.delete("/api/menu/delete", { data: { item_id: deleteMenuId } });
             setDeletePopupVisible(false);
+            alert("Menu item deleted successfully!");
         } catch (error) {
             console.error("Error deleting menu item:", error);
         } finally {
@@ -200,6 +202,7 @@ const Page: React.FC = () => {
                                         <th className='px-4 py-3 text-left w-[15%]'>Category</th>
                                         <th className='px-4 py-3 text-left w-[15%]'>Type</th>
                                         <th className="px-4 py-3 text-left w-[10%]">Price</th>
+                                        <th className="px-4 py-3 text-left w-[15%]">Making Cost</th>
                                         <th className="px-4 py-3 text-left w-[15%]">Image</th>
                                         <th className="px-4 py-3 text-left w-[20%]">Action</th>
                                     </tr>
@@ -213,6 +216,9 @@ const Page: React.FC = () => {
                                                 <td className="border border-gray-200 px-4 py-4 transition-colors duration-300">{item.item_foodtype == "veg" ? "Veg" : "Non Veg"}</td>
                                                 <td className="border border-gray-200 px-4 py-4 transition-colors duration-300">{item.item_type}</td>
                                                 <td className="border border-gray-200 px-4 py-4 transition-colors duration-300">₹ {item.item_price}</td>
+                                                <td className="border border-gray-200 px-4 py-4 transition-colors duration-300">₹ {item.making_cost}</td>
+                                                
+                                                {/* Thumbnail */}
                                                 <td className="border border-gray-200 px-4 py-4 transition-colors duration-300">
                                                     {item.item_thumbnail && (
                                                         <Image
@@ -350,6 +356,19 @@ const Page: React.FC = () => {
                                         name="item_price"
                                         value={editData.item_price}
                                         onChange={(e) => setEditData({ ...editData, item_price: Number(e.target.value) })}
+                                    />
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium text-gray-700">
+                                        Making Cost
+                                    </label>
+                                    <input
+                                        className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all"
+                                        type="number"
+                                        name="making_cost"
+                                        value={editData.making_cost}
+                                        onChange={(e) => setEditData({ ...editData, making_cost: Number(e.target.value) })}
                                     />
                                 </div>
                                 

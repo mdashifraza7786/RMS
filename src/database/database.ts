@@ -136,12 +136,35 @@ export async function getMenu() {
     try {
         // Fetch data from the 'menu' table
         const [userRows] = await connection.query<RowDataPacket[]>(
-            'SELECT item_id,item_description,item_name,item_foodtype,item_price,item_thumbnail,item_type FROM menu'
+            'SELECT item_id,item_description,item_name,item_foodtype,making_cost,item_price,item_thumbnail,item_type FROM menu'
         );
 
         if (userRows.length > 0) {
             return {
                 menu: userRows,
+            };
+        } else {
+            return false;
+        }
+
+    } catch (error: any) {
+        throw error;
+    } finally {
+        await connection.end();
+    }
+}
+
+export async function getExpenses() {
+    const connection = await dbConnect();
+    try {
+        // Fetch data from the 'expenses' table
+        const [userRows] = await connection.query<RowDataPacket[]>(
+            'SELECT id,expenses_for,frequency,cost,date FROM expenses'
+        );
+
+        if (userRows.length > 0) {
+            return {
+                expenses: userRows,
             };
         } else {
             return false;

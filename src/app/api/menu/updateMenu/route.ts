@@ -3,16 +3,16 @@ import {dbConnect, updateMenu} from "@/database/database";
 
 export async function PUT(request: NextRequest) {
         const connection = await dbConnect();
-        const { item_id, item_description, item_name, item_foodtype, item_price, item_thumbnail, item_type } = await request.json();
+        const { item_id, item_description, item_name, item_foodtype, item_price,making_cost, item_thumbnail, item_type } = await request.json();
     
         try {
             // Start transaction
             await connection.beginTransaction();
 
             await connection.query(
-                `UPDATE menu SET item_description = ?, item_name = ?, item_foodtype = ?, item_price = ?, item_thumbnail = ?,item_type = ?
+                `UPDATE menu SET item_description = ?, item_name = ?, item_foodtype = ?, item_price = ?,making_cost = ?, item_thumbnail = ?,item_type = ?
                  WHERE item_id = ?`,
-                [item_description, item_name, item_foodtype, item_price, item_thumbnail, item_type, item_id]
+                [item_description, item_name, item_foodtype, item_price,making_cost, item_thumbnail, item_type, item_id]
             );
     
             // Commit transaction

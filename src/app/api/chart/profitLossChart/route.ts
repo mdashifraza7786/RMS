@@ -1,74 +1,102 @@
 import { NextResponse } from "next/server";
 import { dbConnect } from "@/database/database";
 import mysql, { RowDataPacket } from "mysql2/promise";
+import { GET as pl1GET } from "./pl1";
+import { GET as pl3GET } from "./pl3";
 
 export async function GET() {
     const connection = await dbConnect();
 
+    // formula for Profit_Loss: total_amount - total_expenses
+
     try {
-        // Total Sales
-        const [sales] = await connection.execute<RowDataPacket[]>(`
-            SELECT 
-                SUM(total_amount) AS total_sales,
-                SUM(CASE WHEN generated_at >= DATE_SUB(CURDATE(), INTERVAL 1 WEEK) THEN total_amount ELSE 0 END) AS weekly_sales,
-                SUM(CASE WHEN generated_at >= DATE_SUB(CURDATE(), INTERVAL 1 MONTH) THEN total_amount ELSE 0 END) AS monthly_sales,
-                SUM(CASE WHEN generated_at >= DATE_SUB(CURDATE(), INTERVAL 1 YEAR) THEN total_amount ELSE 0 END) AS yearly_sales
-            FROM invoices;
-        `);
+        const row1 = await pl1GET();
+        const row3 = await pl3GET();
 
-        // Maintenance Costs
-        const maintenanceCostPerDay = 500; // Example: Fixed daily cost
-        const [days] = await connection.execute<RowDataPacket[]>(`
-            SELECT DATEDIFF(CURDATE(), MIN(generated_at)) AS total_days FROM invoices;
-        `);
-        const totalMaintenanceCost = days[0].total_days * maintenanceCostPerDay;
+     
+        // Fourth Query: Profit_Loss by Menu Category
+        // const [row4] = await connection.execute<RowDataPacket[]>(`
+        //     SELECT 
+        //         SUM(CASE WHEN TIME(generated_at) BETWEEN '07:00:00' AND '11:00:00' AND generated_at >= NOW() - INTERVAL 1 WEEK THEN total_amount ELSE 0 END) AS Profit_Loss_week_breakfast,
+        //         SUM(CASE WHEN TIME(generated_at) BETWEEN '11:00:00' AND '15:00:00' AND generated_at >= NOW() - INTERVAL 1 WEEK THEN total_amount ELSE 0 END) AS Profit_Loss_week_lunch,
+        //         SUM(CASE WHEN TIME(generated_at) BETWEEN '15:00:00' AND '19:00:00' AND generated_at >= NOW() - INTERVAL 1 WEEK THEN total_amount ELSE 0 END) AS Profit_Loss_week_evening,
+        //         SUM(CASE WHEN TIME(generated_at) BETWEEN '19:00:00' AND '23:59:59' AND generated_at >= NOW() - INTERVAL 1 WEEK THEN total_amount ELSE 0 END) AS Profit_Loss_week_dinner,
 
-        // Raw Material Costs
-        const [rawMaterialCosts] = await connection.execute<RowDataPacket[]>(`
-            SELECT 
-                SUM(o.quantity * m.raw_material_cost) AS total_raw_material_cost,
-                SUM(CASE WHEN o.generated_at >= DATE_SUB(CURDATE(), INTERVAL 1 WEEK) THEN o.quantity * m.raw_material_cost ELSE 0 END) AS weekly_raw_material_cost,
-                SUM(CASE WHEN o.generated_at >= DATE_SUB(CURDATE(), INTERVAL 1 MONTH) THEN o.quantity * m.raw_material_cost ELSE 0 END) AS monthly_raw_material_cost,
-                SUM(CASE WHEN o.generated_at >= DATE_SUB(CURDATE(), INTERVAL 1 YEAR) THEN o.quantity * m.raw_material_cost ELSE 0 END) AS yearly_raw_material_cost
-            FROM orders o
-            JOIN menu m ON o.item_id = m.id;
-        `);
+        //         SUM(CASE WHEN TIME(generated_at) BETWEEN '07:00:00' AND '11:00:00' AND generated_at >= NOW() - INTERVAL 1 MONTH THEN total_amount ELSE 0 END) AS Profit_Loss_month_breakfast,
+        //         SUM(CASE WHEN TIME(generated_at) BETWEEN '11:00:00' AND '15:00:00' AND generated_at >= NOW() - INTERVAL 1 MONTH THEN total_amount ELSE 0 END) AS Profit_Loss_month_lunch,
+        //         SUM(CASE WHEN TIME(generated_at) BETWEEN '15:00:00' AND '19:00:00' AND generated_at >= NOW() - INTERVAL 1 MONTH THEN total_amount ELSE 0 END) AS Profit_Loss_month_evening,
+        //         SUM(CASE WHEN TIME(generated_at) BETWEEN '19:00:00' AND '23:59:59' AND generated_at >= NOW() - INTERVAL 1 MONTH THEN total_amount ELSE 0 END) AS Profit_Loss_month_dinner,
 
-        // Salaries
-        const totalSalariesPerMonth = 20000; // Example: Fixed monthly salaries
-        const totalSalaries = (days[0].total_days / 30) * totalSalariesPerMonth;
+        //         SUM(CASE WHEN TIME(generated_at) BETWEEN '07:00:00' AND '11:00:00' AND generated_at >= NOW() - INTERVAL 1 YEAR THEN total_amount ELSE 0 END) AS Profit_Loss_year_breakfast,
+        //         SUM(CASE WHEN TIME(generated_at) BETWEEN '11:00:00' AND '15:00:00' AND generated_at >= NOW() - INTERVAL 1 YEAR THEN total_amount ELSE 0 END) AS Profit_Loss_year_lunch,
+        //         SUM(CASE WHEN TIME(generated_at) BETWEEN '15:00:00' AND '19:00:00' AND generated_at >= NOW() - INTERVAL 1 YEAR THEN total_amount ELSE 0 END) AS Profit_Loss_year_evening,
+        //         SUM(CASE WHEN TIME(generated_at) BETWEEN '19:00:00' AND '23:59:59' AND generated_at >= NOW() - INTERVAL 1 YEAR THEN total_amount ELSE 0 END) AS Profit_Loss_year_dinner
+        //     FROM invoices
+        // `);
 
-        // Profit Calculation
-        const totalCosts = totalMaintenanceCost + rawMaterialCosts[0].total_raw_material_cost + totalSalaries;
-        const totalProfit = sales[0].total_sales - totalCosts;
+        // Fifth Query: Chef Performance by Profit_Loss
+        // const [row5] = await connection.execute<RowDataPacket[]>(`
+        //           SELECT 
+        //               -- Weekly Profit_Loss
+        //               SUM(CASE WHEN payment_method = 'cash' AND generated_at >= DATE_SUB(NOW(), INTERVAL 1 WEEK) THEN total_amount ELSE 0 END) AS cash_week,
+        //               SUM(CASE WHEN payment_method = 'upi' AND generated_at >= DATE_SUB(NOW(), INTERVAL 1 WEEK) THEN total_amount ELSE 0 END) AS upi_week,
+        //               SUM(CASE WHEN payment_method = 'debit_card' AND generated_at >= DATE_SUB(NOW(), INTERVAL 1 WEEK) THEN total_amount ELSE 0 END) AS debitcard_week,
+        //               SUM(CASE WHEN payment_method = 'credit_card' AND generated_at >= DATE_SUB(NOW(), INTERVAL 1 WEEK) THEN total_amount ELSE 0 END) AS creditcard_week,
+        //               SUM(CASE WHEN payment_method = 'others' AND generated_at >= DATE_SUB(NOW(), INTERVAL 1 WEEK) THEN total_amount ELSE 0 END) AS others_week,
+
+        //               -- Monthly Profit_Loss
+        //               SUM(CASE WHEN payment_method = 'cash' AND generated_at >= DATE_SUB(NOW(), INTERVAL 1 MONTH) THEN total_amount ELSE 0 END) AS cash_month,
+        //               SUM(CASE WHEN payment_method = 'upi' AND generated_at >= DATE_SUB(NOW(), INTERVAL 1 MONTH) THEN total_amount ELSE 0 END) AS upi_month,
+        //               SUM(CASE WHEN payment_method = 'debit_card' AND generated_at >= DATE_SUB(NOW(), INTERVAL 1 MONTH) THEN total_amount ELSE 0 END) AS debitcard_month,
+        //               SUM(CASE WHEN payment_method = 'credit_card' AND generated_at >= DATE_SUB(NOW(), INTERVAL 1 MONTH) THEN total_amount ELSE 0 END) AS creditcard_month,
+        //               SUM(CASE WHEN payment_method = 'others' AND generated_at >= DATE_SUB(NOW(), INTERVAL 1 MONTH) THEN total_amount ELSE 0 END) AS others_month,
+
+        //               -- Yearly Profit_Loss
+        //               SUM(CASE WHEN payment_method = 'cash' AND generated_at >= DATE_SUB(NOW(), INTERVAL 1 YEAR) THEN total_amount ELSE 0 END) AS cash_year,
+        //               SUM(CASE WHEN payment_method = 'upi' AND generated_at >= DATE_SUB(NOW(), INTERVAL 1 YEAR) THEN total_amount ELSE 0 END) AS upi_year,
+        //               SUM(CASE WHEN payment_method = 'debit_card' AND generated_at >= DATE_SUB(NOW(), INTERVAL 1 YEAR) THEN total_amount ELSE 0 END) AS debitcard_year,
+        //               SUM(CASE WHEN payment_method = 'credit_card' AND generated_at >= DATE_SUB(NOW(), INTERVAL 1 YEAR) THEN total_amount ELSE 0 END) AS creditcard_year,
+        //               SUM(CASE WHEN payment_method = 'others' AND generated_at >= DATE_SUB(NOW(), INTERVAL 1 YEAR) THEN total_amount ELSE 0 END) AS others_year
+        //           FROM invoices
+        //       `);
+
+        // Sixth Query: Waiter Performance by Profit_Loss
+        // const [row6] = await connection.execute<RowDataPacket[]>(`
+        //           SELECT 
+        //               -- Weekly Profit_Loss
+        //               SUM(CASE WHEN c.age < 10 AND i.generated_at >= DATE_SUB(NOW(), INTERVAL 1 WEEK) THEN i.total_amount ELSE 0 END) AS children_week,
+        //               SUM(CASE WHEN c.age BETWEEN 10 AND 18 AND i.generated_at >= DATE_SUB(NOW(), INTERVAL 1 WEEK) THEN i.total_amount ELSE 0 END) AS teens_week,
+        //               SUM(CASE WHEN c.age BETWEEN 18 AND 40 AND i.generated_at >= DATE_SUB(NOW(), INTERVAL 1 WEEK) THEN i.total_amount ELSE 0 END) AS adults_week,
+        //               SUM(CASE WHEN c.age BETWEEN 40 AND 60 AND i.generated_at >= DATE_SUB(NOW(), INTERVAL 1 WEEK) THEN i.total_amount ELSE 0 END) AS middle_aged_week,
+        //               SUM(CASE WHEN c.age > 60 AND i.generated_at >= DATE_SUB(NOW(), INTERVAL 1 WEEK) THEN i.total_amount ELSE 0 END) AS seniors_week,
+
+        //               -- Monthly Profit_Loss
+        //               SUM(CASE WHEN c.age < 10 AND i.generated_at >= DATE_SUB(NOW(), INTERVAL 1 MONTH) THEN i.total_amount ELSE 0 END) AS children_month,
+        //               SUM(CASE WHEN c.age BETWEEN 10 AND 18 AND i.generated_at >= DATE_SUB(NOW(), INTERVAL 1 MONTH) THEN i.total_amount ELSE 0 END) AS teens_month,
+        //               SUM(CASE WHEN c.age BETWEEN 18 AND 40 AND i.generated_at >= DATE_SUB(NOW(), INTERVAL 1 MONTH) THEN i.total_amount ELSE 0 END) AS adults_month,
+        //               SUM(CASE WHEN c.age BETWEEN 40 AND 60 AND i.generated_at >= DATE_SUB(NOW(), INTERVAL 1 MONTH) THEN i.total_amount ELSE 0 END) AS middle_aged_month,
+        //               SUM(CASE WHEN c.age > 60 AND i.generated_at >= DATE_SUB(NOW(), INTERVAL 1 MONTH) THEN i.total_amount ELSE 0 END) AS seniors_month,
+
+        //               -- Yearly Profit_Loss
+        //               SUM(CASE WHEN c.age < 10 AND i.generated_at >= DATE_SUB(NOW(), INTERVAL 1 YEAR) THEN i.total_amount ELSE 0 END) AS children_year,
+        //               SUM(CASE WHEN c.age BETWEEN 10 AND 18 AND i.generated_at >= DATE_SUB(NOW(), INTERVAL 1 YEAR) THEN i.total_amount ELSE 0 END) AS teens_year,
+        //               SUM(CASE WHEN c.age BETWEEN 18 AND 40 AND i.generated_at >= DATE_SUB(NOW(), INTERVAL 1 YEAR) THEN i.total_amount ELSE 0 END) AS adults_year,
+        //               SUM(CASE WHEN c.age BETWEEN 40 AND 60 AND i.generated_at >= DATE_SUB(NOW(), INTERVAL 1 YEAR) THEN i.total_amount ELSE 0 END) AS middle_aged_year,
+        //               SUM(CASE WHEN c.age > 60 AND i.generated_at >= DATE_SUB(NOW(), INTERVAL 1 YEAR) THEN i.total_amount ELSE 0 END) AS seniors_year
+        //           FROM invoices i 
+        //           JOIN customer c ON i.orderid = c.order_id
+        //       `);
 
         return NextResponse.json({
-            total_sales: sales[0].total_sales,
-            total_costs: totalCosts,
-            total_profit: totalProfit,
-            breakdown: {
-                maintenance_cost: totalMaintenanceCost,
-                raw_material_cost: rawMaterialCosts[0].total_raw_material_cost,
-                salaries: totalSalaries,
-            },
-            weekly: {
-                sales: sales[0].weekly_sales,
-                raw_material_cost: rawMaterialCosts[0].weekly_raw_material_cost,
-                profit: sales[0].weekly_sales - (rawMaterialCosts[0].weekly_raw_material_cost + maintenanceCostPerDay * 7 + (totalSalariesPerMonth / 4)),
-            },
-            monthly: {
-                sales: sales[0].monthly_sales,
-                raw_material_cost: rawMaterialCosts[0].monthly_raw_material_cost,
-                profit: sales[0].monthly_sales - (rawMaterialCosts[0].monthly_raw_material_cost + maintenanceCostPerDay * 30 + totalSalariesPerMonth),
-            },
-            yearly: {
-                sales: sales[0].yearly_sales,
-                raw_material_cost: rawMaterialCosts[0].yearly_raw_material_cost,
-                profit: sales[0].yearly_sales - (rawMaterialCosts[0].yearly_raw_material_cost + maintenanceCostPerDay * 365 + totalSalariesPerMonth * 12),
-            },
+            row1: await row1.json(),
+            row3: await row3.json(),
         });
+
     } catch (error) {
-        return NextResponse.json({ error: "Failed to fetch profit/loss data", details: (error as Error).message }, { status: 500 });
+        return NextResponse.json(
+            { error: "Failed to fetch Profit_Loss data", details: (error as Error).message },
+            { status: 500 }
+        );
     } finally {
         await connection.end();
     }

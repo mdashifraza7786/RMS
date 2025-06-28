@@ -198,40 +198,40 @@ const Page = () => {
             )}
 
             {/* Page Header */}
-            <div className="flex items-center mb-6">
-                <div className="h-10 w-10 rounded-lg bg-[#1e4569]/10 flex items-center justify-center mr-3">
-                    <FaMoneyBillWave className="text-[#1e4569]" size={20} />
+            <div className="flex items-center mb-8">
+                <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-[#1e4569] to-[#2c5983] flex items-center justify-center mr-4 shadow-lg">
+                    <FaMoneyBillWave className="text-white" size={24} />
                 </div>
-                <h1 className="text-2xl font-bold text-gray-800">Staff Payouts</h1>
+                <h1 className="text-3xl font-bold text-gray-800">Staff Payouts</h1>
             </div>
 
             {/* Main Content */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
                 {/* Header with search and filters */}
                 <div className="p-6 border-b border-gray-100">
                     <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
-                        <div className="relative">
+                        <div className="relative flex-1">
                             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                 <FaSearch className="text-gray-400" />
                             </div>
                             <input
                                 type="search"
                                 placeholder="Search by ID, name or role..."
-                                className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-[#1e4569] focus:border-[#1e4569] w-full md:w-80"
+                                className="pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e4569] focus:border-[#1e4569] w-full transition-all duration-200"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                             />
                         </div>
                         
-                        <div className="flex space-x-2">
+                        <div className="flex space-x-3">
                             {['All', 'Paid', 'Unpaid'].map((filter) => (
                                 <button
                                     key={filter}
                                     onClick={() => changeFilter(filter)}
-                                    className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                                    className={`px-5 py-2.5 rounded-xl font-medium transition-all duration-200 ${
                                         selectedFilter === filter 
-                                        ? 'bg-[#1e4569] text-white' 
-                                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                        ? 'bg-gradient-to-r from-[#1e4569] to-[#2c5983] text-white shadow-md' 
+                                        : 'bg-gray-50 text-gray-700 hover:bg-gray-100 hover:shadow-sm'
                                     }`}
                                 >
                                     {filter}
@@ -244,29 +244,29 @@ const Page = () => {
                 {/* Table content */}
                 <div className="overflow-x-auto">
                     {loading ? (
-                        <div className="flex justify-center items-center py-12">
+                        <div className="flex justify-center items-center py-16">
                             <Bars height="50" width="50" color="#1e4569" ariaLabel="bars-loading" />
                         </div>
                     ) : (
                         <table className="min-w-full divide-y divide-gray-200 table-fixed">
                             <thead className="bg-gray-50">
                                 <tr>
-                                    <th className="w-24 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    <th className="w-24 px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                                         ID
                                     </th>
-                                    <th className="w-48 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    <th className="w-48 px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                                         Name
                                     </th>
-                                    <th className="w-32 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    <th className="w-32 px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                                         Role
                                     </th>
-                                    <th className="w-32 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    <th className="w-32 px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                                         Amount
                                     </th>
-                                    <th className="w-28 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    <th className="w-28 px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                                         Status
                                     </th>
-                                    <th className="w-52 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    <th className="w-52 px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                                         Action
                                     </th>
                                 </tr>
@@ -293,30 +293,30 @@ const Page = () => {
                                                     ₹ {item.amount}
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap">
-                                                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusInfo.bgColor} ${statusInfo.textColor}`}>
+                                                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium transition-all duration-200 ${statusInfo.bgColor} ${statusInfo.textColor}`}>
                                                         {statusInfo.label}
                                                     </span>
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                    <div className="flex flex-wrap gap-1">
+                                                    <div className="flex flex-wrap gap-2">
                                                         <button 
-                                                            className="inline-flex items-center px-2 py-1 border border-transparent text-xs font-medium rounded-md text-white bg-[#1e4569] hover:bg-[#2c5983] transition"
+                                                            className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-lg text-white bg-[#1e4569] hover:bg-[#2c5983] transition-all duration-200 shadow-sm hover:shadow-md"
                                                             onClick={() => handleViewDetails(item)}
                                                         >
-                                                            <HiEye className="mr-1" /> View
+                                                            <HiEye className="mr-1.5" /> View
                                                         </button>
                                                         {item.status !== 'paid' && (
                                                             <button
-                                                                className="inline-flex items-center px-2 py-1 border border-transparent text-xs font-medium rounded-md text-white bg-green-600 hover:bg-green-700 transition"
+                                                                className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-lg text-white bg-green-600 hover:bg-green-700 transition-all duration-200 shadow-sm hover:shadow-md"
                                                             >
-                                                                <FaCheck className="mr-1" /> Paid
+                                                                <FaCheck className="mr-1.5" /> Paid
                                                             </button>
                                                         )}
                                                         {item.status !== 'unpaid' && item.status !== 'null' && (
                                                             <button
-                                                                className="inline-flex items-center px-2 py-1 border border-transparent text-xs font-medium rounded-md text-white bg-red-600 hover:bg-red-700 transition"
+                                                                className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-lg text-white bg-red-600 hover:bg-red-700 transition-all duration-200 shadow-sm hover:shadow-md"
                                                             >
-                                                                <RxCross2 className="mr-1" /> Unpaid
+                                                                <RxCross2 className="mr-1.5" /> Unpaid
                                                             </button>
                                                         )}
                                                     </div>
@@ -326,7 +326,7 @@ const Page = () => {
                                     })
                                 ) : (
                                     <tr>
-                                        <td colSpan={6} className="py-12 text-center">
+                                        <td colSpan={6} className="py-16 text-center">
                                             <div className="flex flex-col items-center justify-center text-gray-500">
                                                 <svg 
                                                     xmlns="http://www.w3.org/2000/svg"
@@ -365,10 +365,10 @@ const Page = () => {
                             <button
                                 onClick={() => paginate(Math.max(1, currentPage - 1))}
                                 disabled={currentPage === 1}
-                                className={`px-3 py-1 rounded-md ${
+                                className={`px-4 py-2 rounded-lg transition-all duration-200 ${
                                     currentPage === 1 
                                     ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
-                                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                                    : 'bg-gray-50 text-gray-700 hover:bg-gray-100 hover:shadow-sm'
                                 }`}
                             >
                                 Previous
@@ -386,14 +386,14 @@ const Page = () => {
                                     return (
                                         <React.Fragment key={page}>
                                             {showEllipsis && (
-                                                <span className="px-3 py-1 text-gray-500">...</span>
+                                                <span className="px-4 py-2 text-gray-500">...</span>
                                             )}
                                             <button
                                                 onClick={() => paginate(page)}
-                                                className={`px-3 py-1 rounded-md ${
+                                                className={`px-4 py-2 rounded-lg transition-all duration-200 ${
                                                     currentPage === page 
-                                                    ? 'bg-[#1e4569] text-white' 
-                                                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                                                    ? 'bg-gradient-to-r from-[#1e4569] to-[#2c5983] text-white shadow-md' 
+                                                    : 'bg-gray-50 text-gray-700 hover:bg-gray-100 hover:shadow-sm'
                                                 }`}
                                             >
                                                 {page}
@@ -405,10 +405,10 @@ const Page = () => {
                             <button
                                 onClick={() => paginate(Math.min(totalPages, currentPage + 1))}
                                 disabled={currentPage === totalPages}
-                                className={`px-3 py-1 rounded-md ${
+                                className={`px-4 py-2 rounded-lg transition-all duration-200 ${
                                     currentPage === totalPages 
                                     ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
-                                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                                    : 'bg-gray-50 text-gray-700 hover:bg-gray-100 hover:shadow-sm'
                                 }`}
                             >
                                 Next
@@ -421,22 +421,22 @@ const Page = () => {
             {/* Details Modal */}
             {detailsPopupVisible && selectedItem && (
                 <div className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-60 z-50 p-4 animate-fadeIn">
-                    <div className="bg-white rounded-xl shadow-xl max-w-md w-full max-h-[90vh] overflow-auto animate-scaleIn">
+                    <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-auto animate-scaleIn">
                         {/* Header */}
-                        <div className="bg-[#1e4569] text-white p-5 rounded-t-xl sticky top-0 z-10">
-                            <div className="flex justify-between items-center mb-2">
+                        <div className="bg-gradient-to-r from-[#1e4569] to-[#2c5983] text-white p-6 rounded-t-2xl sticky top-0 z-10">
+                            <div className="flex justify-between items-center mb-3">
                                 <h3 className="text-xl font-bold flex items-center gap-2">
-                                    <MdPayment />
+                                    <MdPayment className="text-white" size={24} />
                                     Payout Details
                                 </h3>
                                 <button
                                     onClick={() => setDetailsPopupVisible(false)}
-                                    className="w-8 h-8 rounded-full flex items-center justify-center bg-white/20 hover:bg-white/30 transition"
+                                    className="w-10 h-10 rounded-full flex items-center justify-center bg-white/20 hover:bg-white/30 transition-all duration-200"
                                 >
                                     ✕
                                 </button>
                             </div>
-                            <div className="text-sm text-white/80">
+                            <div className="text-sm text-white/90">
                                 ID: {selectedItem.userid}
                             </div>
                         </div>
@@ -444,31 +444,31 @@ const Page = () => {
                         {/* Staff Info */}
                         <div className="p-6">
                             <div className="grid grid-cols-2 gap-4 mb-6">
-                                <div className="bg-gray-50 p-3 rounded-lg">
+                                <div className="bg-gray-50 p-4 rounded-xl shadow-sm">
                                     <p className="text-xs text-gray-500 mb-1">Name</p>
                                     <p className="font-medium text-gray-900">{selectedItem.name}</p>
                                 </div>
-                                <div className="bg-gray-50 p-3 rounded-lg">
+                                <div className="bg-gray-50 p-4 rounded-xl shadow-sm">
                                     <p className="text-xs text-gray-500 mb-1">Role</p>
                                     <p className="font-medium text-gray-900">{selectedItem.role}</p>
                                 </div>
-                                <div className="bg-gray-50 p-3 rounded-lg">
+                                <div className="bg-gray-50 p-4 rounded-xl shadow-sm">
                                     <p className="text-xs text-gray-500 mb-1">Mobile</p>
                                     <p className="font-medium text-gray-900">{selectedItem.mobile}</p>
                                 </div>
-                                <div className="bg-gray-50 p-3 rounded-lg">
+                                <div className="bg-gray-50 p-4 rounded-xl shadow-sm">
                                     <p className="text-xs text-gray-500 mb-1">Amount</p>
                                     <p className="font-medium text-gray-900">₹ {selectedItem.amount}</p>
                                 </div>
                             </div>
 
                             {/* Bank Details Section */}
-                            <h2 className="font-semibold text-gray-800 mb-3 flex items-center">
-                                <BsBank className="mr-2" /> 
+                            <h2 className="font-semibold text-gray-800 mb-4 flex items-center">
+                                <BsBank className="mr-2 text-[#1e4569]" size={20} /> 
                                 Bank Details
                             </h2>
-                            <div className="bg-gray-50 rounded-lg p-4 mb-6">
-                                <div className="space-y-3">
+                            <div className="bg-gray-50 rounded-xl p-5 mb-6 shadow-sm">
+                                <div className="space-y-4">
                                     <div className="flex justify-between">
                                         <span className="text-sm text-gray-500">Account Number:</span>
                                         <span className="text-sm font-medium text-gray-900">
@@ -499,14 +499,14 @@ const Page = () => {
                             </div>
 
                             {/* Status Section */}
-                            <h2 className="font-semibold text-gray-800 mb-3 flex items-center">
-                                <FaCheck className="mr-2" /> 
+                            <h2 className="font-semibold text-gray-800 mb-4 flex items-center">
+                                <FaCheck className="mr-2 text-[#1e4569]" size={20} /> 
                                 Payment Status
                             </h2>
-                            <div className="bg-[#1e4569]/5 rounded-lg p-4 mb-6">
+                            <div className="bg-[#1e4569]/5 rounded-xl p-5 mb-6 shadow-sm">
                                 <div className="flex items-center justify-between">
                                     <span className="text-gray-600">Status</span>
-                                    <span className={`inline-flex items-center px-3 py-1 rounded-md text-sm font-medium ${
+                                    <span className={`inline-flex items-center px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${
                                         selectedItem.status === 'paid' 
                                         ? 'bg-green-100 text-green-800' 
                                         : selectedItem.status === 'unpaid'
@@ -527,7 +527,7 @@ const Page = () => {
                             <div className="mt-6 flex flex-wrap gap-2 justify-end">
                                 <button
                                     onClick={() => setDetailsPopupVisible(false)}
-                                    className="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium rounded-lg"
+                                    className="px-5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium rounded-xl transition-all duration-200 shadow-sm hover:shadow-md"
                                 >
                                     Close
                                 </button>

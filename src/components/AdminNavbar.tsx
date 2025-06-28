@@ -6,13 +6,13 @@ import { Raleway } from 'next/font/google';
 import { AiOutlineLogout } from "react-icons/ai";
 import { usePathname } from 'next/navigation';
 import { signOut } from 'next-auth/react';
-import {
-    GrHomeRounded,
-    GrRestaurant
+import { 
+  GrHomeRounded, 
+  GrRestaurant 
 } from "react-icons/gr";
-import {
-    FaDollarSign,
-    FaTableCells
+import { 
+  FaDollarSign,
+  FaTableCells
 } from "react-icons/fa6";
 import { SlPeople } from "react-icons/sl";
 import { MdOutlineInventory, MdBorderColor } from "react-icons/md";
@@ -51,14 +51,16 @@ const AdminNavbar: React.FC = () => {
     }
 
     return (
-        <nav className={`w-full sticky top-0 z-50 shadow-sm bg-white`}>
+        <nav className="w-full sticky top-0 z-50 shadow-sm bg-white">
             {/* Top navbar */}
             <div className="bg-primary text-white">
                 <div className="container mx-auto px-4 lg:px-8 flex justify-between items-center h-16">
-                    <div className="flex items-center space-x-3">
+                    <div className={`flex items-center space-x-3 ${raleway.className}`}>
 
-                        <span className="font-semibold text-md hidden sm:block">Restaurant Management System</span>
-                        <span className="font-semibold text-lg sm:hidden">RMS</span>
+                        <span className="font-semibold text-lg hidden sm:block text-white">
+                            Restaurant Management System
+                        </span>
+                        <span className="font-semibold text-lg sm:hidden text-white">RMS</span>
                     </div>
 
                     <div className="flex items-center space-x-3">
@@ -115,22 +117,18 @@ const NavItem: React.FC<NavItemProps> = ({ href, icon, label, isActive }) => {
         <Link
             href={href}
             className={`
-                group px-4 py-3 lg:py-4 flex items-center space-x-2 transition-all duration-200
+                px-4 py-3 lg:py-4 flex items-center space-x-2 transition-all duration-200
                 ${isActive
-                    ? 'text-supporting2 font-semibold'
-                    : 'text-gray-600 hover:bg-gray-50'
-                }
+                    ? 'text-supporting2 font-semibold border-b-2 border-supporting2'
+                    : 'text-gray-600 hover:text-supporting2 hover:bg-gray-50'}
             `}
         >
-            <div className={`w-4 h-4 ${isActive ? 'text-supporting2' : 'text-gray-500 group-hover:text-supporting2'}`}>
+            <div className="w-4 h-4">
                 {icon}
             </div>
-            <span className={`whitespace-nowrap text-sm ${isActive ? 'text-supporting2' : 'group-hover:text-supporting2'}`}>
-                {label}
-            </span>
+            <span className="whitespace-nowrap">{label}</span>
         </Link>
     );
 };
-
 
 export default AdminNavbar;

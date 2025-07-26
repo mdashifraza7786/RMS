@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { IoIosPaper, IoMdAdd, IoMdClose } from "react-icons/io";
+import { FaPlus, FaTimes, FaFileAlt } from "react-icons/fa";
 import GeneratedOrderPage from "./GeneratedOrderPage";
 import { Bars } from "react-loader-spinner";
 
@@ -94,68 +94,104 @@ const OrderCard: React.FC = () => {
     
 
     return (
-        <div className="w-full max-w-full px-4 py-6">
-            <div className="bg-white p-8 rounded-lg shadow-lg border border-gray-300 w-full">
-                <h2 className="text-2xl font-semibold mb-6 text-primary">Order Details</h2>
-                {loading ? (
-                    <div className="flex justify-center items-center py-4">
-                        <Bars height="50" width="50" color="#25476A" ariaLabel="bars-loading" visible={true} />
+        <div className="w-full">
+            {loading ? (
+                <div className="flex justify-center items-center py-12">
+                    <Bars height="50" width="50" color="#1e4569" ariaLabel="bars-loading" />
+                </div>
+            ) : (
+                <>
+                    <div className="flex justify-end mb-4">
+                        <button 
+                            onClick={handleAddOrder} 
+                            className="bg-[#1e4569] hover:bg-[#2c5983] text-white font-medium px-5 py-2.5 rounded-lg transition-colors duration-200 shadow-sm flex items-center gap-2"
+                        >
+                            <FaPlus size={16} />
+                            <span>Add Item</span>
+                        </button>
                     </div>
-                ) : (
-                    <>
-                        {inventoryOrder.map((order, index) => (
-                            <div key={index} className="relative mb-6 border-b border-gray-200 pb-4">
-                                <button onClick={() => handleRemoveOrder(index)} className="absolute top-0 right-2 text-red-500 hover:text-red-700">
-                                    <IoMdClose size={23} />
-                                </button>
-                                <div className="flex flex-wrap gap-4 w-full">
-                                    <div className="flex-1">
-                                        <label className="block font-medium text-gray-800">Name:</label>
-                                        <select
-                                            value={order.item_name}
-                                            onChange={(e) => handleItemChange(index, e.target.value)}
-                                            className="border border-gray-300 rounded-md px-3 py-2 w-full"
-                                        >
-                                            {inventory.map((item) => (
-                                                <option key={item.item_id} value={item.item_name}>{item.item_name}</option>
-                                            ))}
-                                        </select>
+                    
+                    {inventoryOrder.length === 0 ? (
+                        <div className="bg-gray-50 border border-gray-200 rounded-lg p-8 text-center">
+                            <div className="flex flex-col items-center justify-center text-gray-500">
+                                <FaFileAlt className="w-16 h-16 mb-4 text-gray-300" />
+                                <p className="text-lg font-medium">No items added yet</p>
+                                <p className="mt-1 text-sm">Click "Add Item" to create a new order</p>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="space-y-6">
+                            {inventoryOrder.map((order, index) => (
+                                <div key={index} className="bg-white border border-gray-200 rounded-lg p-5 relative shadow-sm">
+                                    <button 
+                                        onClick={() => handleRemoveOrder(index)} 
+                                        className="absolute top-3 right-3 text-gray-400 hover:text-red-500 transition-colors p-1.5 hover:bg-gray-100 rounded-full"
+                                    >
+                                        <FaTimes size={16} />
+                                    </button>
+                                    
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">Item Name</label>
+                                            <select
+                                                value={order.item_name}
+                                                onChange={(e) => handleItemChange(index, e.target.value)}
+                                                className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-[#1e4569] focus:border-[#1e4569] outline-none transition-all bg-white"
+                                            >
+                                                {inventory.map((item) => (
+                                                    <option key={item.item_id} value={item.item_name}>{item.item_name}</option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                        
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">Quantity</label>
+                                            <input
+                                                type="number"
+                                                value={order.quantity}
+                                                onChange={(e) => handleQuantityChange(index, Number(e.target.value))}
+                                                className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-[#1e4569] focus:border-[#1e4569] outline-none transition-all"
+                                                min="1"
+                                            />
+                                        </div>
+                                        
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">Unit</label>
+                                            <input 
+                                                type="text" 
+                                                value={order.unit} 
+                                                readOnly 
+                                                className="w-full border border-gray-200 rounded-lg px-4 py-2.5 bg-gray-50 text-gray-500"
+                                            />
+                                        </div>
                                     </div>
-                                    <div className="flex-1">
-                                        <label className="block font-medium text-gray-800">Quantity:</label>
-                                        <input
-                                            type="number"
-                                            value={order.quantity}
-                                            onChange={(e) => handleQuantityChange(index, Number(e.target.value))}
-                                            className="border border-gray-300 rounded-md px-3 py-2 w-full"
+                                    
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">Remarks</label>
+                                        <textarea
+                                            value={order.remarks || ""}
+                                            onChange={(e) => setInventoryOrder((prev) => prev.map((o, i) => (i === index ? { ...o, remarks: e.target.value } : o)))}
+                                            className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-[#1e4569] focus:border-[#1e4569] outline-none transition-all h-20 resize-none"
+                                            placeholder="Add any additional notes..."
                                         />
                                     </div>
-                                    <div className="flex-1">
-                                        <label className="block font-medium text-gray-800">Unit:</label>
-                                        <input type="text" value={order.unit} readOnly className="border border-gray-300 rounded-md px-3 py-2 w-full bg-gray-100" />
-                                    </div>
                                 </div>
-                                <div className="my-4">
-                                    <label className="block font-medium text-gray-800">Remarks:</label>
-                                    <textarea
-                                        value={order.remarks || ""}
-                                        onChange={(e) => setInventoryOrder((prev) => prev.map((o, i) => (i === index ? { ...o, remarks: e.target.value } : o)))}
-                                        className="border border-gray-300 rounded-md px-3 py-2 w-full h-16 resize-none"
-                                    />
-                                </div>
+                            ))}
+                            
+                            <div className="flex justify-end mt-6">
+                                <button 
+                                    onClick={handleGenerateOrder}
+                                    disabled={inventoryOrder.length === 0}
+                                    className="bg-[#1e4569] hover:bg-[#2c5983] text-white font-medium px-6 py-2.5 rounded-lg transition-colors duration-200 shadow-sm flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    <FaFileAlt size={16} />
+                                    <span>Generate Order</span>
+                                </button>
                             </div>
-                        ))}
-                        <div className="flex justify-between items-center mb-6">
-                            <button onClick={handleAddOrder} className="bg-primary text-white font-bold rounded-md px-4 py-2 flex items-center gap-2 hover:bg-[#193756]">
-                                <IoMdAdd /> ADD MORE ORDER
-                            </button>
-                            <button onClick={handleGenerateOrder} className="bg-supporting2 text-white font-bold rounded-md px-4 py-2 flex items-center gap-2 hover:bg-[#b6d36e]">
-                                <IoIosPaper /> GENERATE ORDER
-                            </button>
                         </div>
-                    </>
-                )}
-            </div>
+                    )}
+                </>
+            )}
             
             {isPopupOpen && <GeneratedOrderPage inventoryOrder={inventoryOrder} onClose={() => setIsPopupOpen(false)} />}
         </div>

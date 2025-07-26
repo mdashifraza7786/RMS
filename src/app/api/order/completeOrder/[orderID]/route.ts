@@ -18,68 +18,41 @@ export async function POST(request: Request, { params }: { params: { orderID: st
       return NextResponse.json({ success: false, message: "The invoice has already been paid." });
     }
     
-    // Fetch invoice details to apply discount
-    const [invoiceDetails]: any = await connection.query(
-      "SELECT subtotal FROM invoices WHERE orderid = ? LIMIT 1",
-      [orderID]
-    );
-    
-    if (invoiceDetails.length === 0) {
-      return NextResponse.json({ success: false, message: "Invoice not found." });
-    }
-    
-    const subtotal = parseFloat(invoiceDetails[0].subtotal);
+    // Calculate discount amount if provided
     let discountAmount = 0;
+    let discountTypeValue = null;
     
-    // Calculate discount if provided
     if (discount && discount.value > 0) {
-      if (discount.type === "flat") {
-        discountAmount = discount.value;
-      } else {
-        // Percentage discount
-        discountAmount = (discount.value / 100) * subtotal;
-      }
-      
-      // Ensure discount doesn't exceed subtotal
-      discountAmount = Math.min(discountAmount, subtotal);
+      discountAmount = discount.value;
+      discountTypeValue = discount.type;
     }
     
-    const discountedSubtotal = subtotal - discountAmount;
-    const gst = discountedSubtotal * 0.18;
-    const totalAmount = discountedSubtotal + gst;
-    
-    // Update invoice with discount information
+    // Update invoice with ONLY the columns shown in the image
     const updateInvoiceQuery = `
       UPDATE invoices 
       SET payment_status = ?, 
           payment_method = ?, 
-          discount_amount = ?, 
-          discount_type = ?, 
-          discount_value = ?,
-          total_after_discount = ?,
-          gst_amount = ?,
-          final_amount = ?
+          discount = ?, 
+          discount_type = ?
       WHERE orderid = ?
     `;
     
     const invoiceValues = [
       "paid", 
       paymentmethod, 
-      discountAmount, 
-      discount ? discount.type : null,
-      discount ? discount.value : null,
-      discountedSubtotal,
-      gst,
-      totalAmount,
+      discountAmount,
+      discountTypeValue,
       orderID
     ];
     
     await connection.query(updateInvoiceQuery, invoiceValues);
     
+    // Update order status
     const updateOrderQuery = "UPDATE orders SET status = ?, end_time = NOW() WHERE id = ?";
     const orderValues = ["completed", orderID];
     await connection.query(updateOrderQuery, orderValues);
 
+    // Update table availability
     const tableUpdate = "UPDATE tables SET availability = ? WHERE tablenumber = ?";
     const tableUpdateValues = [0, tablenumber];
     await connection.query(tableUpdate, tableUpdateValues);
@@ -90,8 +63,7 @@ export async function POST(request: Request, { params }: { params: { orderID: st
       message: "Order Completed",
       discount: discount ? {
         amount: discountAmount,
-        type: discount.type,
-        value: discount.value
+        type: discountTypeValue
       } : null
     });
   } catch (error) {

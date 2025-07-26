@@ -1,13 +1,14 @@
 "use client";
 
-import React, { useRef, useEffect, useState, Suspense } from 'react';
-import { MdKeyboardArrowLeft, MdKeyboardArrowRight } from "react-icons/md";
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import { FaSearch, FaPlus, FaBox, FaBoxOpen } from "react-icons/fa";
+import { Bars } from 'react-loader-spinner';
 import LowStock from '@/app/inventory/components/LowStock';
 import InventoryCard from '@/app/inventory/components/InventoryCard';
 import KitchenOrdersCard from '@/app/inventory/components/KitchenOrdersCard';
 import OrderCard from '@/app/inventory/components/OrderCard';
 import RecentCard from '@/app/inventory/components/RecentCard';
-import axios from 'axios';
 
 interface InventoryItem {
     item_id: string;
@@ -21,10 +22,13 @@ const Page: React.FC = () => {
     const [inventory, setInventory] = useState<InventoryItem[]>([]);
     const [lowStock, setLowStock] = useState<InventoryItem[]>([]);
     const [selectedFilter, setSelectedFilter] = useState<'inventory' | 'order' | 'kitchenOrders' | 'recent'>('inventory');
-    const sliderRef = useRef<HTMLDivElement>(null);
-    const [showLeftArrow, setShowLeftArrow] = useState(false);
-    const [showRightArrow, setShowRightArrow] = useState(true);
-   
+    const [searchQuery, setSearchQuery] = useState("");
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        document.title = "Inventory";
+        fetchInventory();
+    }, []);
 
     useEffect(() => {
         const checkLowStock = () => {
@@ -36,30 +40,9 @@ const Page: React.FC = () => {
         checkLowStock();
     }, [inventory]);
 
-    useEffect(() => {
-        const sliderElement = sliderRef.current;
-        if (sliderElement) {
-            const handleScroll = () => {
-                setShowLeftArrow(sliderElement.scrollLeft > 0);
-                setShowRightArrow(
-                    sliderElement.scrollLeft < sliderElement.scrollWidth - sliderElement.clientWidth
-                );
-            };
-            sliderElement.addEventListener('scroll', handleScroll);
-            // Initial check
-            handleScroll();
-            return () => {
-                sliderElement.removeEventListener('scroll', handleScroll);
-            };
-        }
-    }, []);
-
-    useEffect(() => {
-        fetchInventory();
-    }, []);
-
     const fetchInventory = async () => {
         try {
+            setLoading(true);
             const response = await axios.get('/api/inventory');
             const data = response.data;
             if (data && Array.isArray(data.users)) {
@@ -69,117 +52,126 @@ const Page: React.FC = () => {
             }
         } catch (error) {
             console.error("Error fetching inventory data:", error);
+        } finally {
+            setLoading(false);
         }
     };
 
-    const scrollLeft = () => {
-        if (sliderRef.current) {
-            sliderRef.current.scrollBy({ left: -200, behavior: 'smooth' });
-        }
-    };
-
-    const scrollRight = () => {
-        if (sliderRef.current) {
-            sliderRef.current.scrollBy({ left: 200, behavior: 'smooth' });
-        }
-    };
+    // Tab configuration
+    const tabs = [
+        { id: 'inventory', label: 'Inventory' },
+        { id: 'order', label: 'Generate Order' },
+        { id: 'kitchenOrders', label: 'Kitchen Orders' },
+        { id: 'recent', label: 'Recent Orders' }
+    ];
 
     return (
-        <div className='bg-[#e6e6e6] py-[5vh] px-[8vw] font-raleway flex flex-col gap-[6vh]'>
-            <div className='font-semibold text-[18px]'>Inventory Details</div>
+        <div className="container mx-auto px-4 py-6 md:px-6 lg:max-w-[90%] xl:max-w-7xl 2xl:max-w-[1400px] font-sans">
+            {/* Page Header */}
+            <div className="flex items-center mb-6">
+                <div className="h-10 w-10 rounded-lg bg-[#1e4569]/10 flex items-center justify-center mr-3">
+                    <FaBoxOpen className="text-[#1e4569]" size={20} />
+                </div>
+                <h1 className="text-2xl font-bold text-gray-800">Inventory Management</h1>
+            </div>
 
-            {/* Show alerts for low stock only if there are low stock items */}
+            {/* Low Stock Alert Section */}
             {lowStock.length > 0 && (
-                <section className='bg-white rounded-[10px] p-[4vh] font-semibold flex flex-col gap-3 relative'>
-                    <div className='font-extrabold text-[15px]'>Urgently Needed in Kitchen</div>
-                    <div>
-                        {/* Left Scroll Button */}
-                        {showLeftArrow && (
-                            <button
-                                onClick={scrollLeft}
-                                className='absolute left-[-30px] top-1/2 -translate-y-1/2 w-[50px] h-[50px] rounded-full bg-supporting3 flex justify-center items-center'
-                            >
-                                <MdKeyboardArrowLeft className='text-5xl text-white' />
-                            </button>
-                        )}
-
-                        {/* Slider Div */}
-                        <div ref={sliderRef} className='flex gap-[20px] overflow-x-auto scroll-smooth py-3'>
-                            <Suspense fallback={<div>Loading low stock items...</div>}>
-                                {lowStock.map(item => (
-                                    <LowStock
-                                        key={item.item_id}
-                                        item_id={item.item_id}
-                                        item_name={item.item_name}
-                                        current_stock={item.current_stock}
-                                        low_limit={item.low_limit}
-                                        unit={item.unit}
-                                    />
-                                ))}
-                            </Suspense>
+                <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6">
+                    <div className="flex items-center mb-4">
+                        <div className="h-8 w-8 rounded-lg bg-amber-100 flex items-center justify-center mr-3">
+                            <FaBox className="text-amber-600" size={16} />
                         </div>
+                        <h2 className="text-lg font-semibold text-gray-800">Urgently Needed in Kitchen</h2>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                        {lowStock.map(item => (
+                            <LowStock
+                                key={item.item_id}
+                                item_id={item.item_id}
+                                item_name={item.item_name}
+                                current_stock={item.current_stock}
+                                low_limit={item.low_limit}
+                                unit={item.unit}
+                            />
+                        ))}
+                    </div>
+                </div>
+            )}
 
-                        {/* Right Scroll Button */}
-                        {showRightArrow && (
+            {/* Main Content */}
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                {/* Header with search and tabs */}
+                <div className="p-6 border-b border-gray-100">
+                    <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-6">
+                        <div className="relative">
+                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <FaSearch className="text-gray-400" />
+                            </div>
+                            <input
+                                type="search"
+                                placeholder="Search by name or ID..."
+                                className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-[#1e4569] focus:border-[#1e4569] w-full md:w-80"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                            />
+                        </div>
+                    </div>
+
+                    {/* Tabs */}
+                    <div className="flex flex-wrap gap-2 border-b border-gray-200">
+                        {tabs.map((tab) => (
                             <button
-                                onClick={scrollRight}
-                                className='absolute right-[-30px] top-1/2 -translate-y-1/2 w-[50px] h-[50px] rounded-full bg-supporting3 flex justify-center items-center'
+                                key={tab.id}
+                                onClick={() => setSelectedFilter(tab.id as any)}
+                                className={`px-4 py-2 text-sm font-medium rounded-t-lg transition-all ${
+                                    selectedFilter === tab.id
+                                        ? 'text-[#1e4569] border-b-2 border-[#1e4569] bg-[#1e4569]/5'
+                                        : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                                }`}
                             >
-                                <MdKeyboardArrowRight className='text-5xl text-white' />
+                                {tab.label}
                             </button>
-                        )}
-                    </div>
-                </section>
-            )}
-
-            {/* Optional: Display a message when there are no low stock items */}
-            {lowStock.length === 0 && (
-                <section className='bg-white rounded-[10px] p-[4vh] font-semibold flex flex-col gap-3 relative'>
-                    <div className='font-extrabold text-[15px]'>Urgently Needed in Kitchen</div>
-                    <div className='text-center text-gray-500'>All items are sufficiently stocked.</div>
-                </section>
-            )}
-
-            {/* lower divs */}
-            <div className='bg-white rounded-[10px] p-[4vh] font-semibold flex flex-col gap-6'>
-                <div className='flex text-md gap-4'>
-                    <div
-                        className={`px-[10px] py-2 rounded-xl cursor-pointer ${selectedFilter === 'inventory' ? 'font-bold bg-[#FA9F1B70] transition-colors duration-300 text-[#fc9802e3]' : ''}`}
-                        onClick={() => setSelectedFilter('inventory')}
-                    >
-                        Inventory
-                    </div>
-                    <div
-                        className={`px-[10px] py-2 rounded-xl cursor-pointer ${selectedFilter === 'order' ? 'font-bold bg-[#FA9F1B70] transition-colors duration-300 text-[#fc9802e3]' : ''}`}
-                        onClick={() => setSelectedFilter('order')}
-                    >
-                        Generate Order
-                    </div>
-                    <div
-                        className={`px-[10px] py-2 rounded-xl cursor-pointer ${selectedFilter === 'kitchenOrders' ? 'font-bold bg-[#FA9F1B70] transition-colors duration-300 text-[#fc9802e3]' : ''}`}
-                        onClick={() => setSelectedFilter('kitchenOrders')}
-                    >
-                        Kitchen Orders
-                    </div>
-                    <div
-                        className={`px-[10px] py-2 rounded-xl cursor-pointer ${selectedFilter === 'recent' ? 'font-bold bg-[#FA9F1B70] transition-colors duration-300 text-[#fc9802e3]' : ''}`}
-                        onClick={() => setSelectedFilter('recent')}
-                    >
-                        Recent Orders
+                        ))}
                     </div>
                 </div>
 
-                {selectedFilter === 'inventory' && <InventoryCard />}
-                {selectedFilter === 'recent' && <RecentCard />}
-                {selectedFilter === 'order' && <OrderCard />}
-                {selectedFilter === 'kitchenOrders' && <KitchenOrdersCard />}
+                {/* Content based on selected tab */}
+                <div className="p-6">
+                    {loading ? (
+                        <div className="flex justify-center items-center py-12">
+                            <Bars height="50" width="50" color="#1e4569" ariaLabel="bars-loading" />
+                        </div>
+                    ) : (
+                        <>
+                            {selectedFilter === 'inventory' && <InventoryCard />}
+                            {selectedFilter === 'order' && <OrderCard />}
+                            {selectedFilter === 'kitchenOrders' && <KitchenOrdersCard />}
+                            {selectedFilter === 'recent' && <RecentCard />}
+                        </>
+                    )}
+                </div>
             </div>
 
-            
-
+            <style jsx global>{`
+                @keyframes fadeIn {
+                    from { opacity: 0; }
+                    to { opacity: 1; }
+                }
+                @keyframes scaleIn {
+                    from { transform: scale(0.95); opacity: 0; }
+                    to { transform: scale(1); opacity: 1; }
+                }
+                .animate-fadeIn {
+                    animation: fadeIn 0.2s ease-out;
+                }
+                .animate-scaleIn {
+                    animation: scaleIn 0.3s ease-out;
+                }
+            `}</style>
         </div>
     );
-
 };
 
 export default Page;

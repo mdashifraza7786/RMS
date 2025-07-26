@@ -729,3 +729,48 @@ export async function getFinancialOverview(period: string) {
         period
     };
 }
+
+export async function getOrdersByStatus(status?: string) {
+    const connection = await dbConnect();
+    try {
+        // Base query
+        let query = `
+            SELECT 
+                o.id, 
+                o.table_id, 
+                o.waiter_id, 
+                u1.name AS waiter_name, 
+                o.chef_id, 
+                u2.name AS chef_name, 
+                o.order_items, 
+                o.start_time, 
+                o.end_time, 
+                o.status
+            FROM orders o
+            LEFT JOIN user u1 ON o.waiter_id = u1.userid
+            LEFT JOIN user u2 ON o.chef_id = u2.userid
+        `;
+        
+        // Add WHERE clause if status is provided
+        if (status && status !== 'all') {
+            query += ` WHERE o.status = ?`;
+        }
+        
+        // Add ORDER BY to show newest orders first
+        query += ` ORDER BY o.start_time DESC`;
+        
+        // Execute the query with or without the status parameter
+        const [rows] = status && status !== 'all' 
+            ? await connection.query<RowDataPacket[]>(query, [status])
+            : await connection.query<RowDataPacket[]>(query);
+
+        return {
+            orders: rows
+        };
+    } catch (error: any) {
+        console.error("Error fetching orders by status:", error);
+        throw error;
+    } finally {
+        await connection.end();
+    }
+}

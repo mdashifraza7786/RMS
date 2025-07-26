@@ -5,6 +5,7 @@ import { IoFastFoodOutline } from 'react-icons/io5';
 import { MdOutlineAttachMoney, MdOutlineDescription } from 'react-icons/md';
 import { BiFoodMenu } from 'react-icons/bi';
 import { FiImage } from 'react-icons/fi';
+import { Bars } from 'react-loader-spinner';
 
 interface AddMenuProps {
     popuphandle: () => void;
@@ -15,9 +16,7 @@ const categoriesData: string[] = [
 ];
 
 const AddMenu: React.FC<AddMenuProps> = ({ popuphandle }) => {
-    const [searchTerm, setSearchTerm] = useState<string>('');
     const [selectedCategory, setSelectedCategory] = useState<string>('');
-    const [isDropdownVisible, setIsDropdownVisible] = useState<boolean>(false);
     const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [formValues, setFormValues] = useState({
@@ -25,20 +24,12 @@ const AddMenu: React.FC<AddMenuProps> = ({ popuphandle }) => {
         item_description: '',
         item_foodtype: 'veg',
         item_price: '',
-        making_cost: '', // Renamed field
+        making_cost: '',
     });
-
-    const handleCategoryChange = (event: ChangeEvent<HTMLInputElement>) => {
-        const category = event.target.value;
-        setSearchTerm(category);
-        setIsDropdownVisible(true);
-    };
 
     const handleCategorySelect = (event: ChangeEvent<HTMLSelectElement>) => {
         const category = event.target.value;
         setSelectedCategory(category);
-        setSearchTerm('');
-        setIsDropdownVisible(false);
     };
 
     const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -83,7 +74,7 @@ const AddMenu: React.FC<AddMenuProps> = ({ popuphandle }) => {
             item_description: formValues.item_description,
             item_foodtype: formValues.item_foodtype,
             item_price: formValues.item_price,
-            making_cost: formValues.making_cost, // Added field
+            making_cost: formValues.making_cost,
             item_type: selectedCategory,
             item_thumbnail: imagePreviewUrl,
         };
@@ -92,24 +83,34 @@ const AddMenu: React.FC<AddMenuProps> = ({ popuphandle }) => {
             const response = await axios.post('/api/menu/register', formData);
             console.log(response.data);
             popuphandle();
+            window.location.reload(); // Refresh to show new item
         } catch (error) {
             console.error('Error uploading menu item:', error);
+            alert('Failed to add menu item. Please try again.');
         } finally {
             setIsLoading(false);
         }
     };
 
-    const filteredCategories = categoriesData.filter(category =>
-        category.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-
     return (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-60 z-50 backdrop-blur-sm">
-            <div className="bg-white shadow-2xl rounded-xl p-8 w-full max-w-2xl relative animate-fadeIn">
+            <div className="bg-white shadow-2xl rounded-xl p-8 w-full max-w-2xl relative animate-scaleIn">
+                {isLoading && (
+                    <div className="absolute inset-0 flex justify-center items-center bg-white bg-opacity-90 rounded-xl z-10">
+                        <Bars
+                            height="80"
+                            width="80"
+                            color="#1e4569"
+                            ariaLabel="bars-loading"
+                            visible={true}
+                        />
+                    </div>
+                )}
+                
                 {/* Header */}
                 <div className="flex justify-between items-center border-b border-gray-200 pb-5 mb-6">
-                    <h1 className="text-2xl font-bold text-primary flex items-center gap-2">
-                        <BiFoodMenu className="text-[#9FCC2E]" size={28} />
+                    <h1 className="text-2xl font-bold text-[#1e4569] flex items-center gap-2">
+                        <BiFoodMenu className="text-[#1e4569]" size={28} />
                         Add New Menu Item
                     </h1>
                     <button 
@@ -130,7 +131,7 @@ const AddMenu: React.FC<AddMenuProps> = ({ popuphandle }) => {
                                     <IoFastFoodOutline /> Item Name
                                 </label>
                                 <input
-                                    className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all"
+                                    className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-[#1e4569] focus:border-[#1e4569] outline-none transition-all"
                                     type="text"
                                     name="item_name"
                                     placeholder="Enter item name"
@@ -145,7 +146,7 @@ const AddMenu: React.FC<AddMenuProps> = ({ popuphandle }) => {
                                     <MdOutlineDescription /> Description
                                 </label>
                                 <textarea
-                                    className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all resize-none h-24"
+                                    className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-[#1e4569] focus:border-[#1e4569] outline-none transition-all resize-none h-24"
                                     name="item_description"
                                     placeholder="Enter item description"
                                     value={formValues.item_description}
@@ -161,14 +162,14 @@ const AddMenu: React.FC<AddMenuProps> = ({ popuphandle }) => {
                                         <BiFoodMenu /> Category
                                     </label>
                                     <select
-                                        className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all bg-white"
+                                        className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-[#1e4569] focus:border-[#1e4569] outline-none transition-all bg-white"
                                         name="item_category"
                                         value={selectedCategory}
                                         onChange={handleCategorySelect}
                                         required
                                     >
                                         <option value="" disabled>Select Category</option>
-                                        {filteredCategories.map((category, index) => (
+                                        {categoriesData.map((category, index) => (
                                             <option key={index} value={category}>
                                                 {category}
                                             </option>
@@ -181,7 +182,7 @@ const AddMenu: React.FC<AddMenuProps> = ({ popuphandle }) => {
                                     <div className="space-y-2">
                                         <label className="text-sm font-medium text-gray-700">Food Type</label>
                                         <select
-                                            className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all bg-white"
+                                            className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-[#1e4569] focus:border-[#1e4569] outline-none transition-all bg-white"
                                             name="item_foodtype"
                                             value={formValues.item_foodtype}
                                             onChange={handleInputChange}
@@ -199,27 +200,27 @@ const AddMenu: React.FC<AddMenuProps> = ({ popuphandle }) => {
                                             name="item_price"
                                             type="number"
                                             placeholder="Enter price"
-                                            className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all"
+                                            className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-[#1e4569] focus:border-[#1e4569] outline-none transition-all"
                                             value={formValues.item_price}
                                             onChange={handleInputChange}
                                             required
                                         />
                                     </div>
-                    
-                                    <div className="space-y-2">
-                                        <label className="text-sm font-medium text-gray-700 flex items-center gap-1.5">
-                                            <MdOutlineAttachMoney /> Making Cost
-                                        </label>
-                                        <input
-                                            name="other_cost" // Added field
-                                            type="number"
-                                            placeholder="Enter cost"
-                                            className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all"
-                                            value={formValues.making_cost} // Added value
-                                            onChange={handleInputChange}
-                                            required
-                                        />
-                                    </div>
+                                </div>
+                                
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium text-gray-700 flex items-center gap-1.5">
+                                        <MdOutlineAttachMoney /> Making Cost
+                                    </label>
+                                    <input
+                                        name="making_cost"
+                                        type="number"
+                                        placeholder="Enter cost"
+                                        className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-[#1e4569] focus:border-[#1e4569] outline-none transition-all"
+                                        value={formValues.making_cost}
+                                        onChange={handleInputChange}
+                                        required
+                                    />
                                 </div>
                             </div>
                         </div>
@@ -275,7 +276,7 @@ const AddMenu: React.FC<AddMenuProps> = ({ popuphandle }) => {
                             </button>
                             <button 
                                 type="submit" 
-                                className="bg-[#9FCC2E] hover:bg-[#8bba1e] text-white font-semibold px-8 py-2.5 rounded-lg transition-colors duration-200 shadow-sm flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+                                className="bg-[#1e4569] hover:bg-[#2c5983] text-white font-semibold px-8 py-2.5 rounded-lg transition-colors duration-200 shadow-sm flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
                                 disabled={isLoading}
                             >
                                 {isLoading ? 'Adding...' : 'Add Item'}

@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect, FormEvent } from "react";
-import { FaPenToSquare, FaTrash } from "react-icons/fa6";
+import { FaTrash, FaTimes, FaSearch, FaPlus } from "react-icons/fa";
+import { FaPenToSquare } from "react-icons/fa6";
 import axios from "axios";
 import { Bars } from "react-loader-spinner";
 
@@ -34,9 +35,7 @@ const InventoryCard: React.FC = () => {
   const [deleteItemId, setDeleteItemId] = useState("");
   const [deleteItemBoxValue, setDeleteItemBoxValue] = useState("");
 
-
   useEffect(() => {
-    document.title = "Inventory";
     fetchInventory();
   }, []);
 
@@ -69,7 +68,6 @@ const InventoryCard: React.FC = () => {
   };
 
   const handleDeleteClick = (item_id: string, item_name: string) => {
-    // You can use item_id here if needed
     setDeletePopupVisible(true);
     setDeleteItemId(item_id);
     setDeleteItemName(item_name);
@@ -117,7 +115,6 @@ const InventoryCard: React.FC = () => {
     };
     setAddLoading(true);
 
-    console.log("Form Data:", formData);
     try {
       await axios.post("/api/inventory/register", formData);
       setAddInventoryPopupVisible(false);
@@ -136,297 +133,408 @@ const InventoryCard: React.FC = () => {
     }
   };
 
-
   return (
     <div className="flex flex-col gap-4">
+      {/* Search and Add Button */}
+      <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-4">
+        <button
+          onClick={() => setAddInventoryPopupVisible(true)}
+          className="bg-[#1e4569] hover:bg-[#2c5983] text-white font-medium px-5 py-2.5 rounded-lg transition-colors duration-200 shadow-sm flex items-center gap-2.5"
+        >
+          <FaPlus size={16} />
+          <span>Add New Item</span>
+        </button>
+      </div>
+
+      {/* Inventory Table */}
       {loading ? (
-        <div className="flex justify-center items-center py-4">
-          <Bars height="50" width="50" color="#25476A" ariaLabel="bars-loading" visible={true} />
+        <div className="flex justify-center items-center py-12">
+          <Bars height="50" width="50" color="#1e4569" ariaLabel="bars-loading" />
         </div>
       ) : (
-        <>
-          {/* Search Input */}
-          <section className="flex gap-4 items-center justify-between">
-            <input
-              type="search"
-              placeholder="Search Name, ID..."
-              className="border w-1/4 border-[#807c7c] rounded-xl px-4 py-1"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-            <button
-              onClick={() => setAddInventoryPopupVisible(true)}
-              className="bg-supporting2 hover:bg-[#badb69] w-1/5 text-white font-bold rounded-md px-4 py-2 flex items-center justify-center gap-2 hover:bg-supporting2-dark transition-colors mt-4"
-            >
-              Add New Item
-            </button>
-          </section>
-
-          {/* Inventory Table */}
-          <table className="w-full">
-            <thead>
-              <tr className="bg-primary text-white">
-                <th className="px-4 py-2 text-left w-[200px]">ID</th>
-                <th className="px-4 py-2 text-left">Item</th>
-                <th className="px-4 py-2 text-left">Current Quantity</th>
-                <th className="px-4 py-2 text-left">Low Limit</th>
-                <th className="px-4 py-2 text-left w-[100px]">Action</th>
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Item Name</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Current Stock</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Low Limit</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
-            <tbody>
-              {filteredInventory.map((item, index) => (
-                <tr key={index} className="text-[14px] font-medium font-montserrat">
-                  <td className="border px-4 py-2">{item.item_id}</td>
-                  <td className="border px-4 py-2">{item.item_name}</td>
-                  <td className="border px-4 py-2">{item.current_stock} {item.unit}</td>
-                  <td className="border px-4 py-2">{item.low_limit} {item.unit}</td>
-                  <td className="border px-4 py-4">
-                    <div className="flex gap-4 justify-center">
-                      <button
-                        className="bg-primary hover:bg-[#30557b] text-white px-6 py-2 rounded text-[12px] flex items-center gap-2"
-                        onClick={() => handleEditClick(item)}
+            <tbody className="bg-white divide-y divide-gray-200">
+              {filteredInventory.length > 0 ? (
+                filteredInventory.map((item) => (
+                  <tr key={item.item_id} className="hover:bg-gray-50 transition duration-150">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{item.item_id}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{item.item_name}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                      {item.current_stock} {item.unit}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                      {item.low_limit} {item.unit}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                        item.current_stock < item.low_limit
+                          ? 'bg-red-100 text-red-800'
+                          : item.current_stock < item.low_limit * 1.5
+                          ? 'bg-yellow-100 text-yellow-800'
+                          : 'bg-green-100 text-green-800'
+                      }`}>
+                        {item.current_stock < item.low_limit
+                          ? 'Low Stock'
+                          : item.current_stock < item.low_limit * 1.5
+                          ? 'Warning'
+                          : 'In Stock'}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <div className="flex items-center space-x-2">
+                        <button
+                          className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-[#1e4569] hover:bg-[#2c5983] transition"
+                          onClick={() => handleEditClick(item)}
+                        >
+                          <FaPenToSquare className="mr-1.5" size={12} />
+                          Edit
+                        </button>
+                        <button
+                          className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-red-600 hover:bg-red-700 transition"
+                          onClick={() => handleDeleteClick(item.item_id, item.item_name)}
+                        >
+                          <FaTrash className="mr-1.5" size={12} />
+                          Delete
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={6} className="py-12 text-center">
+                    <div className="flex flex-col items-center justify-center text-gray-500">
+                      <svg 
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none" 
+                        viewBox="0 0 24 24" 
+                        stroke="currentColor" 
+                        className="w-16 h-16 mb-4 text-gray-300"
                       >
-                        <div>Edit</div> <FaPenToSquare />
-                      </button>
-                      <button
-                        className="bg-red-500 hover:bg-red-400 text-white px-6 py-2 rounded text-[12px] flex items-center gap-2"
-                        onClick={() => handleDeleteClick(item.item_id, item.item_name)}>
-                        <div>Delete</div> <FaTrash />
-                      </button>
+                        <path 
+                          strokeLinecap="round" 
+                          strokeLinejoin="round" 
+                          strokeWidth="1" 
+                          d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                        />
+                      </svg>
+                      <p className="text-lg font-medium">No inventory items found</p>
+                      <p className="mt-1 text-sm">Try adjusting your search or adding a new item.</p>
                     </div>
                   </td>
                 </tr>
-              ))}
+              )}
             </tbody>
           </table>
-        </>
+        </div>
       )}
 
       {/* Add Inventory Popup */}
       {addInventoryPopupVisible && (
-
-        <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50">
-          <div className="bg-white p-8 rounded-2xl shadow-xl w-96 max-w-full">
-            <h2 className="text-xl font-bold text-primary text-center mb-4">Add New Item</h2>
-            {addLoading ? (
-              <div className="flex justify-center items-center py-4">
-                <Bars height="50" width="50" color="#25476A" ariaLabel="bars-loading" visible={true} />
-              </div>
-            ) :
-              (<div>
-                <div className="flex flex-col gap-3">
-                  <label className="font-medium text-gray-700">Item Name</label>
-                  <input
-                    required
-                    value={formValues.item_name}
-                    onChange={(e) => setFormValues({ ...formValues, item_name: e.target.value })}
-                    type="text"
-                    className="border border-gray-300 w-full rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-400 focus:outline-none"
-                  />
-
-                  <label className="font-medium text-gray-700">Current Quantity</label>
-                  <input
-                    required
-                    value={formValues.current_stock}
-                    onChange={(e) => setFormValues({ ...formValues, current_stock: e.target.value })}
-                    type="number"
-                    className="border border-gray-300 w-full rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-400 focus:outline-none"
-                  />
-
-                  <label className="font-medium text-gray-700">Low Limit</label>
-                  <input
-                    required
-                    value={formValues.low_limit}
-                    onChange={(e) => setFormValues({ ...formValues, low_limit: e.target.value })}
-                    type="number"
-                    className="border border-gray-300 w-full rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-400 focus:outline-none"
-                  />
-
-                  <label className="font-medium text-gray-700">Unit</label>
-                  <select
-                    required
-                    value={formValues.unit}
-                    onChange={(e) => setFormValues({ ...formValues, unit: e.target.value })}
-                    className="border border-gray-300 w-full rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-400 focus:outline-none"
-                  >
-                    <option value="" className="font-semibold">--SELECT UNIT--</option>
-                    <option value="kg">Kg</option>
-                    <option value="gram">Gram</option>
-                    <option value="ml">ml</option>
-                    <option value="litre">Litre</option>
-                    <option value="pieces">Pieces</option>
-                    <option value="packets">Packets</option>
-                    <option value="bottles">Bottles</option>
-                    <option value="boxes">Boxes</option>
-                    <option value="dozens">Dozens</option>
-                  </select>
-                </div>
-
-                <div className="flex justify-end mt-6 space-x-3">
-                  <button
-                    onClick={() => setAddInventoryPopupVisible(false)}
-                    className="bg-red-500 text-white px-5 py-2 rounded-lg hover:bg-opacity-80"
-                  >
-                    Cancel
-                  </button>
-                  {formValues.item_name !== "" && formValues.unit !== "" ? (
-                    <button
-                      onClick={handleSubmit}
-                      className="bg-supporting2 text-white px-5 py-2 rounded-lg hover:bg-opacity-80"
-                    >
-                      Add Now
-                    </button>
-                  )
-                    : (
-                      <button
-                        disabled
-                        className="bg-green-300 text-white px-5 py-2 rounded-lg hover:bg-opacity-80"
-                      >
-                        Add Now
-                      </button>
-                    )}
-                </div>
-              </div>)}
-          </div>
-        </div>
-
-      )}
-
-      {/* edit inventory Popup */}
-      {editPopupVisible && editData && (
-        <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50">
-          <div className="bg-white p-8 rounded-2xl shadow-xl w-96 max-w-full">
-            <h2 className="text-xl font-bold text-primary text-center mb-4">Update Item</h2>
-
-            {editLoading ? (
-              <div className="flex justify-center items-center py-4">
-                <Bars height="50" width="50" color="#25476A" ariaLabel="bars-loading" visible={true} />
-              </div>
-            ) : (
-              <div>
-                <div className="flex flex-col gap-3">
-                  <label className="font-medium text-gray-700">Item Name</label>
-                  <input
-                    required
-                    value={editData.item_name}
-                    onChange={(e) => setEditData((prev) => prev ? { ...prev, item_name: e.target.value } : null)}
-                    type="text"
-                    className="border border-gray-300 w-full rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-400 focus:outline-none"
-                  />
-
-                  <label className="font-medium text-gray-700">Current Quantity</label>
-                  <input
-                    required
-                    value={editData.current_stock}
-                    onChange={(e) => setEditData((prev) => prev ? { ...prev, current_stock: Number(e.target.value) } : null)}
-                    type="number"
-                    className="border border-gray-300 w-full rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-400 focus:outline-none"
-                  />
-
-                  <label className="font-medium text-gray-700">Low Limit</label>
-                  <input
-                    required
-                    value={editData.low_limit}
-                    onChange={(e) => setEditData((prev) => prev ? { ...prev, low_limit: Number(e.target.value) } : null)}
-                    type="number"
-                    className="border border-gray-300 w-full rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-400 focus:outline-none"
-                  />
-
-                  <label className="font-medium text-gray-700">Unit</label>
-                  <select
-                    required
-                    value={editData.unit}
-                    onChange={(e) => setEditData((prev) => prev ? { ...prev, unit: e.target.value } : null)}
-                    className="border border-gray-300 w-full rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-400 focus:outline-none"
-                  >
-                    <option value="" className="font-semibold">--SELECT UNIT--</option>
-                    <option value="kg">Kg</option>
-                    <option value="gram">Gram</option>
-                    <option value="ml">ml</option>
-                    <option value="litre">Litre</option>
-                    <option value="pieces">Pieces</option>
-                    <option value="packets">Packets</option>
-                    <option value="bottles">Bottles</option>
-                    <option value="boxes">Boxes</option>
-                    <option value="dozens">Dozens</option>
-                  </select>
-                </div>
-
-                <div className="flex justify-end mt-6 space-x-3">
-                  <button
-                    onClick={() => setEditPopupVisible(false)}
-                    className="bg-red-500 text-white px-5 py-2 rounded-lg hover:bg-opacity-80"
-                  >
-                    Cancel
-                  </button>
-                  {editData.item_name !== "" && editData.unit !== "" ? (
-                    <button
-                      onClick={() => handleEditInventory(editData)}
-                      className="bg-supporting2 text-white px-5 py-2 rounded-lg hover:bg-opacity-80"
-                    >
-                      Update
-                    </button>
-                  ) : (
-                    <button
-                      disabled
-                      className="bg-green-300 text-white px-5 py-2 rounded-lg hover:bg-opacity-80"
-                    >
-                      Update
-                    </button>
-                  )}
-                </div>
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-60 z-50 backdrop-blur-sm">
+          <div className="bg-white shadow-2xl rounded-xl p-8 w-[90%] max-w-[600px] relative animate-fadeIn">
+            {addLoading && (
+              <div className='absolute inset-0 flex justify-center items-center bg-white bg-opacity-90 rounded-xl z-10'>
+                <Bars
+                  height="80"
+                  width="80"
+                  color="#1e4569"
+                  ariaLabel="bars-loading"
+                  visible={true}
+                />
               </div>
             )}
+            
+            <div className="flex justify-between items-center border-b border-gray-200 pb-5 mb-6">
+              <h1 className="text-2xl font-bold text-[#1e4569] flex items-center gap-2">
+                <FaPlus className="text-[#1e4569]" size={24} />
+                Add New Inventory Item
+              </h1>
+              <button 
+                className="text-gray-400 hover:text-red-500 transition-colors duration-200 p-2 rounded-full hover:bg-gray-100"
+                onClick={() => setAddInventoryPopupVisible(false)}
+              >
+                <FaTimes size={20} />
+              </button>
+            </div>
+            
+            <form className="mt-6 space-y-5" onSubmit={handleSubmit}>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-700 flex items-center gap-1.5">
+                    Item Name
+                  </label>
+                  <input
+                    className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-[#1e4569] focus:border-[#1e4569] outline-none transition-all"
+                    type="text"
+                    value={formValues.item_name}
+                    onChange={(e) => setFormValues({ ...formValues, item_name: e.target.value })}
+                    required
+                  />
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-gray-700">
+                      Current Stock
+                    </label>
+                    <input
+                      className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-[#1e4569] focus:border-[#1e4569] outline-none transition-all"
+                      type="number"
+                      value={formValues.current_stock}
+                      onChange={(e) => setFormValues({ ...formValues, current_stock: e.target.value })}
+                      required
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-gray-700">
+                      Low Limit
+                    </label>
+                    <input
+                      className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-[#1e4569] focus:border-[#1e4569] outline-none transition-all"
+                      type="number"
+                      value={formValues.low_limit}
+                      onChange={(e) => setFormValues({ ...formValues, low_limit: e.target.value })}
+                      required
+                    />
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-700">
+                    Unit
+                  </label>
+                  <select
+                    className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-[#1e4569] focus:border-[#1e4569] outline-none transition-all bg-white"
+                    value={formValues.unit}
+                    onChange={(e) => setFormValues({ ...formValues, unit: e.target.value })}
+                    required
+                  >
+                    <option value="" className="font-semibold">--SELECT UNIT--</option>
+                    <option value="kg">Kg</option>
+                    <option value="gram">Gram</option>
+                    <option value="ml">ml</option>
+                    <option value="litre">Litre</option>
+                    <option value="pieces">Pieces</option>
+                    <option value="packets">Packets</option>
+                    <option value="bottles">Bottles</option>
+                    <option value="boxes">Boxes</option>
+                    <option value="dozens">Dozens</option>
+                  </select>
+                </div>
+              </div>
+              
+              <div className="flex justify-end pt-3 border-t border-gray-200 mt-6">
+                <div className="flex gap-3">
+                  <button 
+                    type="button" 
+                    className="px-6 py-2.5 rounded-lg border border-gray-300 text-gray-700 font-medium hover:bg-gray-50 transition-colors duration-200"
+                    onClick={() => setAddInventoryPopupVisible(false)}
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    type="submit" 
+                    className="bg-[#1e4569] hover:bg-[#2c5983] text-white font-semibold px-8 py-2.5 rounded-lg transition-colors duration-200 shadow-sm"
+                    disabled={!formValues.item_name || !formValues.unit}
+                  >
+                    Add Item
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Inventory Popup */}
+      {editPopupVisible && editData && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-60 z-50 backdrop-blur-sm">
+          <div className="bg-white shadow-2xl rounded-xl p-8 w-[90%] max-w-[600px] relative animate-fadeIn">
+            {editLoading && (
+              <div className='absolute inset-0 flex justify-center items-center bg-white bg-opacity-90 rounded-xl z-10'>
+                <Bars
+                  height="80"
+                  width="80"
+                  color="#1e4569"
+                  ariaLabel="bars-loading"
+                  visible={true}
+                />
+              </div>
+            )}
+            
+            <div className="flex justify-between items-center border-b border-gray-200 pb-5 mb-6">
+              <h1 className="text-2xl font-bold text-[#1e4569] flex items-center gap-2">
+                <FaPenToSquare className="text-[#1e4569]" size={24} />
+                Edit Inventory Item
+              </h1>
+              <button 
+                className="text-gray-400 hover:text-red-500 transition-colors duration-200 p-2 rounded-full hover:bg-gray-100"
+                onClick={() => setEditPopupVisible(false)}
+              >
+                <FaTimes size={20} />
+              </button>
+            </div>
+            
+            <form className="mt-6 space-y-5" onSubmit={(e) => { e.preventDefault(); handleEditInventory(editData); }}>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-700 flex items-center gap-1.5">
+                    Item Name
+                  </label>
+                  <input
+                    className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-[#1e4569] focus:border-[#1e4569] outline-none transition-all"
+                    type="text"
+                    value={editData.item_name}
+                    onChange={(e) => setEditData({ ...editData, item_name: e.target.value })}
+                    required
+                  />
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-gray-700">
+                      Current Stock
+                    </label>
+                    <input
+                      className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-[#1e4569] focus:border-[#1e4569] outline-none transition-all"
+                      type="number"
+                      value={editData.current_stock}
+                      onChange={(e) => setEditData({ ...editData, current_stock: Number(e.target.value) })}
+                      required
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-gray-700">
+                      Low Limit
+                    </label>
+                    <input
+                      className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-[#1e4569] focus:border-[#1e4569] outline-none transition-all"
+                      type="number"
+                      value={editData.low_limit}
+                      onChange={(e) => setEditData({ ...editData, low_limit: Number(e.target.value) })}
+                      required
+                    />
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-700">
+                    Unit
+                  </label>
+                  <select
+                    className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-[#1e4569] focus:border-[#1e4569] outline-none transition-all bg-white"
+                    value={editData.unit}
+                    onChange={(e) => setEditData({ ...editData, unit: e.target.value })}
+                    required
+                  >
+                    <option value="" className="font-semibold">--SELECT UNIT--</option>
+                    <option value="kg">Kg</option>
+                    <option value="gram">Gram</option>
+                    <option value="ml">ml</option>
+                    <option value="litre">Litre</option>
+                    <option value="pieces">Pieces</option>
+                    <option value="packets">Packets</option>
+                    <option value="bottles">Bottles</option>
+                    <option value="boxes">Boxes</option>
+                    <option value="dozens">Dozens</option>
+                  </select>
+                </div>
+              </div>
+              
+              <div className="flex justify-end pt-3 border-t border-gray-200 mt-6">
+                <div className="flex gap-3">
+                  <button 
+                    type="button" 
+                    className="px-6 py-2.5 rounded-lg border border-gray-300 text-gray-700 font-medium hover:bg-gray-50 transition-colors duration-200"
+                    onClick={() => setEditPopupVisible(false)}
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    type="submit" 
+                    className="bg-[#1e4569] hover:bg-[#2c5983] text-white font-semibold px-8 py-2.5 rounded-lg transition-colors duration-200 shadow-sm"
+                    disabled={!editData.item_name || !editData.unit}
+                  >
+                    Save Changes
+                  </button>
+                </div>
+              </div>
+            </form>
           </div>
         </div>
       )}
 
       {/* Delete Confirmation Popup */}
       {deletePopupVisible && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-          <div className="bg-white p-6 md:p-8 rounded-2xl shadow-xl w-96 max-w-full">
-            <h2 className="text-xl font-bold text-red-600 text-center mb-3">Delete Item</h2>
-            <p className="text-gray-700 text-center mb-4">
-              Are you sure you want to delete this item? Type the item name ({deleteItemName}) to confirm.
-            </p>
-
-            <input
-              required
-              type="text"
-              placeholder="Type the item name"
-              className="border border-gray-300 w-full rounded-lg px-4 py-2 focus:ring-2 focus:ring-red-100 focus:outline-none"
-              value={deleteItemBoxValue}
-              onChange={(e) => setDeleteItemBoxValue(e.target.value)}
-            />
-
-            <div className="flex justify-end space-x-3 mt-4">
-              <button
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-60 z-50 backdrop-blur-sm">
+          <div className="bg-white shadow-2xl rounded-xl p-8 max-w-md w-full animate-fadeIn">
+            {deleteLoading && (
+              <div className='absolute inset-0 flex justify-center items-center bg-white bg-opacity-90 rounded-xl z-10'>
+                <Bars
+                  height="60"
+                  width="60"
+                  color="#1e4569"
+                  ariaLabel="bars-loading"
+                  visible={true}
+                />
+              </div>
+            )}
+            
+            <div className="text-center mb-6">
+              <div className="bg-red-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                <FaTrash className="text-red-500" size={24} />
+              </div>
+              <h2 className="text-2xl font-bold text-gray-800 mb-2">Delete Inventory Item</h2>
+              <p className="text-gray-600">
+                Are you sure you want to delete <span className="font-bold text-[#1e4569]">{deleteItemName}</span>? This action cannot be undone.
+              </p>
+            </div>
+            
+            <div className="mb-5">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Type <span className="font-bold">delete</span> to confirm
+              </label>
+              <input
+                type="text"
+                placeholder="delete"
+                className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none transition-all"
+                value={deleteItemBoxValue}
+                onChange={(e) => setDeleteItemBoxValue(e.target.value)}
+              />
+            </div>
+            
+            <div className="flex justify-end gap-3">
+              <button 
+                className="px-6 py-2.5 rounded-lg border border-gray-300 text-gray-700 font-medium hover:bg-gray-50 transition-colors duration-200"
                 onClick={() => {setDeletePopupVisible(false); setDeleteItemBoxValue("");}}
-                className="bg-gray-300 text-gray-800 px-5 py-2 rounded-lg hover:bg-gray-400 transition-all"
               >
                 Cancel
               </button>
-              {deleteItemName === deleteItemBoxValue ? (
-
-                <button
-                  onClick={() => handleDeleteInventory(deleteItemId)}
-                  className="bg-red-600 text-white px-5 py-2 rounded-lg hover:bg-red-700 transition-all"
-                >
-                  Delete
-                </button>
-              ) : (
-                <button
-                  disabled
-                  className="bg-red-300 text-white px-5 py-2 rounded-lg hover:bg-red-400 transition-all"
-                >
-                  Delete
-                </button>
-              )}
+              <button 
+                className="bg-red-500 hover:bg-red-600 text-white font-semibold px-6 py-2.5 rounded-lg transition-colors duration-200 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                onClick={() => handleDeleteInventory(deleteItemId)}
+                disabled={deleteItemBoxValue !== "delete"}
+              >
+                Delete Item
+              </button>
             </div>
           </div>
         </div>
       )}
-
     </div>
   );
 };

@@ -19,6 +19,7 @@
     "axios": "^1.7.2",
     "bcrypt": "^5.1.1",
     "chart.js": "^4.4.4",
+    "dotenv": "^17.2.1",
     "express": "^4.21.2",
     "fs": "^0.0.1-security",
     "html2canvas": "^1.4.1",

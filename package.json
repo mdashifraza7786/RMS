@@ -16,6 +16,7 @@
     "@mui/material": "^5.15.18",
     "@mui/styled-engine-sc": "^6.0.0-alpha.18",
     "@mui/x-charts": "^7.5.0",
+    "@types/socket.io": "^3.0.1",
     "axios": "^1.7.2",
     "bcrypt": "^5.1.1",
     "chart.js": "^4.4.4",
@@ -36,6 +37,8 @@
     "react-loader-spinner": "^6.1.6",
     "react-qr-code": "^2.0.15",
     "react-toastify": "^10.0.5",
+    "socket.io": "^4.8.1",
+    "socket.io-client": "^4.8.1",
     "styled-components": "^6.1.11",
     "uuid": "^10.0.0",
     "ws": "^8.18.1"

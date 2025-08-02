@@ -306,6 +306,28 @@ export async function getPayout() {
         await connection.end();
     }
 }
+export async function payPayout(data: any) {
+    const connection = await dbConnect();
+    try {
+        const [userRows] = await connection.query<RowDataPacket[]>(
+            'UPDATE payout SET status = ? WHERE userid = ?',
+            [data.status, data.userid]
+        );
+
+        if (userRows.length > 0) {
+            return {
+                payout: userRows,
+            };
+        } else {
+            return userRows;
+        }
+
+    } catch (error: any) {
+        throw error;
+    } finally {
+        await connection.end();
+    }
+}
 
 export async function getTables() {
     const connection = await dbConnect();

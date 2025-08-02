@@ -69,17 +69,14 @@ export default function OrdersComponent() {
         getRecentOrders();
     }, []);
     
-    // Reset to first page when orders change
     useEffect(() => {
         setCurrentPage(1);
     }, [orders]);
 
-    // Calculate total for an order
     const calculateTotal = (items: OrderItem[]) => {
         return items.reduce((acc, item) => acc + (item.price * item.quantity), 0);
     };
 
-    // Filter only completed orders
     const completedOrders = orders.filter(order => order.status === "completed");
 
     const formatDate = (dateString: string) => {
@@ -284,7 +281,6 @@ export default function OrdersComponent() {
                                 </div>
                             </div>
                             
-                            {/* Invoice Information */}
                             {selectedOrder.invoice_subtotal && (
                                 <div className="mt-3 pt-3 border-t border-dashed border-gray-200">
                                     <h4 className="font-medium text-gray-800 mb-2">Invoice Details</h4>

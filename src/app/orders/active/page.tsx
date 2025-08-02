@@ -2,11 +2,10 @@
 
 import { useState, useEffect } from "react";
 import { Bars } from 'react-loader-spinner';
-import Link from 'next/link';
 import { MdSearch, MdTableBar, MdVisibility, MdOutlineInfo } from 'react-icons/md';
 import OrderScreen from "@/components/OrderScreen";
+import { FaFileInvoiceDollar } from "react-icons/fa";
 
-// Interfaces from AdminDashboard
 interface Table {
     id: number;
     tablenumber: number;
@@ -24,7 +23,6 @@ interface billingAmount {
     subtotal: number;
 }
 
-// Interface for the API response
 interface Order {
     orderId: number;
     tableNumber: number;
@@ -41,7 +39,6 @@ export default function ActiveOrdersPage() {
     const [selectedTable, setSelectedTable] = useState<number | null>(null);
     const [tableData, setTableData] = useState<Table[]>([]);
     
-    // Format orders for OrderScreen component
     const formattedOrders = orders.map(order => ({
         orderid: order.orderId,
         billing: order.billing,
@@ -65,7 +62,6 @@ export default function ActiveOrdersPage() {
         }
     }
 
-    // Fetch tables data
     async function fetchTables() {
         try {
             const response = await fetch("/api/tables");
@@ -79,9 +75,7 @@ export default function ActiveOrdersPage() {
         }
     }
     
-    // Functions for OrderScreen component
     function updateOrderedItems(bookedItems: any) {
-        // Update the orders list with the new items
         setOrders(prevOrders => {
             const updatedOrders = [...prevOrders];
             const index = updatedOrders.findIndex(order => order.orderId === bookedItems.orderid);
@@ -99,7 +93,6 @@ export default function ActiveOrdersPage() {
     }
     
     function resetTable(tableNumber: number) {
-        // Update table availability
         setTableData(prevTables => {
             return prevTables.map(table => {
                 if (table.tablenumber === tableNumber) {
@@ -109,7 +102,6 @@ export default function ActiveOrdersPage() {
             });
         });
         
-        // Remove the order from the list
         setOrders(prevOrders => 
             prevOrders.filter(order => order.tableNumber !== tableNumber)
         );
@@ -117,7 +109,6 @@ export default function ActiveOrdersPage() {
     
     const removeOrderedItem = async (itemId: string, tableNumber: number, orderID: number) => {
         try {
-            // API call to remove item
             await fetch(`/api/order/modifyOrder`, {
                 method: 'POST',
                 headers: {
@@ -129,7 +120,6 @@ export default function ActiveOrdersPage() {
                 }),
             });
             
-            // Update local state
             setOrders(prevOrders => {
                 return prevOrders.map(order => {
                     if (order.orderId === orderID) {
@@ -158,7 +148,6 @@ export default function ActiveOrdersPage() {
         getActiveOrders();
         fetchTables();
         
-        // Set up polling to refresh data every 30 seconds
         const intervalId = setInterval(() => {
             getActiveOrders();
         }, 30000);
@@ -194,16 +183,14 @@ export default function ActiveOrdersPage() {
     };
 
     return (
-        <div className="p-6 max-w-7xl mx-auto">
-            <div className="flex justify-between items-center mb-6">
-                <h1 className="text-2xl font-bold text-gray-800">Active Orders</h1>
-                <Link 
-                    href="/orders" 
-                    className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors"
-                >
-                    All Orders
-                </Link>
+        <div className="container mx-auto px-6 pt-4 pb-8">
+            <div className="py-4">
+                <div className="flex items-center gap-3">
+                    <FaFileInvoiceDollar className="text-primary text-2xl" />
+                    <h1 className="text-xl font-semibold text-gray-800">Active Orders</h1>
+                </div>
             </div>
+            
 
             <div className="mb-6">
                 <div className="relative">
@@ -296,7 +283,6 @@ export default function ActiveOrdersPage() {
                 </div>
             )}
             
-            {/* OrderScreen component */}
             {selectedTable !== null && (
                 <OrderScreen 
                     tableNumber={selectedTable} 

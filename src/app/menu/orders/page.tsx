@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { Bars } from "react-loader-spinner";
-import { FaSearch, FaFileInvoiceDollar } from "react-icons/fa";
+import { FaSearch, FaFileInvoiceDollar, FaUserSlash } from "react-icons/fa";
 import { IoFastFoodOutline } from "react-icons/io5";
 import { BsClock, BsClockHistory, BsCalendar3 } from "react-icons/bs";
 import { FiCreditCard, FiDollarSign } from "react-icons/fi";
@@ -45,7 +45,6 @@ const Page: React.FC = () => {
     const [detailsPopup, setDetailsPopup] = useState(false);
     const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
     const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
-    const [debugInfo, setDebugInfo] = useState<string | null>(null);
 
     useEffect(() => {
         document.title = "Orders";
@@ -57,7 +56,6 @@ const Page: React.FC = () => {
         setLoading(true);
         try {
             const response = await axios.get('/api/order');
-            console.log("Orders API response:", response.data);
             
             if (response.data?.tableOrders) {
                 const formattedData: Order[] = response.data.tableOrders.map((order: any) => ({
@@ -67,16 +65,13 @@ const Page: React.FC = () => {
                 }));
                 
                 setAllOrders(formattedData);
-                setDebugInfo(null); // Clear debug info on success
             } else {
                 console.error("Failed to fetch orders:", response.data);
                 setAllOrders([]);
-                setDebugInfo("Failed to fetch orders. Check console for details.");
             }
         } catch (error) {
             console.error("Error fetching orders:", error);
             setAllOrders([]);
-            setDebugInfo(`Error fetching orders: ${error instanceof Error ? error.message : 'Unknown error'}`);
         }
         setLoading(false);
     };
@@ -84,7 +79,6 @@ const Page: React.FC = () => {
     const fetchInvoicesData = async () => {
         try {
             const response = await axios.get('/api/order/orderInvoice');
-            console.log("Invoices API response:", response.data);
             
             if (response.data?.invoice) {
                 setInvoices(response.data.invoice);
@@ -92,14 +86,12 @@ const Page: React.FC = () => {
                 console.error("Failed to fetch invoices:", response.data);
                 setInvoices([]);
                 if (!allOrders.length) {
-                    setDebugInfo(prev => prev || "Failed to fetch invoices. Check console for details.");
                 }
             }
         } catch (error) {
             console.error("Error fetching invoices:", error);
             setInvoices([]);
             if (!allOrders.length) {
-                setDebugInfo(prev => prev || `Error fetching invoices: ${error instanceof Error ? error.message : 'Unknown error'}`);
             }
         }
     };
@@ -109,7 +101,6 @@ const Page: React.FC = () => {
         fetchOrdersData();
         fetchInvoicesData();
         
-        // Refresh data every 60 seconds
         const intervalId = setInterval(() => {
             fetchOrdersData();
             fetchInvoicesData();
@@ -122,29 +113,19 @@ const Page: React.FC = () => {
         try {
             setSelectedOrder(order);
             
-            // Find matching invoice for this order
             const matchingInvoice = invoices.find(inv => inv.orderid === order.id);
-            console.log("Order ID:", order.id);
-            console.log("Available invoices:", invoices);
-            console.log("Matching invoice:", matchingInvoice);
             
             if (matchingInvoice) {
-                console.log("Found matching invoice:", matchingInvoice);
                 setSelectedInvoice(matchingInvoice);
             } else {
-                console.log("No matching invoice found for order ID:", order.id);
-                // Create a placeholder invoice when one doesn't exist
                 if (order.status.toLowerCase() === "completed") {
-                    // Calculate order total from items
                     const orderTotal = order.order_items.reduce(
                         (sum, item) => sum + (item.price * item.quantity), 
                         0
                     );
                     
-                    // Calculate GST (18% of subtotal)
                     const gstAmount = parseFloat((orderTotal * 0.18).toFixed(2));
                     
-                    // Create placeholder invoice object
                     const placeholderInvoice: Invoice = {
                         id: "pending-" + order.id,
                         orderid: order.id,
@@ -158,7 +139,6 @@ const Page: React.FC = () => {
                         generated_at: order.end_time || order.start_time
                     };
                     
-                    console.log("Created placeholder invoice:", placeholderInvoice);
                     setSelectedInvoice(placeholderInvoice);
                 } else {
                     setSelectedInvoice(null);
@@ -177,7 +157,6 @@ const Page: React.FC = () => {
     const handlePrintInvoice = () => {
         if (!selectedOrder || !selectedInvoice) return;
         
-        // Create a new window for printing
         const printWindow = window.open('', '_blank');
         if (!printWindow) {
             alert('Please allow popups for this site to print invoices.');
@@ -186,7 +165,6 @@ const Page: React.FC = () => {
         
         const currentDate = new Date().toLocaleString();
         
-        // Generate bill content using EXACTLY the same format as OrderScreen
         const billContent = `
             <html>
             <head>
@@ -250,7 +228,6 @@ const Page: React.FC = () => {
             </html>
         `;
 
-        // Write to the new window and open the print dialog
         printWindow.document.open();
         printWindow.document.write(billContent);
         printWindow.document.close();
@@ -275,7 +252,6 @@ const Page: React.FC = () => {
         invoice.subtotal.toString().toString().includes(searchTerm)
     );
 
-    // Format currency in a consistent way
     const formatCurrency = (amount: number | null | undefined) => {
         if (amount === null || amount === undefined) return '₹ 0.00';
         
@@ -286,7 +262,6 @@ const Page: React.FC = () => {
         }).format(amount).replace('₹', '₹ ');
     };
 
-    // Get appropriate status color based on status value
     const getStatusColor = (status: string) => {
         switch (status.toLowerCase()) {
             case 'completed':
@@ -304,42 +279,14 @@ const Page: React.FC = () => {
 
     return (
         <div className="container mx-auto px-4 py-6 md:px-6 lg:max-w-[90%] xl:max-w-7xl 2xl:max-w-[1400px] font-sans">
-            {/* Debug Information */}
-            {debugInfo && (
-                <div className="mb-4 p-3 bg-yellow-100 text-yellow-800 rounded-lg border border-yellow-200">
-                    <div className="flex items-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-                            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                        </svg>
-                        <p className="font-medium">Debug Info: {debugInfo}</p>
-                    </div>
-                    <div className="mt-2 text-sm">
-                        <p>Orders Count: {allOrders.length}</p>
-                        <p>Invoices Count: {invoices.length}</p>
-                        <button 
-                            onClick={() => {
-                                fetchOrdersData();
-                                fetchInvoicesData();
-                            }}
-                            className="mt-2 px-3 py-1 bg-yellow-200 hover:bg-yellow-300 rounded-md text-yellow-800 text-xs font-medium"
-                        >
-                            Retry Loading Data
-                        </button>
-                    </div>
-                </div>
-            )}
-
-            {/* Page Header */}
             <div className="flex items-center mb-6">
-                <div className="h-10 w-10 rounded-lg bg-[#1e4569]/10 flex items-center justify-center mr-3">
-                    <FaFileInvoiceDollar className="text-[#1e4569]" size={20} />
+                <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center mr-3">
+                    <FaFileInvoiceDollar className="text-primary" size={20} />
                 </div>
                 <h1 className="text-2xl font-bold text-gray-800">Orders</h1>
             </div>
 
-            {/* Main Content */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                {/* Header with search */}
                 <div className="p-6 border-b border-gray-100">
                     <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-6">
                         <div className="relative">
@@ -349,7 +296,7 @@ const Page: React.FC = () => {
                             <input
                                 type="search"
                                 placeholder="Search by order ID, table, staff..."
-                                className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-[#1e4569] focus:border-[#1e4569] w-full md:w-80"
+                                className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary w-full md:w-80"
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                             />
@@ -357,11 +304,10 @@ const Page: React.FC = () => {
                     </div>
                 </div>
 
-                {/* Table content */}
                 <div className="overflow-x-auto">
                     {loading ? (
                         <div className="flex justify-center items-center py-12">
-                            <Bars height="50" width="50" color="#1e4569" ariaLabel="bars-loading" />
+                            <Bars height="50" width="50" color="primary" ariaLabel="bars-loading" />
                         </div>
                     ) : (
                         <table className="min-w-full divide-y divide-gray-200">
@@ -447,7 +393,7 @@ const Page: React.FC = () => {
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                                 <button 
-                                                    className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-[#1e4569] hover:bg-[#2c5983] transition"
+                                                    className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-primary hover:bg-primary/90 transition"
                                                     onClick={() => handleDetailsClick(order)}
                                                 >
                                                     View Details
@@ -459,20 +405,7 @@ const Page: React.FC = () => {
                                     <tr>
                                         <td colSpan={9} className="py-12 text-center">
                                             <div className="flex flex-col items-center justify-center text-gray-500">
-                                                <svg 
-                                                    xmlns="http://www.w3.org/2000/svg"
-                                                    fill="none" 
-                                                    viewBox="0 0 24 24" 
-                                                    stroke="currentColor" 
-                                                    className="w-16 h-16 mb-4 text-gray-300"
-                                                >
-                                                    <path 
-                                                        strokeLinecap="round" 
-                                                        strokeLinejoin="round" 
-                                                        strokeWidth="1" 
-                                                        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
-                                                    />
-                                                </svg>
+                                                <FaUserSlash className="text-primary text-2xl" />
                                                 <p className="text-lg font-medium">No orders available</p>
                                                 <p className="mt-1 text-sm">Try adjusting your search to find what {"you're"} looking for.</p>
                                             </div>
@@ -485,12 +418,10 @@ const Page: React.FC = () => {
                 </div>
             </div>
 
-            {/* Order Details Modal */}
             {detailsPopup && selectedOrder && (
                 <div className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-60 z-50 p-4 animate-fadeIn">
                     <div className="bg-white rounded-xl shadow-xl max-w-md w-full max-h-[90vh] overflow-auto animate-scaleIn">
-                        {/* Header */}
-                        <div className="bg-[#1e4569] text-white p-5 rounded-t-xl sticky top-0 z-10">
+                        <div className="bg-primary text-white p-5 rounded-t-xl sticky top-0 z-10">
                             <div className="flex justify-between items-center mb-2">
                                 <h3 className="text-xl font-bold flex items-center gap-2">
                                     <IoFastFoodOutline />
@@ -508,7 +439,6 @@ const Page: React.FC = () => {
                             </div>
                         </div>
 
-                        {/* Order Info */}
                         <div className="p-6">
                             <div className="grid grid-cols-2 gap-4 mb-6">
                                 <div className="bg-gray-50 p-3 rounded-lg">
@@ -538,7 +468,6 @@ const Page: React.FC = () => {
                                 </div>
                             </div>
 
-                            {/* Items List */}
                             <h2 className="font-semibold text-gray-800 mb-3">Order Items</h2>
                             <div className="bg-gray-50 rounded-lg p-4 mb-6">
                                 <ul className="divide-y divide-gray-200">
@@ -558,8 +487,7 @@ const Page: React.FC = () => {
                                 </ul>
                             </div>
 
-                            {/* Total Price */}
-                            <div className="bg-[#1e4569]/5 rounded-lg p-4 mb-6">
+                            <div className="bg-primary/5 rounded-lg p-4 mb-6">
                                 <div className="flex justify-between items-center mb-2">
                                     <span className="text-gray-600">Subtotal</span>
                                     <span className="font-medium text-gray-900">
@@ -567,7 +495,6 @@ const Page: React.FC = () => {
                                     </span>
                                 </div>
                                 
-                                {/* Always show GST section, using placeholder if no invoice */}
                                 <div className="flex justify-between items-center mb-2">
                                     <span className="text-gray-600">GST (18%)</span>
                                     <span className="font-medium text-gray-900">
@@ -589,7 +516,7 @@ const Page: React.FC = () => {
                                 <div className="border-t border-gray-200 my-2 pt-2">
                                     <div className="flex justify-between items-center">
                                         <span className="font-medium text-gray-900">Total</span>
-                                        <span className="text-xl font-bold text-[#1e4569]">
+                                        <span className="text-xl font-bold text-primary">
                                             {selectedInvoice 
                                                 ? formatCurrency(selectedInvoice.total_amount)
                                                 : formatCurrency(
@@ -608,11 +535,10 @@ const Page: React.FC = () => {
                                     Close
                                 </button>
                                 
-                                {/* Show only Print Invoice button for completed orders */}
                                 {selectedOrder.status.toLowerCase() === "completed" && (
                                     <button
                                         onClick={handlePrintInvoice}
-                                        className="px-4 py-2 bg-[#1e4569] hover:bg-[#2c5983] text-white font-medium rounded-lg flex items-center justify-center"
+                                        className="px-4 py-2 bg-primary hover:bg-primary/90 text-white font-medium rounded-lg flex items-center justify-center"
                                     >
                                         <FaFileInvoiceDollar className="mr-2" />
                                         Print Invoice

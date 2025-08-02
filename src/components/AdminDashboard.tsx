@@ -412,13 +412,12 @@ const AdminDashboard: React.FC = () => {
                 return null;
         }
     };
-
+ 
     return (
-        <div className="min-h-screen px-[8vw]">
+        <div className="">
             <div className="">
                 <div className="container mx-auto px-6 py-4">
                     <div className="flex items-center gap-3">
-                        <MdDashboard className="text-primary text-2xl" />
                         <h1 className="text-xl font-semibold text-gray-800">Restaurant Dashboard</h1>
                     </div>
                 </div>
@@ -590,8 +589,12 @@ const AdminDashboard: React.FC = () => {
                                 <div className="flex justify-between items-center mb-2">
                                     <div className="text-sm text-primary">Period Overview</div>
                                     <div className="text-xs text-gray-600 bg-white px-2 py-1 rounded">
-                                        {financialData.period === '7days' ? 'Last 7 days' : 
-                                        financialData.period === '30days' ? 'Last 30 days' : 'This month'}
+                                        {financialData.period === '7days' ? 'Last 7 days' :
+                                        financialData.period === '30days' ? 'Last 30 days' :
+                                        financialData.period === 'month' ? 'This month' :
+                                        financialData.period === 'today' ? 'Today' :
+                                        financialData.period === 'yesterday' ? 'Yesterday' :
+                                        'N/A'}
                                     </div>
                                 </div>
                                 <div className="flex justify-between text-sm mt-1">

@@ -4,13 +4,13 @@ import React, { useState, useEffect } from 'react';
 import AddMemberPopup from './AddMemberPopup';
 import { Member } from './components/MemberTypes';
 
-// Import the new components
 import MemberHeader from './components/MemberHeader';
 import MemberSearch from './components/MemberSearch';
 import MembersList from './components/MembersList';
 import ViewMemberModal from './components/ViewMemberModal';
 import EditMemberModal from './components/EditMemberModal';
 import DeleteMemberModal from './components/DeleteMemberModal';
+import { FaUserPlus } from 'react-icons/fa';
 
 const Page: React.FC = () => {
     const [memberData, setMemberData] = useState<Member[]>([]);
@@ -18,8 +18,6 @@ const Page: React.FC = () => {
     const [loading, setLoading] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [hasMore, setHasMore] = useState(true);
-    
-    // Modal states
     const [editPopupVisible, setEditPopupVisible] = useState(false);
     const [detailsPopupVisible, setDetailsPopupVisible] = useState(false);
     const [selectedItem, setSelectedItem] = useState<Member | null>(null);
@@ -143,7 +141,7 @@ const Page: React.FC = () => {
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (!editData) return;
-        
+
         const file = e.target.files?.[0];
         if (file) {
             const reader = new FileReader();
@@ -155,22 +153,28 @@ const Page: React.FC = () => {
     };
 
     return (
-        <div className="container mx-auto px-4 py-6 md:px-6 lg:max-w-[90%] xl:max-w-7xl 2xl:max-w-[1400px] font-sans">
-            <MemberHeader onAddMember={handleAddMemberPopup} />
-            
-            {/* Main Content */}
+        <div className="container mx-auto px-6 pt-4 pb-8">
+
+            <MemberHeader />
+
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                {/* Header with search */}
-                <div className="p-6 border-b border-gray-100">
+                <div className="p-6 border-b border-gray-100 flex justify-between items-center">
                     <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-4">
-                        <MemberSearch 
-                            searchQuery={searchQuery} 
-                            setSearchQuery={setSearchQuery} 
+                        <MemberSearch
+                            searchQuery={searchQuery}
+                            setSearchQuery={setSearchQuery}
                         />
                     </div>
-                                        </div>
+                    <button
+                        onClick={handleAddMemberPopup}
+                        className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-primary/90 transition shadow-sm"
+                    >
+                        <FaUserPlus className="mr-2" />
+                        <span>Add Member</span>
+                    </button>
+                </div>
 
-                <MembersList 
+                <MembersList
                     members={filteredData}
                     loading={loading}
                     hasMore={hasMore}
@@ -178,24 +182,23 @@ const Page: React.FC = () => {
                     onView={(member) => handleViewClick(member)}
                     onEdit={(member) => handleEditClick(member)}
                     onDelete={handleDeleteClick}
-                                            />
-                                        </div>
+                />
+            </div>
 
-            {/* Modals */}
             {addMemberPopupVisible && (
                 <AddMemberPopup onHandle={handleAddMemberPopup} />
             )}
-            
+
             {selectedItem && (
-                <ViewMemberModal 
+                <ViewMemberModal
                     member={selectedItem}
                     isVisible={detailsPopupVisible}
                     onClose={() => setDetailsPopupVisible(false)}
                 />
             )}
-            
+
             {editData && (
-                <EditMemberModal 
+                <EditMemberModal
                     isVisible={editPopupVisible}
                     memberData={editData}
                     loading={editLoading}
@@ -205,8 +208,8 @@ const Page: React.FC = () => {
                     onFileChange={handleFileChange}
                 />
             )}
-            
-            <DeleteMemberModal 
+
+            <DeleteMemberModal
                 isVisible={deletePopupVisible}
                 memberName={deleteMemberName}
                 memberID={deleteMemberId}
@@ -214,7 +217,7 @@ const Page: React.FC = () => {
                 onClose={() => setDeletePopupVisible(false)}
                 onDelete={handleDeleteMember}
             />
-            </div>
+        </div>
     );
 };
 

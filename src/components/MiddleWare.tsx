@@ -1,4 +1,4 @@
-"use client"; // Ensure this component is a client component
+"use client";
 
 import React, { Suspense } from "react";
 import AdminNavbar from "@/components/AdminNavbar";
@@ -13,15 +13,17 @@ const MiddleWare: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return (
     <div>
       {status === "authenticated" ? (
-         <>
-         <NextTopLoader color="#FFFFFF" />
-         <AdminNavbar />
-         {children}
-       </>
-      ) : status === 'loading' ?(
-        <Loading/>
-      ):(
-      <Login />
+        <>
+          <NextTopLoader color="white" />
+          <AdminNavbar />
+          <div className="min-h-screen px-[8vw]">
+            {children}
+          </div>
+        </>
+      ) : status === 'loading' ? (
+        <Loading />
+      ) : (
+        <Login />
       )}
     </div>
   );

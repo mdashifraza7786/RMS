@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { FaPenToSquare, FaTrash } from "react-icons/fa6";
-import { FaTimes } from "react-icons/fa";
+import { FaSearch } from "react-icons/fa";
 import { Bars } from "react-loader-spinner";
 import { RiBillLine } from "react-icons/ri";
 import AddExpense from './popup';
@@ -27,6 +27,7 @@ const ExpensePage: React.FC = () => {
     const [addPopupVisible, setAddPopupVisible] = useState<boolean>(false);
     const [editPopupVisible, setEditPopupVisible] = useState<boolean>(false);
     const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
+    const [activeTab, setActiveTab] = useState<string>("all");
 
     useEffect(() => {
         document.title = "Expenses";
@@ -75,11 +76,20 @@ const ExpensePage: React.FC = () => {
         }
     };
 
-    const formatDate = (dateString: string) => new Date(dateString).toLocaleString();
+    const formatDate = (dateString: string) => {
+        const date = new Date(dateString);
+        return date.toLocaleString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    };
 
     const formatExpenseType = (type: string) => {
         switch (type) {
             case 'electric_bill':
+            case 'electricity_bill':
                 return 'Electricity Bill';
             case 'water_bill':
                 return 'Water Bill';
@@ -101,109 +111,173 @@ const ExpensePage: React.FC = () => {
         }
     };
 
-    const filteredExpenses = expenses.filter(expense =>
-        expense.expenses_for.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        expense.frequency.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const formatCurrency = (amount: number | null | undefined) => {
+        if (amount === null || amount === undefined) return '₹ 0.00';
+
+        return new Intl.NumberFormat('en-IN', {
+            style: 'currency',
+            currency: 'INR',
+            minimumFractionDigits: 2
+        }).format(amount).replace('₹', '₹ ');
+    };
+
+    const filteredExpenses = expenses.filter(expense => {
+        const matchesSearch = 
+            expense.expenses_for.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            expense.frequency.toLowerCase().includes(searchTerm.toLowerCase());
+        
+        if (activeTab === "all") return matchesSearch;
+        
+        return matchesSearch && expense.frequency.toLowerCase() === activeTab.toLowerCase();
+    });
+
+    const tabs = [
+        { id: 'all', label: 'All Expenses' },
+        { id: 'daily', label: 'Daily' },
+        { id: 'weekly', label: 'Weekly' },
+        { id: 'monthly', label: 'Monthly' },
+        { id: 'yearly', label: 'Yearly' }
+    ];
 
     return (
-        <div className="bg-[#e6e6e6] py-[5vh] px-[8vw] font-raleway flex flex-col gap-[6vh] relative">
-            <h1 className="font-bold">Expenses</h1>
-            <section className="bg-white rounded-[10px] p-[4vh] font-semibold flex flex-col gap-3 relative">
-                <section className="flex justify-between items-center py-4">
-                    <div className="relative">
-                        <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-gray-500">
-                            <svg className="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
-                                <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
-                            </svg>
+        <div className="container mx-auto px-6 pt-4 pb-8">
+            <div className="py-4">
+                <div className="flex items-center gap-3">
+                    <h1 className="text-xl font-semibold text-gray-800">Expenses</h1>
+                </div>
+            </div>
+
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                <div className="p-6 border-b border-gray-100">
+                    <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-6">
+                        <div className="relative">
+                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <FaSearch className="text-gray-400" />
+                            </div>
+                            <input
+                                type="search"
+                                placeholder="Search by expense type or frequency..."
+                                className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary w-full md:w-80"
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                            />
                         </div>
-                        <input
-                            type="search"
-                            placeholder="Search by name or frequency..."
-                            className="pl-10 border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all w-[280px]"
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                        />
-                    </div>
-                    <div className="flex">
                         <button 
                             onClick={() => setAddPopupVisible(true)}
-                            className="bg-[#9FCC2E] hover:bg-[#8bba1e] text-white font-medium px-5 py-2.5 rounded-lg transition-colors duration-200 shadow-sm flex items-center gap-2.5"
+                            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-primary/90 transition"
                         >
-                            <RiBillLine size={20} />
-                            <span>Add Expense</span>
+                            <RiBillLine className="mr-2" />
+                            Add Expense
                         </button>
                     </div>
-                </section>
 
-                {isLoading ? (
-                    <div className="flex justify-center items-center py-4">
-                        <Bars
-                            height="50"
-                            width="50"
-                            color="#25476A"
-                            ariaLabel="bars-loading"
-                            visible={true}
-                        />
+                    <div className="flex flex-wrap gap-2 border-b border-gray-200">
+                        {tabs.map((tab) => (
+                            <button
+                                key={tab.id}
+                                onClick={() => setActiveTab(tab.id)}
+                                className={`px-4 py-2 text-sm font-medium rounded-t-lg transition-all ${activeTab === tab.id
+                                    ? 'text-primary border-b-2 border-primary bg-primary/5'
+                                    : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                                    }`}
+                            >
+                                {tab.label}
+                            </button>
+                        ))}
                     </div>
-                ) : (
-                    <table className="table-fixed w-full border-collapse">
-                        <thead>
-                            <tr className="bg-primary text-white font-light">
-                                <th className="px-4 py-3 text-left w-[20%]">Date</th>
-                                <th className="px-4 py-3 text-left w-[25%]">Expense For</th>
-                                <th className="px-4 py-3 text-left w-[15%]">Frequency</th>
-                                <th className="px-4 py-3 text-left w-[15%]">Cost</th>
-                                <th className="px-4 py-3 text-left w-[25%]">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {filteredExpenses.length > 0 ? (
-                                filteredExpenses.map((expense) => (
-                                    <tr key={expense.id} className="text-[14px] font-medium font-montserrat hover:bg-gray-50 transition-colors duration-200">
-                                        <td className="border border-gray-200 px-4 py-4 transition-colors duration-300">
-                                            {formatDate(expense.date)}
-                                        </td>
-                                        <td className="border border-gray-200 px-4 py-4 transition-colors duration-300">
-                                            {formatExpenseType(expense.expenses_for)}
-                                        </td>
-                                        <td className="border border-gray-200 px-4 py-4 transition-colors duration-300">
-                                            {expense.frequency}
-                                        </td>
-                                        <td className="border border-gray-200 px-4 py-4 transition-colors duration-300">
-                                            ₹ {expense.cost}
-                                        </td>
-                                        <td className="border border-gray-200 px-4 py-4 transition-colors duration-300">
-                                            <div className="flex flex-col gap-3">
-                                                <button 
-                                                    className="bg-primary hover:bg-[#416f9d] text-white px-4 py-2 rounded-lg text-[12px] flex items-center justify-between transition-colors duration-200"
-                                                    onClick={() => handleEditClick(expense)}
+                </div>
+
+                <div className="overflow-x-auto">
+                    {isLoading ? (
+                        <div className="flex justify-center items-center py-12">
+                            <Bars height="50" width="50" color="primary" ariaLabel="bars-loading" />
+                        </div>
+                    ) : (
+                        <table className="min-w-full divide-y divide-gray-200">
+                            <thead className="bg-gray-50">
+                                <tr>
+                                    {[
+                                        { id: "date", label: "Date" },
+                                        { id: "expenseType", label: "Expense Type" },
+                                        { id: "frequency", label: "Frequency" },
+                                        { id: "cost", label: "Amount" },
+                                        { id: "actions", label: "Actions" }
+                                    ].map((header) => (
+                                        <th
+                                            key={header.id}
+                                            className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                                        >
+                                            {header.label}
+                                        </th>
+                                    ))}
+                                </tr>
+                            </thead>
+                            <tbody className="bg-white divide-y divide-gray-200">
+                                {filteredExpenses.length > 0 ? (
+                                    filteredExpenses.map((expense) => (
+                                        <tr key={expense.id} className="hover:bg-gray-50 transition duration-150">
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                {formatDate(expense.date)}
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                                {formatExpenseType(expense.expenses_for)}
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                <span className="capitalize">{expense.frequency}</span>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                                {formatCurrency(expense.cost)}
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                <div className="flex gap-2">
+                                                    <button
+                                                        className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-primary hover:bg-primary/90 transition"
+                                                        onClick={() => handleEditClick(expense)}
+                                                    >
+                                                        <FaPenToSquare className="mr-1.5" />
+                                                        Edit
+                                                    </button>
+                                                    <button
+                                                        className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-red-600 hover:bg-red-700 transition"
+                                                        onClick={() => handleDeleteClick(expense.id, expense.expenses_for)}
+                                                    >
+                                                        <FaTrash className="mr-1.5" />
+                                                        Delete
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))
+                                ) : (
+                                    <tr>
+                                        <td colSpan={5} className="py-12 text-center">
+                                            <div className="flex flex-col items-center justify-center text-gray-500">
+                                                <svg
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    fill="none"
+                                                    viewBox="0 0 24 24"
+                                                    stroke="currentColor"
+                                                    className="w-16 h-16 mb-4 text-gray-300"
                                                 >
-                                                    <div>Edit</div> <FaPenToSquare className="ml-3" />
-                                                </button>
-                                                <button 
-                                                    className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-[12px] flex items-center justify-between transition-colors duration-200"
-                                                    onClick={() => handleDeleteClick(expense.id, expense.expenses_for)}
-                                                >
-                                                    <div>Delete</div> <FaTrash className="ml-3" />
-                                                </button>
+                                                    <path
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                        strokeWidth="1"
+                                                        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                                                    />
+                                                </svg>
+                                                <p className="text-lg font-medium">No expenses found</p>
+                                                <p className="mt-1 text-sm">Try adjusting your search or adding a new expense.</p>
                                             </div>
                                         </td>
                                     </tr>
-                                ))
-                            ) : (
-                                <tr>
-                                    <td colSpan={5} className="text-center py-6 text-gray-500 font-medium">
-                                        No expenses found
-                                    </td>
-                                </tr>
-                            )}
-                        </tbody>
-                    </table>
-                )}
-            </section>
+                                )}
+                            </tbody>
+                        </table>
+                    )}
+                </div>
+            </div>
 
-            {/* Add Expense Popup */}
             {addPopupVisible && (
                 <AddExpense 
                     popupHandle={() => setAddPopupVisible(false)} 
@@ -211,7 +285,6 @@ const ExpensePage: React.FC = () => {
                 />
             )}
 
-            {/* Edit Expense Popup */}
             {editPopupVisible && selectedExpense && (
                 <EditExpense 
                     popupHandle={() => setEditPopupVisible(false)} 
@@ -220,17 +293,16 @@ const ExpensePage: React.FC = () => {
                 />
             )}
 
-            {/* Delete Confirmation Popup */}
             {deletePopupVisible && (
-                <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-60 z-50 backdrop-blur-sm">
-                    <div className="bg-white shadow-2xl rounded-xl p-8 max-w-md w-full animate-fadeIn">
+                <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-60 z-50 backdrop-blur-sm animate-fadeIn">
+                    <div className="bg-white rounded-xl shadow-xl max-w-md w-full animate-scaleIn p-6">
                         <div className="text-center mb-6">
                             <div className="bg-red-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
                                 <FaTrash className="text-red-500" size={24} />
                             </div>
-                            <h2 className="text-2xl font-bold text-gray-800 mb-2">Delete Expense</h2>
+                            <h2 className="text-xl font-bold text-gray-800 mb-2">Delete Expense</h2>
                             <p className="text-gray-600">
-                                Are you sure you want to delete <span className="font-bold text-primary">{deleteExpenseName}</span>? This action cannot be undone.
+                                Are you sure you want to delete <span className="font-bold text-primary">{formatExpenseType(deleteExpenseName)}</span>? This action cannot be undone.
                             </p>
                         </div>
                         <div className="mb-5">
@@ -247,22 +319,40 @@ const ExpensePage: React.FC = () => {
                         </div>
                         <div className="flex justify-end gap-3">
                             <button 
-                                className="px-6 py-2.5 rounded-lg border border-gray-300 text-gray-700 font-medium hover:bg-gray-50 transition-colors duration-200"
+                                className="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium rounded-lg"
                                 onClick={() => setDeletePopupVisible(false)}
                             >
                                 Cancel
                             </button>
                             <button 
-                                className="bg-red-500 hover:bg-red-600 text-white font-semibold px-6 py-2.5 rounded-lg transition-colors duration-200 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg flex items-center"
                                 onClick={handleDeleteExpense}
                                 disabled={deleteConfirmation !== "delete"}
                             >
+                                <FaTrash className="mr-1.5" />
                                 Delete Expense
                             </button>
                         </div>
                     </div>
                 </div>
             )}
+
+            <style jsx global>{`
+                @keyframes fadeIn {
+                    from { opacity: 0; }
+                    to { opacity: 1; }
+                }
+                @keyframes scaleIn {
+                    from { transform: scale(0.95); opacity: 0; }
+                    to { transform: scale(1); opacity: 1; }
+                }
+                .animate-fadeIn {
+                    animation: fadeIn 0.2s ease-out;
+                }
+                .animate-scaleIn {
+                    animation: scaleIn 0.3s ease-out;
+                }
+            `}</style>
         </div>
     );
 };

@@ -54,115 +54,119 @@ const AddExpense: React.FC<AddExpenseProps> = ({ popupHandle, onExpenseAdded }) 
 
     return (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-60 z-50 backdrop-blur-sm">
-            <div className="bg-white shadow-2xl rounded-xl p-8 w-[90%] max-w-[600px] relative animate-fadeIn">
-                {isLoading && (
-                    <div className='absolute inset-0 flex justify-center items-center bg-white bg-opacity-90 rounded-xl z-10'>
-                        <Bars
-                            height="80"
-                            width="80"
-                            color="#25476A"
-                            ariaLabel="bars-loading"
-                            visible={true}
-                        />
+            <div className="bg-white rounded-xl shadow-xl max-w-md w-full animate-scaleIn">
+                {/* Header */}
+                <div className="bg-[#1e4569] text-white p-5 rounded-t-xl sticky top-0 z-10">
+                    <div className="flex justify-between items-center mb-2">
+                        <h3 className="text-xl font-bold flex items-center gap-2">
+                            <MdOutlineAttachMoney />
+                            Add New Expense
+                        </h3>
+                        <button
+                            onClick={popupHandle}
+                            className="w-8 h-8 rounded-full flex items-center justify-center bg-white/20 hover:bg-white/30 transition"
+                        >
+                            ✕
+                        </button>
                     </div>
-                )}
-                
-                <div className="flex justify-between items-center border-b border-gray-200 pb-5 mb-6">
-                    <h1 className="text-2xl font-bold text-primary flex items-center gap-2">
-                        <MdOutlineAttachMoney className="text-[#9FCC2E]" size={28} />
-                        Add New Expense
-                    </h1>
-                    <button 
-                        className="text-gray-400 hover:text-red-500 transition-colors duration-200 p-2 rounded-full hover:bg-gray-100"
-                        onClick={popupHandle}
-                    >
-                        <FaTimes size={20} />
-                    </button>
                 </div>
                 
-                <form className="mt-6 space-y-5" onSubmit={handleSubmit}>
-                    <div className="space-y-4">
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium text-gray-700">
-                                Expense For
-                            </label>
-                            <select
-                                className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all bg-white"
-                                name="expenses_for"
-                                value={formValues.expenses_for}
-                                onChange={handleInputChange}
-                                required
-                            >
-                                <option value="">Select Expense Type</option>
-                                <option value="electricity_bill">Electricity Bill</option>
-                                <option value="water_bill">Water Bill</option>
-                                <option value="rent">Rent</option>
-                                <option value="taxes">Taxes</option>
-                                <option value="raw_material">Raw Material</option>
-                                <option value="utensils">Utensils</option>
-                                <option value="marketing">Marketing</option>
-                                <option value="others">Others</option>
-                            </select>
-                        </div>
-                        
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium text-gray-700">
-                                Frequency
-                            </label>
-                            <select
-                                className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all bg-white"
-                                name="frequency"
-                                value={formValues.frequency}
-                                onChange={handleInputChange}
-                                required
-                            >
-                                <option value="">Select Frequency</option>
-                                <option value="daily">Daily</option>
-                                <option value="weekly">Weekly</option>
-                                <option value="monthly">Monthly</option>
-                                <option value="yearly">Yearly</option>
-                            </select>
-                        </div>
-                        
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium text-gray-700">
-                                Cost
-                            </label>
-                            <input
-                                className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all"
-                                type="number"
-                                name="cost"
-                                value={formValues.cost}
-                                onChange={handleInputChange}
-                                required
-                                min="0"
-                                step="0.01"
-                                placeholder="Enter cost amount"
+                {/* Form Content */}
+                <div className="p-6">
+                    {isLoading && (
+                        <div className='absolute inset-0 flex justify-center items-center bg-white bg-opacity-90 rounded-xl z-10'>
+                            <Bars
+                                height="50"
+                                width="50"
+                                color="#1e4569"
+                                ariaLabel="bars-loading"
+                                visible={true}
                             />
                         </div>
-                    </div>
+                    )}
                     
-                    <div className="flex justify-end pt-3 border-t border-gray-200 mt-6">
-                        <div className="flex gap-3">
+                    <form className="space-y-5" onSubmit={handleSubmit}>
+                        <div className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Expense Type
+                                </label>
+                                <select
+                                    className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-[#1e4569] focus:border-[#1e4569] outline-none transition-all bg-white"
+                                    name="expenses_for"
+                                    value={formValues.expenses_for}
+                                    onChange={handleInputChange}
+                                    required
+                                >
+                                    <option value="">Select Expense Type</option>
+                                    <option value="electricity_bill">Electricity Bill</option>
+                                    <option value="water_bill">Water Bill</option>
+                                    <option value="rent">Rent</option>
+                                    <option value="taxes">Taxes</option>
+                                    <option value="raw_material">Raw Material</option>
+                                    <option value="utensils">Utensils</option>
+                                    <option value="marketing">Marketing</option>
+                                    <option value="others">Others</option>
+                                </select>
+                            </div>
+                            
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Frequency
+                                </label>
+                                <select
+                                    className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-[#1e4569] focus:border-[#1e4569] outline-none transition-all bg-white"
+                                    name="frequency"
+                                    value={formValues.frequency}
+                                    onChange={handleInputChange}
+                                    required
+                                >
+                                    <option value="">Select Frequency</option>
+                                    <option value="daily">Daily</option>
+                                    <option value="weekly">Weekly</option>
+                                    <option value="monthly">Monthly</option>
+                                    <option value="yearly">Yearly</option>
+                                </select>
+                            </div>
+                            
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Amount
+                                </label>
+                                <input
+                                    className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-[#1e4569] focus:border-[#1e4569] outline-none transition-all"
+                                    type="number"
+                                    name="cost"
+                                    value={formValues.cost}
+                                    onChange={handleInputChange}
+                                    required
+                                    min="0"
+                                    step="0.01"
+                                    placeholder="Enter amount"
+                                />
+                            </div>
+                        </div>
+                        
+                        <div className="mt-6 flex flex-wrap gap-2 justify-end pt-3 border-t border-gray-200">
                             <button 
                                 type="button" 
-                                className="px-6 py-2.5 rounded-lg border border-gray-300 text-gray-700 font-medium hover:bg-gray-50 transition-colors duration-200"
+                                className="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium rounded-lg"
                                 onClick={popupHandle}
                             >
                                 Cancel
                             </button>
                             <button 
                                 type="submit" 
-                                className="bg-[#9FCC2E] hover:bg-[#8bba1e] text-white font-semibold px-8 py-2.5 rounded-lg transition-colors duration-200 shadow-sm"
+                                className="px-4 py-2 bg-[#1e4569] hover:bg-[#2c5983] text-white font-medium rounded-lg"
                             >
                                 Add Expense
                             </button>
                         </div>
-                    </div>
-                </form>
+                    </form>
+                </div>
             </div>
         </div>
     );
 };
 
-export default AddExpense; 
+export default AddExpense;

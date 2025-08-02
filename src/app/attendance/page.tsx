@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from 'react';
-import { FaCheck, FaCalendarAlt, FaUserCheck } from "react-icons/fa";
+import { FaCheck, FaCalendarAlt, FaSearch } from "react-icons/fa";
 import { RxCross2 } from "react-icons/rx";
 import { FiRefreshCcw } from "react-icons/fi";
 import { HiOutlineChevronLeft, HiOutlineChevronRight } from "react-icons/hi";
@@ -25,7 +25,7 @@ interface AvailableDate {
 
 const Page: React.FC = () => {
     const [searchQuery, setSearchQuery] = useState<string>('');
-    const [selectedRole, setSelectedRole] = useState<string>('All');
+    const [activeTab, setActiveTab] = useState<string>('All');
     const [loading, setLoading] = useState<boolean>(false);
     const [attendanceloading, setAttendanceloading] = useState<boolean>(false);
     const [attendanceData, setAttendanceData] = useState<AttendanceItem[]>([]);
@@ -39,7 +39,6 @@ const Page: React.FC = () => {
     const [availableDates, setAvailableDates] = useState<string[]>([]);
     const [showCalendar, setShowCalendar] = useState<boolean>(false);
     const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
-
 
     const giveAttendance = async (id: string, status: string, type: string) => {
         setAttendanceData(prevData => {
@@ -115,11 +114,17 @@ const Page: React.FC = () => {
 
     useEffect(() => {
         const filtered = attendanceData.filter(item =>
-            (selectedRole === 'All' || item.role === selectedRole) &&
-            (item.userid.toLowerCase().includes(searchQuery.toLowerCase()) || item.name.toLowerCase().includes(searchQuery.toLowerCase()))
+            (activeTab === 'All' || item.role === activeTab || 
+             (activeTab === 'Present' && item.status === 'present') || 
+             (activeTab === 'Absent' && item.status === 'absent') || 
+             (activeTab === 'Chef' && item.role === 'chef') ||
+             (activeTab === 'Waiter' && item.role === 'waiter') ||
+             (activeTab === 'Not Marked' && item.status === null)) &&
+            (item.userid.toLowerCase().includes(searchQuery.toLowerCase()) || 
+             item.name.toLowerCase().includes(searchQuery.toLowerCase()))
         );
         setFilteredData(filtered);
-    }, [attendanceData, searchQuery, selectedRole]);
+    }, [attendanceData, searchQuery, activeTab]);
 
     useEffect(() => {
         const currentDate = new Date();
@@ -148,15 +153,11 @@ const Page: React.FC = () => {
         
                     setAvaiableDate(dates);
                     
-                    // Set available dates from API response
                     if (response.data.availableDates && Array.isArray(response.data.availableDates)) {
-                        // Make sure all dates are in YYYY-MM-DD format
                         const formattedDates = response.data.availableDates.map((date: string) => {
-                            // If already in YYYY-MM-DD format, return as is
                             if (/^\d{4}-\d{2}-\d{2}$/.test(date)) {
                                 return date;
                             }
-                            // Otherwise, format it
                             return new Date(date).toISOString().split('T')[0];
                         });
                         
@@ -178,13 +179,10 @@ const Page: React.FC = () => {
         document.title = "Staff Attendance";
     }, []);
 
-    // Function to check if a date has attendance records
     const hasAttendanceRecords = (date: string) => {
-        // Make sure format matches what comes from API
         return Array.isArray(availableDates) && availableDates.some(d => d === date);
     };
 
-    // Format date for display
     const formatDisplayDate = (dateString: string) => {
         const date = new Date(dateString);
         return date.toLocaleDateString('en-US', { 
@@ -195,54 +193,40 @@ const Page: React.FC = () => {
         });
     };
 
-    // Custom date picker with calendar
     const renderCalendar = () => {
-        // Get current month and year
         const year = currentMonth.getFullYear();
         const month = currentMonth.getMonth();
         
-        // Create a date for the first day of the month
         const firstDay = new Date(year, month, 1);
         const lastDay = new Date(year, month + 1, 0);
         
-        // Get the day of the week for the first day (0 = Sunday, 6 = Saturday)
         const startingDay = firstDay.getDay();
         
-        // Calculate the number of days in the month
         const monthLength = lastDay.getDate();
         
-        // Calculate the number of rows needed
         const numRows = Math.ceil((startingDay + monthLength) / 7);
         
-        // Generate days for the calendar
         const days = [];
         let day = 1;
         
-        // Parse min and max dates
         const minDateObj = availableDate.minDate ? new Date(availableDate.minDate) : new Date(2000, 0, 1);
         const maxDateObj = availableDate.maxDate ? new Date(availableDate.maxDate) : new Date();
         
-        // Ensure we always have 6 rows to keep height consistent
         const totalRows = 6;
         
         for (let i = 0; i < totalRows; i++) {
             const row = [];
             for (let j = 0; j < 7; j++) {
                 if ((i === 0 && j < startingDay) || day > monthLength) {
-                    // Empty cell
                     row.push(null);
                 } else {
-                    // Date cell
                     const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
                     const cellDate = new Date(dateStr);
                     
-                    // Check if date is between min and max
                     const isInRange = cellDate >= minDateObj && cellDate <= maxDateObj;
                     
-                    // Check if the date has attendance records
                     const hasRecords = hasAttendanceRecords(dateStr);
                     
-                    // Debug for specific dates
                     if (hasRecords || dateStr === today) {
                         console.log(`Calendar date ${dateStr} - hasRecords: ${hasRecords}, isToday: ${dateStr === today}`);
                     }
@@ -263,7 +247,6 @@ const Page: React.FC = () => {
         
         return (
             <div className="bg-white border border-gray-200 shadow-lg rounded-lg w-[320px] h-[380px] flex flex-col">
-                {/* Header with month/year and navigation */}
                 <div className="bg-[#1e4569] text-white px-4 py-3 rounded-t-lg flex justify-between items-center">
                     <button 
                         className="p-1 hover:bg-[#2c5983] rounded text-white transition-colors"
@@ -290,9 +273,7 @@ const Page: React.FC = () => {
                     </button>
                 </div>
                 
-                {/* Calendar body */}
                 <div className="flex-1 overflow-hidden">
-                    {/* Day headers */}
                     <div className="grid grid-cols-7 border-b">
                         {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map((dayName, i) => (
                             <div key={i} className="h-8 flex items-center justify-center text-sm font-medium text-gray-500">
@@ -386,25 +367,30 @@ const Page: React.FC = () => {
         );
     };
 
+    // Tab configuration
+    const tabs = [
+        { id: 'All', label: 'All Staff' },
+        { id: 'Present', label: 'Present' },
+        { id: 'Absent', label: 'Absent' },
+        { id: 'Not Marked', label: 'Not Marked' },
+        { id: 'Chef', label: 'Chefs' },
+        { id: 'Waiter', label: 'Waiters' }
+    ];
+
     return (
         <>
             <ToastContainer position="top-right" autoClose={3000} />
-            <div className="container mx-auto px-4 md:px-6 lg:px-8 xl:max-w-[1320px] 2xl:max-w-[1400px] py-8 font-sans">
-                {/* Page Header */}
-                <div className="flex items-center mb-6">
-                    <div className="h-10 w-10 rounded-lg bg-[#1e4569]/10 flex items-center justify-center mr-3">
-                        <FaUserCheck className="text-[#1e4569]" size={20} />
+            <div className="container mx-auto px-6 pt-4 pb-8">
+                <div className="py-4">
+                    <div className="flex items-center gap-3">
+                        <h1 className="text-xl font-semibold text-gray-800">Staff Attendance</h1>
                     </div>
-                    <h1 className="text-2xl font-bold text-gray-800">Staff Attendance</h1>
                 </div>
 
-                {/* Main Content */}
                 <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                    {/* Header with date picker, search and filters */}
                     <div className="p-6 border-b border-gray-100">
-                        <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
+                        <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-6">
                             <div className="flex flex-wrap gap-4 items-center">
-                                {/* Date selector */}
                                 <button
                                     className="inline-flex items-center px-4 py-2 bg-[#1e4569]/10 hover:bg-[#1e4569]/15 text-[#1e4569] rounded-lg transition-colors"
                                     onClick={() => setShowCalendar(true)}
@@ -428,40 +414,34 @@ const Page: React.FC = () => {
                                 </button>
                             </div>
 
-                            <div className="flex flex-wrap gap-4 items-center">
-                                {/* Search */}
-                                <div className="relative">
-                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <svg className="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                                            <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
-                                        </svg>
-                                    </div>
+                            <div className="relative">
+                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <FaSearch className="text-gray-400" />
+                                </div>
                                 <input
-                                        type="text"
-                                        placeholder="Search by ID or name"
-                                        className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-[#1e4569] focus:border-[#1e4569] w-full md:w-64"
+                                    type="search"
+                                    placeholder="Search by ID or name..."
+                                    className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-[#1e4569] focus:border-[#1e4569] w-full md:w-80"
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
                                 />
-                                </div>
-
-                                {/* Role filter */}
-                                <div className="flex space-x-2">
-                                    {['All', 'Manager', 'Chef', 'Waiter', 'Cashier'].map((role) => (
-                                        <button
-                                            key={role}
-                                            onClick={() => setSelectedRole(role)}
-                                            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                                                selectedRole === role 
-                                                ? 'bg-[#1e4569] text-white' 
-                                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                                            }`}
-                                        >
-                                            {role}
-                                        </button>
-                                    ))}
-                                </div>
                             </div>
+                        </div>
+
+                        {/* Tabs */}
+                        <div className="flex flex-wrap gap-2 border-b border-gray-200 overflow-x-auto">
+                            {tabs.map((tab) => (
+                                <button
+                                    key={tab.id}
+                                    onClick={() => setActiveTab(tab.id)}
+                                    className={`px-4 py-2 text-sm font-medium rounded-t-lg transition-all ${activeTab === tab.id
+                                        ? 'text-[#1e4569] border-b-2 border-[#1e4569] bg-[#1e4569]/5'
+                                        : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                                        }`}
+                                >
+                                    {tab.label}
+                                </button>
+                            ))}
                         </div>
                     </div>
 
@@ -521,13 +501,15 @@ const Page: React.FC = () => {
                                                     )}
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
-                                                    <div className="flex justify-center gap-2">
-                                                <button
-                                                            disabled={getdate !== today}
+                                                    {/* Action buttons */}
+                                                    <div className="flex justify-center space-x-2">
+                                                        {/* Present button */}
+                                                        <button
+                                                            disabled={getdate !== today || item.status === 'present'}
                                                             onClick={() => giveAttendance(item.userid, 'present', 'update')}
-                                                            className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium ${
+                                                            className={`inline-flex items-center px-3 py-1 rounded text-xs font-medium ${
                                                                 item.status === 'present'
-                                                                    ? 'bg-green-600 text-white'
+                                                                    ? 'bg-green-500 text-white cursor-not-allowed'
                                                                     : getdate !== today
                                                                     ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
                                                                     : 'bg-green-100 text-green-800 hover:bg-green-200'
@@ -535,13 +517,15 @@ const Page: React.FC = () => {
                                                         >
                                                             <FaCheck className="mr-1" />
                                                             Present
-                                                </button>
-                                                <button
-                                                            disabled={getdate !== today}
+                                                        </button>
+                                                        
+                                                        {/* Absent button */}
+                                                        <button
+                                                            disabled={getdate !== today || item.status === 'absent'}
                                                             onClick={() => giveAttendance(item.userid, 'absent', 'update')}
-                                                            className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium ${
+                                                            className={`inline-flex items-center px-3 py-1 rounded text-xs font-medium ${
                                                                 item.status === 'absent'
-                                                                    ? 'bg-red-600 text-white'
+                                                                    ? 'bg-red-500 text-white cursor-not-allowed'
                                                                     : getdate !== today
                                                                     ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
                                                                     : 'bg-red-100 text-red-800 hover:bg-red-200'
@@ -549,8 +533,8 @@ const Page: React.FC = () => {
                                                         >
                                                             <RxCross2 className="mr-1" />
                                                             Absent
-                                                </button>
-                                            </div>
+                                                        </button>
+                                                    </div>
                                                 </td>
                                             </tr>
                                         ))

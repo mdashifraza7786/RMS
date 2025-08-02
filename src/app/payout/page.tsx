@@ -3,11 +3,13 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { RowDataPacket } from 'mysql2';
 import { HiEye } from 'react-icons/hi';
-import { FaSearch, FaFileInvoiceDollar, FaCheck, FaMoneyBillWave } from 'react-icons/fa';
+import { FaSearch, FaFileInvoiceDollar, FaCheck, FaMoneyBillWave, FaUserSlash } from 'react-icons/fa';
 import { RxCross2 } from 'react-icons/rx';
 import { Bars } from "react-loader-spinner";
-import { BsCreditCard, BsBank, BsPerson } from 'react-icons/bs';
+import { BsBank, BsPerson } from 'react-icons/bs';
 import { MdPayment } from 'react-icons/md';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 interface PayoutInfo {
     userid: string,
@@ -45,35 +47,29 @@ const Page = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage] = useState(10);
-    const [selectedFilter, setSelectedFilter] = useState('All');
+    const [activeTab, setActiveTab] = useState('all');
     const [detailsPopupVisible, setDetailsPopupVisible] = useState(false);
     const [payoutInfo, setPayoutInfo] = useState<PayoutInfo[]>([]);
     const [userInfo, setUserInfo] = useState<User[]>([]);
     const [mergedData, setMergedData] = useState<MergedUserPayout[]>([]);
     const [selectedItem, setSelectedItem] = useState<MergedUserPayout | null>(null);
     const [loading, setLoading] = useState(true);
+    const [actionLoading, setActionLoading] = useState(false);
     const [debugInfo, setDebugInfo] = useState<string | null>(null);
 
-    // Filter data based on search query and selected filter
     const filteredData = mergedData.filter(item =>
-        (selectedFilter === 'All' || item.status === selectedFilter.toLowerCase()) &&
+        (activeTab === 'all' || item.status === activeTab.toLowerCase()) &&
         (item.userid.toLowerCase().includes(searchQuery.toLowerCase()) || 
          item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
          item.role.toLowerCase().includes(searchQuery.toLowerCase()))
     );
 
-    // Paginate data
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
     const currentItems = filteredData.slice(indexOfFirstItem, indexOfLastItem);
     const totalPages = Math.ceil(filteredData.length / itemsPerPage);
 
     const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
-
-    const changeFilter = (filter: string) => {
-        setSelectedFilter(filter);
-        setCurrentPage(1); // Reset to first page when changing filter
-    };
 
     const handleViewDetails = (item: MergedUserPayout) => {
         setSelectedItem(item);
@@ -88,7 +84,6 @@ const Page = () => {
     const fetchData = async () => {
         setLoading(true);
         try {
-            // Fetch payout information
             const payoutResponse = await axios.get('/api/payout');
             if (payoutResponse.data?.payout) {
                 setPayoutInfo(payoutResponse.data.payout);
@@ -98,7 +93,6 @@ const Page = () => {
                 setDebugInfo("Failed to fetch payout data");
             }
 
-            // Fetch user information
             const userResponse = await axios.get('/api/members');
             if (userResponse.data?.users) {
                 const { users, payouts, addresses } = userResponse.data;
@@ -125,8 +119,56 @@ const Page = () => {
         }
     };
 
+    const updatePayoutStatus = async (userId: string, newStatus: string) => {
+        setActionLoading(true);
+        try {
+            const response = await axios.post('/api/payout/update', {
+                userid: userId,
+                status: newStatus
+            });
+
+            if (response.status === 200) {
+                setPayoutInfo(prev => 
+                    prev.map(payout => 
+                        payout.userid === userId 
+                            ? { ...payout, status: newStatus } 
+                            : payout
+                    )
+                );
+
+                setMergedData(prev => 
+                    prev.map(item => 
+                        item.userid === userId 
+                            ? { ...item, status: newStatus } 
+                            : item
+                    )
+                );
+
+                if (selectedItem && selectedItem.userid === userId) {
+                    setSelectedItem({ ...selectedItem, status: newStatus });
+                }
+
+                toast.success(`Payout for ${userId} marked as ${newStatus}`);
+            } else {
+                toast.error("Failed to update payout status");
+            }
+        } catch (error) {
+            console.error("Error updating payout status:", error);
+            toast.error(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        } finally {
+            setActionLoading(false);
+        }
+    };
+
+    const handleMarkAsPaid = (userId: string) => {
+        updatePayoutStatus(userId, 'paid');
+    };
+
+    const handleMarkAsUnpaid = (userId: string) => {
+        updatePayoutStatus(userId, 'unpaid');
+    };
+
     useEffect(() => {
-        // Merge user and payout data
         if (payoutInfo.length > 0 && userInfo.length > 0) {
             const merged = payoutInfo.map(payout => {
                 const user = userInfo.find(user => user.userid === payout.userid);
@@ -149,201 +191,170 @@ const Page = () => {
         }
     }, [userInfo, payoutInfo]);
 
-    // Get appropriate status color and label
-    const getStatusInfo = (status: string) => {
+    const formatCurrency = (amount: string | number | null | undefined) => {
+        if (amount === null || amount === undefined) return '₹ 0.00';
+        
+        const numAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
+        
+        return new Intl.NumberFormat('en-IN', {
+            style: 'currency',
+            currency: 'INR',
+            minimumFractionDigits: 2
+        }).format(numAmount).replace('₹', '₹ ');
+    };
+
+    const getStatusColor = (status: string) => {
         switch (status.toLowerCase()) {
             case 'paid':
-                return {
-                    bgColor: 'bg-green-100',
-                    textColor: 'text-green-800',
-                    label: 'PAID'
-                };
+                return 'bg-green-100 text-green-800';
             case 'unpaid':
-                return {
-                    bgColor: 'bg-red-100',
-                    textColor: 'text-red-800',
-                    label: 'UNPAID'
-                };
+                return 'bg-red-100 text-red-800';
             default:
-                return {
-                    bgColor: 'bg-yellow-100',
-                    textColor: 'text-yellow-800',
-                    label: 'PENDING'
-                };
+                return 'bg-yellow-100 text-yellow-800';
         }
     };
 
-    return (
-        <div className="container mx-auto px-4 md:px-6 lg:px-8 py-8 font-sans">
-            {/* Debug Information */}
-            {debugInfo && (
-                <div className="mb-4 p-3 bg-yellow-100 text-yellow-800 rounded-lg border border-yellow-200">
-                    <div className="flex items-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-                            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                        </svg>
-                        <p className="font-medium">Debug Info: {debugInfo}</p>
-                    </div>
-                    <div className="mt-2 text-sm">
-                        <p>Payouts Count: {payoutInfo.length}</p>
-                        <p>Users Count: {userInfo.length}</p>
-                        <button 
-                            onClick={fetchData}
-                            className="mt-2 px-3 py-1 bg-yellow-200 hover:bg-yellow-300 rounded-md text-yellow-800 text-xs font-medium"
-                        >
-                            Retry Loading Data
-                        </button>
-                    </div>
-                </div>
-            )}
+    const tabs = [
+        { id: 'all', label: 'All Payouts' },
+        { id: 'paid', label: 'Paid' },
+        { id: 'unpaid', label: 'Unpaid' },
+        { id: 'pending', label: 'Pending' }
+    ];
 
-            {/* Page Header */}
-            <div className="flex items-center mb-8">
-                <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-[#1e4569] to-[#2c5983] flex items-center justify-center mr-4 shadow-lg">
-                    <FaMoneyBillWave className="text-white" size={24} />
+    return (
+        <div className="container mx-auto px-6 pt-4 pb-8">
+            <ToastContainer position="top-right" autoClose={3000} />
+            
+            <div className="py-4">
+                <div className="flex items-center gap-3">
+                    <h1 className="text-xl font-semibold text-gray-800">Staff Payouts</h1>
                 </div>
-                <h1 className="text-3xl font-bold text-gray-800">Staff Payouts</h1>
             </div>
 
-            {/* Main Content */}
-            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
-                {/* Header with search and filters */}
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                 <div className="p-6 border-b border-gray-100">
-                    <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
-                        <div className="relative flex-1">
+                    <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-6">
+                        <div className="relative">
                             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                 <FaSearch className="text-gray-400" />
                             </div>
                             <input
                                 type="search"
                                 placeholder="Search by ID, name or role..."
-                                className="pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1e4569] focus:border-[#1e4569] w-full transition-all duration-200"
+                                className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary w-full md:w-80"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                             />
                         </div>
-                        
-                        <div className="flex space-x-3">
-                            {['All', 'Paid', 'Unpaid'].map((filter) => (
-                                <button
-                                    key={filter}
-                                    onClick={() => changeFilter(filter)}
-                                    className={`px-5 py-2.5 rounded-xl font-medium transition-all duration-200 ${
-                                        selectedFilter === filter 
-                                        ? 'bg-gradient-to-r from-[#1e4569] to-[#2c5983] text-white shadow-md' 
-                                        : 'bg-gray-50 text-gray-700 hover:bg-gray-100 hover:shadow-sm'
+                    </div>
+
+                    <div className="flex flex-wrap gap-2 border-b border-gray-200">
+                        {tabs.map((tab) => (
+                            <button
+                                key={tab.id}
+                                onClick={() => setActiveTab(tab.id)}
+                                className={`px-4 py-2 text-sm font-medium rounded-t-lg transition-all ${activeTab === tab.id
+                                    ? 'text-primary border-b-2 border-primary bg-primary/5'
+                                    : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
                                     }`}
-                                >
-                                    {filter}
-                                </button>
-                            ))}
-                        </div>
+                            >
+                                {tab.label}
+                            </button>
+                        ))}
                     </div>
                 </div>
 
-                {/* Table content */}
                 <div className="overflow-x-auto">
                     {loading ? (
-                        <div className="flex justify-center items-center py-16">
-                            <Bars height="50" width="50" color="#1e4569" ariaLabel="bars-loading" />
+                        <div className="flex justify-center items-center py-12">
+                            <Bars height="50" width="50" color="primary" ariaLabel="bars-loading" />
                         </div>
                     ) : (
-                        <table className="min-w-full divide-y divide-gray-200 table-fixed">
+                        <table className="min-w-full divide-y divide-gray-200">
                             <thead className="bg-gray-50">
                                 <tr>
-                                    <th className="w-24 px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                                        ID
-                                    </th>
-                                    <th className="w-48 px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                                        Name
-                                    </th>
-                                    <th className="w-32 px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                                        Role
-                                    </th>
-                                    <th className="w-32 px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                                        Amount
-                                    </th>
-                                    <th className="w-28 px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                                        Status
-                                    </th>
-                                    <th className="w-52 px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                                        Action
-                                    </th>
+                                    {[
+                                        { id: "userId", label: "User ID" },
+                                        { id: "name", label: "Name" },
+                                        { id: "role", label: "Role" },
+                                        { id: "amount", label: "Amount" },
+                                        { id: "accountNumber", label: "Account Number" },
+                                        { id: "status", label: "Status" },
+                                        { id: "action", label: "Action" }
+                                    ].map((header) => (
+                                        <th
+                                            key={header.id}
+                                            className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                                        >
+                                            {header.label}
+                                        </th>
+                                    ))}
                                 </tr>
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-200">
                                 {currentItems.length > 0 ? (
-                                    currentItems.map((item) => {
-                                        const statusInfo = getStatusInfo(item.status);
-                                        return (
-                                            <tr key={item.userid} className="hover:bg-gray-50 transition duration-150">
-                                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                                    {item.userid}
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                    <div className="flex items-center">
-                                                        <BsPerson className="mr-2 text-gray-400" />
-                                                        {item.name}
-                                                    </div>
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                    {item.role}
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                                    ₹ {item.amount}
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap">
-                                                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium transition-all duration-200 ${statusInfo.bgColor} ${statusInfo.textColor}`}>
-                                                        {statusInfo.label}
-                                                    </span>
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                    <div className="flex flex-wrap gap-2">
-                                                        <button 
-                                                            className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-lg text-white bg-[#1e4569] hover:bg-[#2c5983] transition-all duration-200 shadow-sm hover:shadow-md"
-                                                            onClick={() => handleViewDetails(item)}
+                                    currentItems.map((item) => (
+                                        <tr key={item.userid} className="hover:bg-gray-50 transition duration-150">
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                                #{item.userid}
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                <div className="flex items-center">
+                                                    <BsPerson className="mr-1 text-gray-400" />
+                                                    {item.name}
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                {item.role}
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                                {formatCurrency(item.amount)}
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                {item.account_number || "Not provided"}
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(item.status)}`}>
+                                                    {item.status.toUpperCase()}
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                <div className="flex flex-wrap gap-2">
+                                                    <button
+                                                        className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-primary hover:bg-primary/80 transition"
+                                                        onClick={() => handleViewDetails(item)}
+                                                    >
+                                                        View Details
+                                                    </button>
+                                                    {item.status !== 'paid' && (
+                                                        <button
+                                                            className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-green-600 hover:bg-green-700 transition"
+                                                            onClick={() => handleMarkAsPaid(item.userid)}
+                                                            disabled={actionLoading}
                                                         >
-                                                            <HiEye className="mr-1.5" /> View
+                                                            <FaCheck className="mr-1.5" /> Paid
                                                         </button>
-                                                        {item.status !== 'paid' && (
-                                                            <button
-                                                                className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-lg text-white bg-green-600 hover:bg-green-700 transition-all duration-200 shadow-sm hover:shadow-md"
-                                                            >
-                                                                <FaCheck className="mr-1.5" /> Paid
-                                                            </button>
-                                                        )}
-                                                        {item.status !== 'unpaid' && item.status !== 'null' && (
-                                                            <button
-                                                                className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-lg text-white bg-red-600 hover:bg-red-700 transition-all duration-200 shadow-sm hover:shadow-md"
-                                                            >
-                                                                <RxCross2 className="mr-1.5" /> Unpaid
-                                                            </button>
-                                                        )}
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        );
-                                    })
+                                                    )}
+                                                    {item.status !== 'unpaid' && (
+                                                        <button
+                                                            className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-red-600 hover:bg-red-700 transition"
+                                                            onClick={() => handleMarkAsUnpaid(item.userid)}
+                                                            disabled={actionLoading}
+                                                        >
+                                                            <RxCross2 className="mr-1.5" /> Unpaid
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))
                                 ) : (
                                     <tr>
-                                        <td colSpan={6} className="py-16 text-center">
+                                        <td colSpan={7} className="py-12 text-center">
                                             <div className="flex flex-col items-center justify-center text-gray-500">
-                                                <svg 
-                                                    xmlns="http://www.w3.org/2000/svg"
-                                                    fill="none" 
-                                                    viewBox="0 0 24 24" 
-                                                    stroke="currentColor" 
-                                                    className="w-16 h-16 mb-4 text-gray-300"
-                                                >
-                                                    <path 
-                                                        strokeLinecap="round" 
-                                                        strokeLinejoin="round" 
-                                                        strokeWidth="1" 
-                                                        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
-                                                    />
-                                                </svg>
+                                                <FaUserSlash className="text-primary text-2xl mb-2" />
                                                 <p className="text-lg font-medium">No payouts available</p>
-                                                <p className="mt-1 text-sm">Try adjusting your search or filter to find what you&apos;re looking for.</p>
+                                                <p className="mt-1 text-sm">Try adjusting your search or selecting a different tab.</p>
                                             </div>
                                         </td>
                                     </tr>
@@ -353,7 +364,6 @@ const Page = () => {
                     )}
                 </div>
 
-                {/* Pagination */}
                 {filteredData.length > 0 && (
                     <div className="px-6 py-4 flex items-center justify-between border-t border-gray-200">
                         <div className="text-sm text-gray-500">
@@ -368,7 +378,7 @@ const Page = () => {
                                 className={`px-4 py-2 rounded-lg transition-all duration-200 ${
                                     currentPage === 1 
                                     ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
-                                    : 'bg-gray-50 text-gray-700 hover:bg-gray-100 hover:shadow-sm'
+                                    : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
                                 }`}
                             >
                                 Previous
@@ -390,10 +400,10 @@ const Page = () => {
                                             )}
                                             <button
                                                 onClick={() => paginate(page)}
-                                                className={`px-4 py-2 rounded-lg transition-all duration-200 ${
+                                                className={`px-4 py-2 rounded-lg transition-all ${
                                                     currentPage === page 
-                                                    ? 'bg-gradient-to-r from-[#1e4569] to-[#2c5983] text-white shadow-md' 
-                                                    : 'bg-gray-50 text-gray-700 hover:bg-gray-100 hover:shadow-sm'
+                                                    ? 'bg-primary text-white' 
+                                                    : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
                                                 }`}
                                             >
                                                 {page}
@@ -408,7 +418,7 @@ const Page = () => {
                                 className={`px-4 py-2 rounded-lg transition-all duration-200 ${
                                     currentPage === totalPages 
                                     ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
-                                    : 'bg-gray-50 text-gray-700 hover:bg-gray-100 hover:shadow-sm'
+                                    : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
                                 }`}
                             >
                                 Next
@@ -418,116 +428,112 @@ const Page = () => {
                 )}
             </div>
 
-            {/* Details Modal */}
             {detailsPopupVisible && selectedItem && (
                 <div className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-60 z-50 p-4 animate-fadeIn">
-                    <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-auto animate-scaleIn">
-                        {/* Header */}
-                        <div className="bg-gradient-to-r from-[#1e4569] to-[#2c5983] text-white p-6 rounded-t-2xl sticky top-0 z-10">
-                            <div className="flex justify-between items-center mb-3">
+                    <div className="bg-white rounded-xl shadow-xl max-w-md w-full max-h-[90vh] overflow-auto animate-scaleIn">
+                        <div className="bg-primary text-white p-5 rounded-t-xl sticky top-0 z-10">
+                            <div className="flex justify-between items-center mb-2">
                                 <h3 className="text-xl font-bold flex items-center gap-2">
-                                    <MdPayment className="text-white" size={24} />
+                                    <MdPayment />
                                     Payout Details
                                 </h3>
                                 <button
                                     onClick={() => setDetailsPopupVisible(false)}
-                                    className="w-10 h-10 rounded-full flex items-center justify-center bg-white/20 hover:bg-white/30 transition-all duration-200"
+                                    className="w-8 h-8 rounded-full flex items-center justify-center bg-white/20 hover:bg-white/30 transition"
                                 >
                                     ✕
                                 </button>
                             </div>
-                            <div className="text-sm text-white/90">
-                                ID: {selectedItem.userid}
+                            <div className="text-sm text-white/80 flex items-center">
+                                ID: #{selectedItem.userid}
                             </div>
                         </div>
 
-                        {/* Staff Info */}
                         <div className="p-6">
                             <div className="grid grid-cols-2 gap-4 mb-6">
-                                <div className="bg-gray-50 p-4 rounded-xl shadow-sm">
+                                <div className="bg-gray-50 p-3 rounded-lg">
                                     <p className="text-xs text-gray-500 mb-1">Name</p>
                                     <p className="font-medium text-gray-900">{selectedItem.name}</p>
                                 </div>
-                                <div className="bg-gray-50 p-4 rounded-xl shadow-sm">
+                                <div className="bg-gray-50 p-3 rounded-lg">
                                     <p className="text-xs text-gray-500 mb-1">Role</p>
                                     <p className="font-medium text-gray-900">{selectedItem.role}</p>
                                 </div>
-                                <div className="bg-gray-50 p-4 rounded-xl shadow-sm">
+                                <div className="bg-gray-50 p-3 rounded-lg">
                                     <p className="text-xs text-gray-500 mb-1">Mobile</p>
                                     <p className="font-medium text-gray-900">{selectedItem.mobile}</p>
                                 </div>
-                                <div className="bg-gray-50 p-4 rounded-xl shadow-sm">
+                                <div className="bg-gray-50 p-3 rounded-lg">
                                     <p className="text-xs text-gray-500 mb-1">Amount</p>
-                                    <p className="font-medium text-gray-900">₹ {selectedItem.amount}</p>
+                                    <p className="font-medium text-gray-900">{formatCurrency(selectedItem.amount)}</p>
                                 </div>
                             </div>
 
-                            {/* Bank Details Section */}
-                            <h2 className="font-semibold text-gray-800 mb-4 flex items-center">
-                                <BsBank className="mr-2 text-[#1e4569]" size={20} /> 
-                                Bank Details
-                            </h2>
-                            <div className="bg-gray-50 rounded-xl p-5 mb-6 shadow-sm">
-                                <div className="space-y-4">
-                                    <div className="flex justify-between">
-                                        <span className="text-sm text-gray-500">Account Number:</span>
-                                        <span className="text-sm font-medium text-gray-900">
+                            <h2 className="font-semibold text-gray-800 mb-3">Bank Details</h2>
+                            <div className="bg-gray-50 rounded-lg p-4 mb-6">
+                                <ul className="divide-y divide-gray-200">
+                                    <li className="py-3 flex justify-between items-center">
+                                        <p className="text-sm text-gray-500">Account Number</p>
+                                        <p className="text-sm font-medium text-gray-900">
                                             {selectedItem.account_number || 'Not provided'}
-                                        </span>
-                                    </div>
-                                    <div className="flex justify-between">
-                                        <span className="text-sm text-gray-500">IFSC Code:</span>
-                                        <span className="text-sm font-medium text-gray-900">
+                                        </p>
+                                    </li>
+                                    <li className="py-3 flex justify-between items-center">
+                                        <p className="text-sm text-gray-500">IFSC Code</p>
+                                        <p className="text-sm font-medium text-gray-900">
                                             {selectedItem.ifsc_code || 'Not provided'}
-                                        </span>
-                                    </div>
-                                    <div className="flex justify-between">
-                                        <span className="text-sm text-gray-500">Branch:</span>
-                                        <span className="text-sm font-medium text-gray-900">
+                                        </p>
+                                    </li>
+                                    <li className="py-3 flex justify-between items-center">
+                                        <p className="text-sm text-gray-500">Branch</p>
+                                        <p className="text-sm font-medium text-gray-900">
                                             {selectedItem.branch || 'Not provided'}
-                                        </span>
-                                    </div>
+                                        </p>
+                                    </li>
                                     {selectedItem.upi_id && (
-                                        <div className="flex justify-between">
-                                            <span className="text-sm text-gray-500">UPI ID:</span>
-                                            <span className="text-sm font-medium text-gray-900">
+                                        <li className="py-3 flex justify-between items-center">
+                                            <p className="text-sm text-gray-500">UPI ID</p>
+                                            <p className="text-sm font-medium text-gray-900">
                                                 {selectedItem.upi_id}
-                                            </span>
-                                        </div>
+                                            </p>
+                                        </li>
                                     )}
-                                </div>
+                                </ul>
                             </div>
 
-                            {/* Status Section */}
-                            <h2 className="font-semibold text-gray-800 mb-4 flex items-center">
-                                <FaCheck className="mr-2 text-[#1e4569]" size={20} /> 
-                                Payment Status
-                            </h2>
-                            <div className="bg-[#1e4569]/5 rounded-xl p-5 mb-6 shadow-sm">
-                                <div className="flex items-center justify-between">
+                                <div className="bg-primary/5 rounded-lg p-4 mb-6">
+                                <div className="flex justify-between items-center mb-2">
                                     <span className="text-gray-600">Status</span>
-                                    <span className={`inline-flex items-center px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${
-                                        selectedItem.status === 'paid' 
-                                        ? 'bg-green-100 text-green-800' 
-                                        : selectedItem.status === 'unpaid'
-                                        ? 'bg-red-100 text-red-800'
-                                        : 'bg-yellow-100 text-yellow-800'
-                                    }`}>
-                                        {selectedItem.status === 'paid' 
-                                            ? 'PAID' 
-                                            : selectedItem.status === 'unpaid'
-                                            ? 'UNPAID'
-                                            : 'PENDING'
-                                        }
+                                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(selectedItem.status)}`}>
+                                        {selectedItem.status.toUpperCase()}
                                     </span>
                                 </div>
                             </div>
 
-                            {/* Action buttons */}
                             <div className="mt-6 flex flex-wrap gap-2 justify-end">
+                                {selectedItem.status !== 'paid' && (
+                                    <button
+                                        className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg flex items-center justify-center"
+                                        onClick={() => handleMarkAsPaid(selectedItem.userid)}
+                                        disabled={actionLoading}
+                                    >
+                                        <FaCheck className="mr-2" />
+                                        Mark as Paid
+                                    </button>
+                                )}
+                                {selectedItem.status !== 'unpaid' && (
+                                    <button
+                                        className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg flex items-center justify-center"
+                                        onClick={() => handleMarkAsUnpaid(selectedItem.userid)}
+                                        disabled={actionLoading}
+                                    >
+                                        <RxCross2 className="mr-2" />
+                                        Mark as Unpaid
+                                    </button>
+                                )}
                                 <button
                                     onClick={() => setDetailsPopupVisible(false)}
-                                    className="px-5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium rounded-xl transition-all duration-200 shadow-sm hover:shadow-md"
+                                    className="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium rounded-lg"
                                 >
                                     Close
                                 </button>

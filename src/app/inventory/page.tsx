@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { FaSearch, FaPlus, FaBox, FaBoxOpen } from "react-icons/fa";
+import { FaSearch, FaBox } from "react-icons/fa";
 import { Bars } from 'react-loader-spinner';
 import LowStock from '@/app/inventory/components/LowStock';
 import InventoryCard from '@/app/inventory/components/InventoryCard';
@@ -32,7 +32,6 @@ const Page: React.FC = () => {
 
     useEffect(() => {
         const checkLowStock = () => {
-            // Filter items where current_stock is less than low_limit
             const array = inventory.filter(item => item.current_stock < item.low_limit);
             setLowStock(array);
         };
@@ -57,7 +56,6 @@ const Page: React.FC = () => {
         }
     };
 
-    // Tab configuration
     const tabs = [
         { id: 'inventory', label: 'Inventory' },
         { id: 'order', label: 'Generate Order' },
@@ -66,16 +64,13 @@ const Page: React.FC = () => {
     ];
 
     return (
-        <div className="container mx-auto px-4 py-6 md:px-6 lg:max-w-[90%] xl:max-w-7xl 2xl:max-w-[1400px] font-sans">
-            {/* Page Header */}
-            <div className="flex items-center mb-6">
-                <div className="h-10 w-10 rounded-lg bg-[#1e4569]/10 flex items-center justify-center mr-3">
-                    <FaBoxOpen className="text-[#1e4569]" size={20} />
+        <div className="container mx-auto px-6 pt-4 pb-8">
+            <div className="py-4">
+                <div className="flex items-center gap-3">
+                    <h1 className="text-xl font-semibold text-gray-800">Inventory Management</h1>
                 </div>
-                <h1 className="text-2xl font-bold text-gray-800">Inventory Management</h1>
             </div>
 
-            {/* Low Stock Alert Section */}
             {lowStock.length > 0 && (
                 <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6">
                     <div className="flex items-center mb-4">
@@ -84,7 +79,7 @@ const Page: React.FC = () => {
                         </div>
                         <h2 className="text-lg font-semibold text-gray-800">Urgently Needed in Kitchen</h2>
                     </div>
-                    
+
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                         {lowStock.map(item => (
                             <LowStock
@@ -100,9 +95,7 @@ const Page: React.FC = () => {
                 </div>
             )}
 
-            {/* Main Content */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                {/* Header with search and tabs */}
                 <div className="p-6 border-b border-gray-100">
                     <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-6">
                         <div className="relative">
@@ -112,24 +105,22 @@ const Page: React.FC = () => {
                             <input
                                 type="search"
                                 placeholder="Search by name or ID..."
-                                className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-[#1e4569] focus:border-[#1e4569] w-full md:w-80"
+                                className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary w-full md:w-80"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                             />
                         </div>
                     </div>
 
-                    {/* Tabs */}
                     <div className="flex flex-wrap gap-2 border-b border-gray-200">
                         {tabs.map((tab) => (
                             <button
                                 key={tab.id}
                                 onClick={() => setSelectedFilter(tab.id as any)}
-                                className={`px-4 py-2 text-sm font-medium rounded-t-lg transition-all ${
-                                    selectedFilter === tab.id
-                                        ? 'text-[#1e4569] border-b-2 border-[#1e4569] bg-[#1e4569]/5'
+                                className={`px-4 py-2 text-sm font-medium rounded-t-lg transition-all ${selectedFilter === tab.id
+                                        ? 'text-primary border-b-2 border-primary bg-primary/5'
                                         : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
-                                }`}
+                                    }`}
                             >
                                 {tab.label}
                             </button>
@@ -137,11 +128,10 @@ const Page: React.FC = () => {
                     </div>
                 </div>
 
-                {/* Content based on selected tab */}
                 <div className="p-6">
                     {loading ? (
                         <div className="flex justify-center items-center py-12">
-                            <Bars height="50" width="50" color="#1e4569" ariaLabel="bars-loading" />
+                            <Bars height="50" width="50" color="primary" ariaLabel="bars-loading" />
                         </div>
                     ) : (
                         <>
@@ -175,3 +165,5 @@ const Page: React.FC = () => {
 };
 
 export default Page;
+
+

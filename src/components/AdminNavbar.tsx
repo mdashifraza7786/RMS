@@ -27,7 +27,6 @@ const raleway = Raleway({
     subsets: ['latin'],
 });
 
-// Navigation items configuration
 const NAV_ITEMS = [
     { href: "/", icon: <GrHomeRounded />, label: "Dashboard" },
     { href: "/orders", icon: <MdBorderColor />, label: "Orders" },
@@ -52,16 +51,13 @@ const AdminNavbar: React.FC = () => {
     }
 
     return (
-        <nav className="w-full sticky top-0 z-50 shadow-sm bg-white">
-            {/* Top navbar */}
-            <div className="bg-primary text-white">
-                <div className="container mx-auto px-4 lg:px-8 flex justify-between items-center h-16">
-                    <div className={`flex items-center space-x-3 ${raleway.className}`}>
-
-                        <span className="font-semibold text-lg hidden sm:block text-white">
+        <nav className="w-full sticky top-0 z-50 shadow-sm bg-white mx-auto">
+            <div className="bg-primary text-white px-[8vw]">
+                <div className="container mx-auto px-6 flex justify-between items-center h-16">
+                    <div className={`flex items-center ${raleway.className}`}>
+                        <span className="font-semibold text-lg text-white">
                             Restaurant Management System
                         </span>
-                        <span className="font-semibold text-lg sm:hidden text-white">RMS</span>
                     </div>
 
                     <div className="flex items-center space-x-3">
@@ -86,10 +82,9 @@ const AdminNavbar: React.FC = () => {
                 </div>
             </div>
 
-            {/* Navigation menu */}
             <div className={`bg-white border-b transition-all duration-300 ${isMobileMenuOpen ? 'max-h-screen' : 'max-h-14 overflow-hidden'}`}>
-                <div className="container mx-auto px-4 lg:px-8">
-                    <div className="flex flex-col lg:flex-row lg:items-center lg:h-14 overflow-x-auto scrollbar-hide">
+                <div className="container mx-auto px-2">
+                    <div className="flex flex-col lg:flex-row lg:items-center lg:h-14 overflow-x-auto scrollbar-hide px-[8vw] [@media(min-width:1920px)]:px-0">
                         {NAV_ITEMS.map((item) => (
                             <NavItem
                                 key={item.href}

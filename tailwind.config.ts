@@ -13,6 +13,9 @@ const config: Config = {
         "gradient-conic":
           "conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))",
       },
+      screens: {
+        'desktop1920': '1921px',
+      },
       colors: {
         primary: "#25476A",  //dark blue -- primary color
         primaryhover:"#193756",

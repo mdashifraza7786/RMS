@@ -72,7 +72,6 @@ const OrderQueueCard: React.FC<OrderQueueCardProps> = ({ table, waiter, amount, 
             {isModalOpen && (
                <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
                     <div className="bg-white rounded-xl w-[420px] shadow-xl relative p-6 transform scale-100 transition-all duration-300 max-h-[90vh] overflow-hidden flex flex-col">
-                        {/* Header */}
                         <div className="flex justify-between items-center border-b pb-3">
                             <h2 className="text-xl font-semibold text-gray-800 flex items-center">
                                 <MdTableBar className="text-primary mr-2" size={22} />
@@ -86,7 +85,6 @@ const OrderQueueCard: React.FC<OrderQueueCardProps> = ({ table, waiter, amount, 
                             </button>
                         </div>
    
-                        {/* Order Info */}
                         <div className="mt-3 text-gray-700 text-sm grid grid-cols-2 gap-2">
                             <p className="flex items-center"><span className="font-medium mr-1">Table:</span> <span className="text-primary font-medium">#{table}</span></p>
                             <p className="flex items-center"><span className="font-medium mr-1">Order ID:</span> <span className="text-gray-900">{orid}</span></p>
@@ -94,7 +92,6 @@ const OrderQueueCard: React.FC<OrderQueueCardProps> = ({ table, waiter, amount, 
                             <p className="flex items-center"><span className="font-medium mr-1">Time:</span> <span className="text-gray-900">{start_time}</span></p>
                         </div>
    
-                        {/* Ordered Items */}
                         <div className="mt-4 flex-grow overflow-hidden flex flex-col">
                             <h3 className="font-medium text-gray-800 mb-2">Ordered Items</h3>
                             <ul className="overflow-y-auto space-y-2 flex-grow pr-1">
@@ -116,7 +113,6 @@ const OrderQueueCard: React.FC<OrderQueueCardProps> = ({ table, waiter, amount, 
                             </ul>
                         </div>
    
-                        {/* Pricing Details */}
                         <div className="mt-4 pt-3 border-t text-gray-700 space-y-1">
                             <p className="flex justify-between"><span className="text-gray-600">Subtotal:</span> <span>₹{subtotal.toFixed(2)}</span></p>
                             <p className="flex justify-between"><span className="text-gray-600">GST (18%):</span> <span>₹{gst.toFixed(2)}</span></p>

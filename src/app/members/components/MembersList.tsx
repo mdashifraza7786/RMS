@@ -1,5 +1,5 @@
 import React from 'react';
-import { FaEye, FaTrash, FaUserEdit } from "react-icons/fa";
+import { FaEye, FaTrash, FaUserEdit, FaUserSlash } from "react-icons/fa";
 import { Bars } from 'react-loader-spinner';
 import { Member } from './MemberTypes';
 
@@ -28,7 +28,7 @@ const MembersList: React.FC<MembersListProps> = ({
         <Bars
           height="50"
           width="50"
-          color="#1e4569"
+          color="primary"
           ariaLabel="bars-loading"
           visible={true}
         />
@@ -101,7 +101,7 @@ const MembersList: React.FC<MembersListProps> = ({
                     </button>
                     <button
                       onClick={() => onEdit(member)}
-                      className="p-1.5 bg-[#1e4569]/10 text-[#1e4569] rounded-md hover:bg-[#1e4569]/20 transition"
+                      className="p-1.5 bg-primary/10 text-primary rounded-md hover:bg-primary/20 transition"
                       title="Edit member"
                     >
                       <FaUserEdit />
@@ -121,20 +121,7 @@ const MembersList: React.FC<MembersListProps> = ({
             <tr>
               <td colSpan={6} className="py-12 text-center">
                 <div className="flex flex-col items-center justify-center text-gray-500">
-                  <svg 
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none" 
-                    viewBox="0 0 24 24" 
-                    stroke="currentColor" 
-                    className="w-16 h-16 mb-4 text-gray-300"
-                  >
-                    <path 
-                      strokeLinecap="round" 
-                      strokeLinejoin="round" 
-                      strokeWidth="1" 
-                      d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
-                    />
-                  </svg>
+                  <FaUserSlash className="text-primary text-2xl" />
                   <p className="text-lg font-medium">No members found</p>
                   <p className="mt-1 text-sm">Try adjusting your search or add a new member.</p>
                 </div>
@@ -148,7 +135,7 @@ const MembersList: React.FC<MembersListProps> = ({
         <div className="flex justify-center mt-4">
           <button
             onClick={onLoadMore}
-            className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#1e4569]"
+            className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
           >
             Load More
           </button>

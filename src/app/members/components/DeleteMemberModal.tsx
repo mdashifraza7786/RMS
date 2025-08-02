@@ -32,13 +32,11 @@ const DeleteMemberModal: React.FC<DeleteMemberModalProps> = ({
   return (
     <div className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-60 z-50 p-4 animate-fadeIn">
       <div className="bg-white rounded-xl shadow-xl max-w-md w-full animate-scaleIn">
-        {/* Header */}
         <div className="bg-red-600 text-white p-5 rounded-t-xl flex items-center gap-3">
           <FaExclamationTriangle size={24} />
           <h3 className="text-xl font-bold">Delete Member</h3>
         </div>
-
-        {/* Content */}
+    
         <div className="p-6">
           <div className="mb-6">
             <p className="text-gray-700 mb-4">

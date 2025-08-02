@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Bars } from "react-loader-spinner";
 import Link from "next/link";
-import { MdPayment, MdPerson, MdTableBar, MdOutlineLocalAtm, MdAttachMoney, MdPhone, MdKeyboardArrowLeft, MdKeyboardArrowRight } from "react-icons/md";
+import { MdPayment, MdPerson, MdTableBar, MdOutlineLocalAtm, MdPhone, MdKeyboardArrowLeft, MdKeyboardArrowRight } from "react-icons/md";
 import { FaRegCreditCard } from "react-icons/fa";
 
 interface InvoiceItem {
@@ -42,7 +42,7 @@ export default function PaymentsComponent() {
     useEffect(() => {
         getRecentPayments();
     }, []);
-    
+
     useEffect(() => {
         setCurrentPage(1);
     }, [invoice]);
@@ -69,8 +69,8 @@ export default function PaymentsComponent() {
                     <MdPayment className="text-primary" />
                     Recent Payments
                 </h2>
-                <Link 
-                    href="/orders" 
+                <Link
+                    href="/orders"
                     className="text-sm text-primary hover:text-primary/80 font-medium flex items-center"
                 >
                     View All
@@ -118,7 +118,7 @@ export default function PaymentsComponent() {
                                     </span>
                                 </div>
                             </div>
-                            
+
                             <div className="flex justify-between items-center px-4 py-2 text-xs">
                                 <div className="flex items-center gap-1">
                                     <MdTableBar className="text-gray-400" />
@@ -131,7 +131,7 @@ export default function PaymentsComponent() {
                                     <span className="text-gray-700 font-medium capitalize">{item.payment_method}</span>
                                 </div>
                             </div>
-                            
+
                             <div className="px-4 py-3 border-t border-gray-100 flex justify-between items-center">
                                 <div className="text-xs bg-green-50 text-green-600 px-2 py-1 rounded-full font-medium">
                                     {item.payment_status}
@@ -147,30 +147,30 @@ export default function PaymentsComponent() {
                     ))}
                 </div>
             )}
-                {invoice.length > 0 && (
-                    <div className="flex justify-center items-center mt-4 pt-3 border-t border-gray-100">
-                        <button 
-                            onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                            disabled={currentPage === 1}
-                            className={`w-8 h-8 rounded-full flex items-center justify-center mr-2 ${currentPage === 1 ? 'text-gray-300 cursor-not-allowed' : 'text-gray-600 hover:bg-gray-100'}`}
-                        >
-                            <MdKeyboardArrowLeft size={20} />
-                        </button>
-                        <span className="text-sm text-gray-600">
-                            Page {currentPage} of {Math.ceil(invoice.length / itemsPerPage)}
-                        </span>
-                        <button 
-                            onClick={() => setCurrentPage(prev => Math.min(prev + 1, Math.ceil(invoice.length / itemsPerPage)))}
-                            disabled={currentPage >= Math.ceil(invoice.length / itemsPerPage)}
-                            className={`w-8 h-8 rounded-full flex items-center justify-center ml-2 ${currentPage >= Math.ceil(invoice.length / itemsPerPage) ? 'text-gray-300 cursor-not-allowed' : 'text-gray-600 hover:bg-gray-100'}`}
-                        >
-                            <MdKeyboardArrowRight size={20} />
-                        </button>
-                    </div>
-                )}
+            {invoice.length > 0 && (
+                <div className="flex justify-center items-center mt-4 pt-3 border-t border-gray-100">
+                    <button
+                        onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                        disabled={currentPage === 1}
+                        className={`w-8 h-8 rounded-full flex items-center justify-center mr-2 ${currentPage === 1 ? 'text-gray-300 cursor-not-allowed' : 'text-gray-600 hover:bg-gray-100'}`}
+                    >
+                        <MdKeyboardArrowLeft size={20} />
+                    </button>
+                    <span className="text-sm text-gray-600">
+                        Page {currentPage} of {Math.ceil(invoice.length / itemsPerPage)}
+                    </span>
+                    <button
+                        onClick={() => setCurrentPage(prev => Math.min(prev + 1, Math.ceil(invoice.length / itemsPerPage)))}
+                        disabled={currentPage >= Math.ceil(invoice.length / itemsPerPage)}
+                        className={`w-8 h-8 rounded-full flex items-center justify-center ml-2 ${currentPage >= Math.ceil(invoice.length / itemsPerPage) ? 'text-gray-300 cursor-not-allowed' : 'text-gray-600 hover:bg-gray-100'}`}
+                    >
+                        <MdKeyboardArrowRight size={20} />
+                    </button>
+                </div>
+            )}
 
             {selectedInvoice && (
-                <div 
+                <div
                     className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 p-4 z-50"
                     onClick={(e) => {
                         if (e.target === e.currentTarget) {
@@ -227,45 +227,45 @@ export default function PaymentsComponent() {
                                     {selectedInvoice.payment_status.toUpperCase()}
                                 </span>
                             </div>
-                            
+
                             <div className="flex justify-between items-center px-1">
                                 <span className="text-gray-500 text-sm">Payment Method</span>
                                 <span className="px-2 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary capitalize">
                                     {selectedInvoice.payment_method}
                                 </span>
                             </div>
-                            
+
                             <div className="border-t border-dashed border-gray-200 my-3"></div>
-                            
+
                             <div className="flex justify-between items-center px-1 text-sm">
                                 <span className="text-gray-600">Subtotal</span>
                                 <span className="font-medium">₹{formatCurrency(selectedInvoice.subtotal)}</span>
                             </div>
-                            
+
                             <div className="flex justify-between items-center px-1 text-sm">
                                 <span className="text-gray-600">GST ({typeof selectedInvoice.gst === 'string' ? selectedInvoice.gst : selectedInvoice.gst.toFixed(0)}%)</span>
                                 <span className="font-medium">₹{formatCurrency((parseFloat(formatCurrency(selectedInvoice.subtotal)) * parseFloat(selectedInvoice.gst.toString()) / 100))}</span>
                             </div>
-                            
+
                             {parseFloat(selectedInvoice.discount.toString()) > 0 && (
                                 <div className="flex justify-between items-center px-1 text-sm">
                                     <span className="text-gray-600">Discount</span>
                                     <span className="font-medium text-green-600">-₹{formatCurrency(selectedInvoice.discount)}</span>
                                 </div>
                             )}
-                            
+
                             <div className="border-t border-gray-200 pt-3 mt-3">
                                 <div className="flex justify-between items-center px-1">
                                     <span className="text-gray-900 font-medium">Total Amount</span>
                                     <span className="text-lg font-semibold text-primary">₹{formatCurrency(selectedInvoice.total_amount)}</span>
                                 </div>
                             </div>
-                            
+
                             <div className="text-center text-xs text-gray-500 mt-4 pb-2">
                                 Generated on {new Date(selectedInvoice.generated_at).toLocaleString()}
                             </div>
                         </div>
-                        
+
                         <div className="mt-6 flex justify-end border-t pt-4">
                             <button
                                 onClick={() => setSelectedInvoice(null)}

@@ -15,7 +15,7 @@ const MemberSearch: React.FC<MemberSearchProps> = ({ searchQuery, setSearchQuery
       <input
         type="search"
         placeholder="Search by ID, name, role..."
-        className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-[#1e4569] focus:border-[#1e4569] w-full md:w-80"
+        className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary w-full md:w-80"
         value={searchQuery}
         onChange={(e) => setSearchQuery(e.target.value)}
       />

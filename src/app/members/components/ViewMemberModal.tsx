@@ -1,5 +1,5 @@
 import React from 'react';
-import { FaUser, FaPhone, FaEnvelope, FaIdCard, FaAddressCard, FaMoneyBillAlt } from 'react-icons/fa';
+import { FaPhone, FaEnvelope, FaIdCard, FaAddressCard, FaMoneyBillAlt } from 'react-icons/fa';
 import { Member } from './MemberTypes';
 
 interface ViewMemberModalProps {
@@ -14,11 +14,9 @@ const ViewMemberModal: React.FC<ViewMemberModalProps> = ({ member, isVisible, on
   return (
     <div className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-60 z-50 p-4 animate-fadeIn">
       <div className="bg-white rounded-xl shadow-xl max-w-md w-full max-h-[90vh] overflow-auto animate-scaleIn">
-        {/* Header */}
-        <div className="bg-[#1e4569] text-white p-5 rounded-t-xl sticky top-0 z-10">
+        <div className="bg-primary text-white p-5 rounded-t-xl sticky top-0 z-10">
           <div className="flex justify-between items-center mb-2">
             <h3 className="text-xl font-bold flex items-center gap-2">
-              <FaUser />
               Member Details
             </h3>
             <button
@@ -33,11 +31,8 @@ const ViewMemberModal: React.FC<ViewMemberModalProps> = ({ member, isVisible, on
           </div>
         </div>
 
-        {/* Member Info */}
         <div className="p-6">
-          {/* Profile Section */}
           <div className="flex items-center justify-center h-36 gap-6">
-            {/* Profile Image */}
             <div className="h-36 w-36 rounded-full overflow-hidden border-2 border-gray-200 shadow-sm flex items-center justify-center bg-gray-100">
               {member.photo ? (
                 <img 
@@ -53,7 +48,6 @@ const ViewMemberModal: React.FC<ViewMemberModalProps> = ({ member, isVisible, on
               )}
             </div>
 
-            {/* Personal Info */}
             <div>
               <h4 className="text-xl font-bold text-gray-800">{member.name}</h4>
               <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
@@ -66,7 +60,6 @@ const ViewMemberModal: React.FC<ViewMemberModalProps> = ({ member, isVisible, on
             </div>
           </div>
 
-          {/* Contact Info */}
           <div className="bg-gray-50 rounded-lg p-4 mb-4">
             <h5 className="text-sm font-medium text-gray-500 uppercase tracking-wider mb-3">Contact Information</h5>
             <div className="space-y-2">
@@ -81,7 +74,6 @@ const ViewMemberModal: React.FC<ViewMemberModalProps> = ({ member, isVisible, on
             </div>
           </div>
 
-          {/* ID Documents */}
           <div className="bg-gray-50 rounded-lg p-4 mb-4">
             <h5 className="text-sm font-medium text-gray-500 uppercase tracking-wider mb-3">ID Documents</h5>
             <div className="grid grid-cols-2 gap-3">
@@ -100,7 +92,6 @@ const ViewMemberModal: React.FC<ViewMemberModalProps> = ({ member, isVisible, on
             </div>
           </div>
 
-          {/* Bank Details */}
           <div className="bg-gray-50 rounded-lg p-4 mb-4">
             <h5 className="text-sm font-medium text-gray-500 uppercase tracking-wider mb-3">
               <FaMoneyBillAlt className="inline mr-1" /> Bank Details
@@ -131,7 +122,6 @@ const ViewMemberModal: React.FC<ViewMemberModalProps> = ({ member, isVisible, on
             </div>
           </div>
 
-          {/* Address */}
           <div className="bg-gray-50 rounded-lg p-4 mb-4">
             <h5 className="text-sm font-medium text-gray-500 uppercase tracking-wider mb-3">
               <FaAddressCard className="inline mr-1" /> Address

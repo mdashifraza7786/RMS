@@ -3,11 +3,11 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { Bars } from "react-loader-spinner";
-import { FaSearch, FaFileInvoiceDollar, FaFilter } from "react-icons/fa";
+import { FaSearch, FaFileInvoiceDollar, FaFilter, FaUserSlash } from "react-icons/fa";
 import { IoFastFoodOutline } from "react-icons/io5";
 import { BsClock, BsClockHistory } from "react-icons/bs";
 import { BiTable } from "react-icons/bi";
-import { MdPerson } from "react-icons/md";
+import { MdDashboard, MdPerson } from "react-icons/md";
 
 interface OrderItem {
   item_id: string;
@@ -62,14 +62,14 @@ const OrdersPage: React.FC = () => {
     setLoading(true);
     try {
       const response = await axios.get(`/api/orders?status=${status}`);
-      
+
       if (response.data?.orders) {
         const formattedData: Order[] = response.data.orders.map((order: any) => ({
           ...order,
-          order_items: typeof order.order_items === 'string' ? 
+          order_items: typeof order.order_items === 'string' ?
             JSON.parse(order.order_items) : order.order_items,
         }));
-        
+
         setOrders(formattedData);
       } else {
         console.error("Failed to fetch orders:", response.data);
@@ -85,7 +85,7 @@ const OrdersPage: React.FC = () => {
   const fetchInvoices = async () => {
     try {
       const response = await axios.get('/api/order/orderInvoice');
-      
+
       if (response.data?.invoice) {
         setInvoices(response.data.invoice);
       } else {
@@ -101,25 +101,20 @@ const OrdersPage: React.FC = () => {
   const handleDetailsClick = (order: Order) => {
     try {
       setSelectedOrder(order);
-      
-      // Find matching invoice for this order
+
       const matchingInvoice = invoices.find(inv => inv.orderid === order.id);
-      
+
       if (matchingInvoice) {
         setSelectedInvoice(matchingInvoice);
       } else {
-        // Create a placeholder invoice when one doesn't exist
         if (order.status.toLowerCase() === "completed") {
-          // Calculate order total from items
           const orderTotal = order.order_items.reduce(
-            (sum, item) => sum + (item.price * item.quantity), 
+            (sum, item) => sum + (item.price * item.quantity),
             0
           );
-          
-          // Calculate GST (18% of subtotal)
+
           const gstAmount = parseFloat((orderTotal * 0.18).toFixed(2));
-          
-          // Create placeholder invoice object
+
           const placeholderInvoice: Invoice = {
             id: "pending-" + order.id,
             orderid: order.id,
@@ -132,13 +127,13 @@ const OrdersPage: React.FC = () => {
             payment_status: "pending",
             generated_at: order.end_time || order.start_time || ""
           };
-          
+
           setSelectedInvoice(placeholderInvoice);
         } else {
           setSelectedInvoice(null);
         }
       }
-      
+
       setDetailsPopup(true);
     } catch (error) {
       console.error("Error handling order details:", error);
@@ -150,17 +145,15 @@ const OrdersPage: React.FC = () => {
 
   const handlePrintInvoice = () => {
     if (!selectedOrder || !selectedInvoice) return;
-    
-    // Create a new window for printing
+
     const printWindow = window.open('', '_blank');
     if (!printWindow) {
       alert('Please allow popups for this site to print invoices.');
       return;
     }
-    
+
     const currentDate = new Date().toLocaleString();
-    
-    // Generate bill content
+
     const billContent = `
       <html>
       <head>
@@ -211,9 +204,9 @@ const OrdersPage: React.FC = () => {
           </table>
           <hr>
           <p class="total">Subtotal: ₹${selectedInvoice.subtotal.toFixed(2)}</p>
-          ${selectedInvoice.discount > 0 ? 
-            `<p class="total">Discount: ₹${selectedInvoice.discount.toFixed(2)}</p>` 
-            : ''}
+          ${selectedInvoice.discount > 0 ?
+        `<p class="total">Discount: ₹${selectedInvoice.discount.toFixed(2)}</p>`
+        : ''}
           <p class="total">GST (18%): ₹${selectedInvoice.gst.toFixed(2)}</p>
           <p class="grand-total">TOTAL: ₹${selectedInvoice.total_amount.toFixed(2)}</p>
           <div class="payment-method">Paid By: ${selectedInvoice.payment_method?.toUpperCase() || 'CASH'}</div>
@@ -224,13 +217,11 @@ const OrdersPage: React.FC = () => {
       </html>
     `;
 
-    // Write to the new window and open the print dialog
     printWindow.document.open();
     printWindow.document.write(billContent);
     printWindow.document.close();
   };
 
-  // Filter orders based on search term
   const filteredOrders = orders.filter((order) =>
     order.id.toString().includes(searchTerm) ||
     order.table_id.toString().includes(searchTerm) ||
@@ -240,10 +231,9 @@ const OrdersPage: React.FC = () => {
     order.order_items.some((item) => item.item_name.toString().toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
-  // Format currency in a consistent way
   const formatCurrency = (amount: number | null | undefined) => {
     if (amount === null || amount === undefined) return '₹ 0.00';
-    
+
     return new Intl.NumberFormat('en-IN', {
       style: 'currency',
       currency: 'INR',
@@ -251,7 +241,6 @@ const OrdersPage: React.FC = () => {
     }).format(amount).replace('₹', '₹ ');
   };
 
-  // Get appropriate status color based on status value
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
       case 'completed':
@@ -269,7 +258,6 @@ const OrdersPage: React.FC = () => {
     }
   };
 
-  // Tab configuration
   const tabs = [
     { id: 'all', label: 'All Orders' },
     { id: 'ordered', label: 'Ordered' },
@@ -278,18 +266,14 @@ const OrdersPage: React.FC = () => {
   ];
 
   return (
-    <div className="container mx-auto px-4 py-6 md:px-6 lg:max-w-[90%] xl:max-w-7xl 2xl:max-w-[1400px] font-sans">
-      {/* Page Header */}
-      <div className="flex items-center mb-6">
-        <div className="h-10 w-10 rounded-lg bg-[#1e4569]/10 flex items-center justify-center mr-3">
-          <FaFileInvoiceDollar className="text-[#1e4569]" size={20} />
-        </div>
-        <h1 className="text-2xl font-bold text-gray-800">Orders</h1>
+    <div className="container mx-auto px-6 pt-4 pb-8">
+      <div className="py-4">
+          <div className="flex items-center gap-3">
+            <h1 className="text-xl font-semibold text-gray-800">Orders</h1>
+          </div>
       </div>
 
-      {/* Main Content */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-        {/* Header with search and tabs */}
         <div className="p-6 border-b border-gray-100">
           <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-6">
             <div className="relative">
@@ -299,24 +283,22 @@ const OrdersPage: React.FC = () => {
               <input
                 type="search"
                 placeholder="Search by order ID, table, staff..."
-                className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-[#1e4569] focus:border-[#1e4569] w-full md:w-80"
+                className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary w-full md:w-80"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
           </div>
 
-          {/* Tabs */}
           <div className="flex flex-wrap gap-2 border-b border-gray-200">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`px-4 py-2 text-sm font-medium rounded-t-lg transition-all ${
-                  activeTab === tab.id
-                    ? 'text-[#1e4569] border-b-2 border-[#1e4569] bg-[#1e4569]/5'
-                    : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
-                }`}
+                className={`px-4 py-2 text-sm font-medium rounded-t-lg transition-all ${activeTab === tab.id
+                    ? 'text-primary border-b-2 border-primary bg-primary/5'
+                  : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                  }`}
               >
                 {tab.label}
               </button>
@@ -324,11 +306,10 @@ const OrdersPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Table content */}
         <div className="overflow-x-auto">
           {loading ? (
             <div className="flex justify-center items-center py-12">
-              <Bars height="50" width="50" color="#1e4569" ariaLabel="bars-loading" />
+              <Bars height="50" width="50" color="primary" ariaLabel="bars-loading" />
             </div>
           ) : (
             <table className="min-w-full divide-y divide-gray-200">
@@ -345,9 +326,9 @@ const OrdersPage: React.FC = () => {
                     { id: "status", label: "Status" },
                     { id: "action", label: "Action" }
                   ].map((header) => (
-                    <th 
+                    <th
                       key={header.id}
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      className={`px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider ${header.label === "Start Time" || header.label === "End Time" ? "hidden [@media(min-width:1915px)]:table-cell" : ""}`}
                     >
                       {header.label}
                     </th>
@@ -379,7 +360,7 @@ const OrdersPage: React.FC = () => {
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                         {formatCurrency(order.order_items.reduce((sum, item) => sum + item.price * item.quantity, 0))}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 hidden [@media(min-width:1915px)]:table-cell">
                         <div className="flex items-center">
                           <BsClock className="mr-1 text-gray-400" />
                           {new Date(order.start_time).toLocaleString('en-US', {
@@ -390,7 +371,7 @@ const OrdersPage: React.FC = () => {
                           })}
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 hidden [@media(min-width:1915px)]:table-cell">
                         {order.end_time ? (
                           <div className="flex items-center">
                             <BsClockHistory className="mr-1 text-gray-400" />
@@ -413,8 +394,8 @@ const OrdersPage: React.FC = () => {
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        <button 
-                          className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-[#1e4569] hover:bg-[#2c5983] transition"
+                        <button
+                          className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-primary hover:bg-primary/80 transition"
                           onClick={() => handleDetailsClick(order)}
                         >
                           View Details
@@ -426,20 +407,7 @@ const OrdersPage: React.FC = () => {
                   <tr>
                     <td colSpan={9} className="py-12 text-center">
                       <div className="flex flex-col items-center justify-center text-gray-500">
-                        <svg 
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none" 
-                          viewBox="0 0 24 24" 
-                          stroke="currentColor" 
-                          className="w-16 h-16 mb-4 text-gray-300"
-                        >
-                          <path 
-                            strokeLinecap="round" 
-                            strokeLinejoin="round" 
-                            strokeWidth="1" 
-                            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
-                          />
-                        </svg>
+                        <FaUserSlash className="text-primary text-2xl mb-2" />
                         <p className="text-lg font-medium">No orders available</p>
                         <p className="mt-1 text-sm">Try adjusting your search or selecting a different tab.</p>
                       </div>
@@ -452,12 +420,10 @@ const OrdersPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Order Details Modal */}
       {detailsPopup && selectedOrder && (
         <div className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-60 z-50 p-4 animate-fadeIn">
           <div className="bg-white rounded-xl shadow-xl max-w-md w-full max-h-[90vh] overflow-auto animate-scaleIn">
-            {/* Header */}
-            <div className="bg-[#1e4569] text-white p-5 rounded-t-xl sticky top-0 z-10">
+            <div className="bg-primary text-white p-5 rounded-t-xl sticky top-0 z-10">
               <div className="flex justify-between items-center mb-2">
                 <h3 className="text-xl font-bold flex items-center gap-2">
                   <IoFastFoodOutline />
@@ -475,7 +441,6 @@ const OrdersPage: React.FC = () => {
               </div>
             </div>
 
-            {/* Order Info */}
             <div className="p-6">
               <div className="grid grid-cols-2 gap-4 mb-6">
                 <div className="bg-gray-50 p-3 rounded-lg">
@@ -505,7 +470,6 @@ const OrdersPage: React.FC = () => {
                 </div>
               </div>
 
-              {/* Items List */}
               <h2 className="font-semibold text-gray-800 mb-3">Order Items</h2>
               <div className="bg-gray-50 rounded-lg p-4 mb-6">
                 <ul className="divide-y divide-gray-200">
@@ -525,25 +489,23 @@ const OrdersPage: React.FC = () => {
                 </ul>
               </div>
 
-              {/* Total Price */}
-              <div className="bg-[#1e4569]/5 rounded-lg p-4 mb-6">
+              <div className="bg-primary/5 rounded-lg p-4 mb-6">
                 <div className="flex justify-between items-center mb-2">
                   <span className="text-gray-600">Subtotal</span>
                   <span className="font-medium text-gray-900">
                     {formatCurrency(selectedOrder.order_items.reduce((total, item) => total + item.price * item.quantity, 0))}
                   </span>
                 </div>
-                
-                {/* Always show GST section, using placeholder if no invoice */}
+
                 <div className="flex justify-between items-center mb-2">
                   <span className="text-gray-600">GST (18%)</span>
                   <span className="font-medium text-gray-900">
-                    {selectedInvoice 
+                    {selectedInvoice
                       ? formatCurrency(selectedInvoice.gst)
                       : formatCurrency(selectedOrder.order_items.reduce((total, item) => total + item.price * item.quantity, 0) * 0.18)}
                   </span>
                 </div>
-                
+
                 {selectedInvoice && selectedInvoice.discount > 0 && (
                   <div className="flex justify-between items-center mb-2">
                     <span className="text-gray-600">Discount</span>
@@ -552,16 +514,16 @@ const OrdersPage: React.FC = () => {
                     </span>
                   </div>
                 )}
-                
+
                 <div className="border-t border-gray-200 my-2 pt-2">
                   <div className="flex justify-between items-center">
                     <span className="font-medium text-gray-900">Total</span>
-                    <span className="text-xl font-bold text-[#1e4569]">
-                      {selectedInvoice 
+                    <span className="text-xl font-bold text-primary">
+                      {selectedInvoice
                         ? formatCurrency(selectedInvoice.total_amount)
                         : formatCurrency(
-                            selectedOrder.order_items.reduce((total, item) => total + item.price * item.quantity, 0) * 1.18
-                          )}
+                          selectedOrder.order_items.reduce((total, item) => total + item.price * item.quantity, 0) * 1.18
+                        )}
                     </span>
                   </div>
                 </div>
@@ -574,12 +536,11 @@ const OrdersPage: React.FC = () => {
                 >
                   Close
                 </button>
-                
-                {/* Show only Print Invoice button for completed orders */}
+
                 {selectedOrder.status.toLowerCase() === "completed" && (
                   <button
                     onClick={handlePrintInvoice}
-                    className="px-4 py-2 bg-[#1e4569] hover:bg-[#2c5983] text-white font-medium rounded-lg flex items-center justify-center"
+                    className="px-4 py-2 bg-primary hover:bg-primary/80 text-white font-medium rounded-lg flex items-center justify-center"
                   >
                     <FaFileInvoiceDollar className="mr-2" />
                     Print Invoice
@@ -611,4 +572,6 @@ const OrdersPage: React.FC = () => {
   );
 };
 
-export default OrdersPage; 
+export default OrdersPage;
+
+

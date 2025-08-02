@@ -112,7 +112,7 @@ const InventoryForecastPage: React.FC = () => {
             <ResponsiveContainer width="100%" height={350}>
               <LineChart data={forecast} margin={{ top: 20, right: 30, left: 0, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="forecasted date" tickFormatter={d => d.slice(5, 10)} />
+                <XAxis dataKey="forecasted date" tickFormatter={(d: any) => d.slice(5, 10)} />
                 <YAxis />
                 <Tooltip />
                 <Legend />

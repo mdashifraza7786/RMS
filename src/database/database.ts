@@ -192,10 +192,16 @@ export async function getTableOrders() {
                 o.order_items, 
                 o.start_time, 
                 o.end_time, 
-                o.status
+                o.status,
+                i.subtotal as invoice_subtotal,
+                i.gst as invoice_gst,
+                i.total_amount as invoice_total_amount,
+                i.payment_status as invoice_payment_status
              FROM orders o
              LEFT JOIN user u1 ON o.waiter_id = u1.userid
-             LEFT JOIN user u2 ON o.chef_id = u2.userid`
+             LEFT JOIN user u2 ON o.chef_id = u2.userid
+             LEFT JOIN invoices i ON o.id = i.orderid
+             ORDER BY o.id DESC`
         );
 
 

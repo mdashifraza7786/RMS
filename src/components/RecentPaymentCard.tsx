@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Bars } from "react-loader-spinner";
 import Link from "next/link";
-import { MdPayment, MdPerson, MdTableBar, MdOutlineLocalAtm, MdAttachMoney, MdPhone } from "react-icons/md";
+import { MdPayment, MdPerson, MdTableBar, MdOutlineLocalAtm, MdAttachMoney, MdPhone, MdKeyboardArrowLeft, MdKeyboardArrowRight } from "react-icons/md";
 import { FaRegCreditCard } from "react-icons/fa";
 
 interface InvoiceItem {
@@ -24,6 +24,8 @@ export default function PaymentsComponent() {
     const [invoice, setInvoice] = useState<InvoiceItem[]>([]);
     const [selectedInvoice, setSelectedInvoice] = useState<InvoiceItem | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
+    const [currentPage, setCurrentPage] = useState<number>(1);
+    const [itemsPerPage] = useState<number>(3);
 
     async function getRecentPayments() {
         try {
@@ -40,6 +42,10 @@ export default function PaymentsComponent() {
     useEffect(() => {
         getRecentPayments();
     }, []);
+    
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [invoice]);
 
     const formatDate = (dateString: string) => {
         const date = new Date(dateString);
@@ -51,14 +57,13 @@ export default function PaymentsComponent() {
         });
     };
 
-    // Helper function to ensure values are properly formatted as numbers
     const formatCurrency = (value: number | string): string => {
         const numValue = typeof value === 'string' ? parseFloat(value) : value;
         return isNaN(numValue) ? '0.00' : numValue.toFixed(2);
     };
 
     return (
-        <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100 h-full flex flex-col">
+        <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100 h-full flex flex-col w-[50%]">
             <div className="flex justify-between items-center mb-6">
                 <h2 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
                     <MdPayment className="text-primary" />
@@ -84,7 +89,7 @@ export default function PaymentsComponent() {
                 </div>
             ) : (
                 <div className="space-y-3 flex-grow overflow-auto pr-1">
-                    {invoice.slice(0, 5).map((item) => (
+                    {invoice.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((item) => (
                         <div
                             key={item.id}
                             className="bg-white border border-gray-100 rounded-lg shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden"
@@ -114,7 +119,7 @@ export default function PaymentsComponent() {
                                 </div>
                             </div>
                             
-                            <div className="grid grid-cols-2 gap-2 px-4 py-2 text-xs">
+                            <div className="flex justify-between items-center px-4 py-2 text-xs">
                                 <div className="flex items-center gap-1">
                                     <MdTableBar className="text-gray-400" />
                                     <span className="text-gray-500">Table: </span>
@@ -142,19 +147,38 @@ export default function PaymentsComponent() {
                     ))}
                 </div>
             )}
+                {invoice.length > 0 && (
+                    <div className="flex justify-center items-center mt-4 pt-3 border-t border-gray-100">
+                        <button 
+                            onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                            disabled={currentPage === 1}
+                            className={`w-8 h-8 rounded-full flex items-center justify-center mr-2 ${currentPage === 1 ? 'text-gray-300 cursor-not-allowed' : 'text-gray-600 hover:bg-gray-100'}`}
+                        >
+                            <MdKeyboardArrowLeft size={20} />
+                        </button>
+                        <span className="text-sm text-gray-600">
+                            Page {currentPage} of {Math.ceil(invoice.length / itemsPerPage)}
+                        </span>
+                        <button 
+                            onClick={() => setCurrentPage(prev => Math.min(prev + 1, Math.ceil(invoice.length / itemsPerPage)))}
+                            disabled={currentPage >= Math.ceil(invoice.length / itemsPerPage)}
+                            className={`w-8 h-8 rounded-full flex items-center justify-center ml-2 ${currentPage >= Math.ceil(invoice.length / itemsPerPage) ? 'text-gray-300 cursor-not-allowed' : 'text-gray-600 hover:bg-gray-100'}`}
+                        >
+                            <MdKeyboardArrowRight size={20} />
+                        </button>
+                    </div>
+                )}
 
             {selectedInvoice && (
                 <div 
                     className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 p-4 z-50"
                     onClick={(e) => {
-                        // Close the modal when clicking on the backdrop
                         if (e.target === e.currentTarget) {
                             setSelectedInvoice(null);
                         }
                     }}
                 >
                     <div className="bg-white rounded-xl p-6 shadow-xl max-w-md w-full max-h-[90vh] overflow-auto">
-                        {/* Header */}
                         <div className="flex justify-between items-center border-b pb-3 sticky top-0 bg-white z-10">
                             <h3 className="text-xl font-semibold text-gray-800 flex items-center gap-2">
                                 <MdOutlineLocalAtm className="text-primary" size={22} />
@@ -168,7 +192,6 @@ export default function PaymentsComponent() {
                             </button>
                         </div>
 
-                        {/* Customer Info */}
                         <div className="mt-4 px-4 py-3 bg-gray-50 rounded-lg">
                             <div className="flex items-center gap-3 mb-2">
                                 <div className="w-9 h-9 rounded-full bg-primary/10 text-primary flex items-center justify-center">
@@ -197,7 +220,6 @@ export default function PaymentsComponent() {
                             </div>
                         </div>
 
-                        {/* Payment Details */}
                         <div className="mt-5 space-y-3">
                             <div className="flex justify-between items-center px-1">
                                 <span className="text-gray-500 text-sm">Payment Status</span>

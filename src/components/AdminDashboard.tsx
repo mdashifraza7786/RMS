@@ -244,7 +244,6 @@ const AdminDashboard: React.FC = () => {
         setSelectedTable(null);
     };
 
-    // Function to render different chart types
     const renderChart = () => {
         if (isFinancialLoading) {
             return (
@@ -254,7 +253,6 @@ const AdminDashboard: React.FC = () => {
             );
         }
 
-        // Get container dimensions for responsive charts
         const chartWidth = 600;
         const chartHeight = 300;
 
@@ -321,19 +319,17 @@ const AdminDashboard: React.FC = () => {
                     />
                 );
             case 'line':
-                // For line chart, we simulate data points for the selected period
                 const generateDataPoints = () => {
                     const points = [];
                     const days = financialData.period === '7days' ? 7 : 
                                  financialData.period === '30days' ? 30 : 
-                                 new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate(); // days in current month
+                                 new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate(); 
                     
                     const revPerDay = financialData.revenue.value / days;
                     const ordersPerDay = financialData.orders.value / days;
                     
                     for (let i = 0; i < days; i++) {
-                        // Create some variation in the data
-                        const revVariation = 0.8 + Math.random() * 0.4; // 80-120% of average
+                        const revVariation = 0.8 + Math.random() * 0.4;
                         const orderVariation = 0.8 + Math.random() * 0.4;
                         
                         points.push({
@@ -417,8 +413,7 @@ const AdminDashboard: React.FC = () => {
     };
 
     return (
-        <div className="min-h-screen py-[5vh] px-[8vw]">
-            {/* Dashboard Header */}
+        <div className="min-h-screen px-[8vw]">
             <div className="">
                 <div className="container mx-auto px-6 py-4">
                     <div className="flex items-center gap-3">
@@ -428,9 +423,7 @@ const AdminDashboard: React.FC = () => {
                 </div>
             </div>
 
-            {/* Main Content */}
-            <div className="container mx-auto px-6 py-8">
-                {/* Stats Overview */}
+            <div className="container mx-auto px-6 py-4">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                     <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100 col-span-2">
                         <div className="flex items-center justify-between mb-6">
@@ -457,7 +450,6 @@ const AdminDashboard: React.FC = () => {
                             </div>
                         ) : (
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                {/* Revenue Card */}
                                 <div className="bg-gradient-to-br from-primary/10 to-primary/5 rounded-xl p-6 transition-all">
                                     <div className="flex justify-between items-start">
                                         <div>
@@ -483,7 +475,6 @@ const AdminDashboard: React.FC = () => {
                                     </div>
                                 </div>
 
-                                {/* Orders Card */}
                                 <div className="bg-gradient-to-br from-green-50 to-green-50/50 rounded-xl p-6 transition-all">
                                     <div className="flex justify-between items-start">
                                         <div>
@@ -509,7 +500,6 @@ const AdminDashboard: React.FC = () => {
                                     </div>
                                 </div>
 
-                                {/* Average Order Value */}
                                 <div className="bg-gradient-to-br from-amber-50 to-amber-50/50 rounded-xl p-6 transition-all">
                                     <div className="flex justify-between items-start">
                                         <div>
@@ -535,7 +525,6 @@ const AdminDashboard: React.FC = () => {
                                     </div>
                                 </div>
 
-                                {/* Estimated Monthly Revenue */}
                                 <div className="bg-gradient-to-br from-blue-50 to-blue-50/50 rounded-xl p-6 transition-all">
                                     <div className="flex justify-between items-start">
                                         <div>
@@ -624,7 +613,6 @@ const AdminDashboard: React.FC = () => {
                     </div>
                 </div>
 
-                {/* Orders in Queue */}
                 <section className="bg-white rounded-xl shadow-sm p-6 border border-gray-100 mb-8">
                     <div className="flex justify-between items-center mb-6">
                         <h2 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
@@ -632,7 +620,7 @@ const AdminDashboard: React.FC = () => {
                             Active Orders
                         </h2>
                         <Link 
-                            href="" 
+                            href="/orders/active" 
                             className="text-sm text-primary hover:text-primary/80 font-medium flex items-center"
                         >
                             View All
@@ -694,7 +682,6 @@ const AdminDashboard: React.FC = () => {
                     </div>
                 </section>
 
-                {/* Table Status */}
                 <section className="bg-white rounded-xl shadow-sm p-6 border border-gray-100 mb-8">
                     <div className="flex justify-between items-center mb-6">
                         <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
@@ -746,8 +733,7 @@ const AdminDashboard: React.FC = () => {
                     </div>
                 </section>
 
-                {/* Recent Activity */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="flex gap-6 w-full">
                     <RecentTableOrders />
                     <RecentPaymentCard />
                 </div>

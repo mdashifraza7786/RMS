@@ -19,7 +19,7 @@ import { MdOutlineInventory, MdBorderColor } from "react-icons/md";
 import { PiChefHatThin } from "react-icons/pi";
 import { MdOutlineRestaurantMenu } from "react-icons/md";
 import { IoBarChartSharp } from "react-icons/io5";
-import { FaMoneyBillWave } from "react-icons/fa";
+import { FaBox, FaMoneyBillWave } from "react-icons/fa";
 import { RiMenu3Line } from 'react-icons/ri';
 
 const raleway = Raleway({
@@ -38,7 +38,8 @@ const NAV_ITEMS = [
     { href: "/menu", icon: <MdOutlineRestaurantMenu />, label: "Menu" },
     { href: "/chart", icon: <IoBarChartSharp />, label: "Charts" },
     { href: "/expenses", icon: <FaMoneyBillWave />, label: "Expenses" },
-    { href: "/tables", icon: <FaTableCells />, label: "Tables" }
+    { href: "/tables", icon: <FaTableCells />, label: "Tables" },
+    { href: "/inventory-forecast", icon: <FaBox />, label: "Inventory Forecast" }
 ];
 
 const AdminNavbar: React.FC = () => {

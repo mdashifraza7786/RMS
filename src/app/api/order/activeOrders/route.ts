@@ -21,6 +21,7 @@ export async function GET() {
     },
     tableNumber: Number(row.table_id),
     orderItems: JSON.parse(row.order_items),
+    start_time: row.start_time ? new Date(row.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : null,
   }));
 
   return NextResponse.json(fullOrderDetails);

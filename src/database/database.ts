@@ -655,6 +655,12 @@ export async function getFinancialOverview(period: string) {
     let startDate = new Date();
     
     switch (period) {
+        case 'today':
+            startDate.setDate(endDate.getDate());
+            break;
+        case 'yesterday':
+            startDate.setDate(endDate.getDate() - 1);
+            break;
         case '7days':
             startDate.setDate(endDate.getDate() - 7);
             break;

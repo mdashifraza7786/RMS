@@ -50,7 +50,7 @@ const AdminDashboard: React.FC = () => {
     const [showLeftArrow, setShowLeftArrow] = useState(false);
     const [showRightArrow, setShowRightArrow] = useState(true);
     const [selectedTable, setSelectedTable] = useState<number | null>(null);
-    const [orderedItems, setOrderedItems] = useState<{ orderid: number, billing: billingAmount; tablenumber: number; itemsordered: OrderedItems[] }[]>([]);
+    const [orderedItems, setOrderedItems] = useState<{ orderid: number, billing: billingAmount; tablenumber: number; itemsordered: OrderedItems[]; start_time?: string }[]>([]);
     const [tableLoaded, setTableLoaded] = useState(false);
 
 
@@ -69,6 +69,7 @@ const AdminDashboard: React.FC = () => {
                     quantity: item.quantity,
                     price: item.price,
                 })),
+                start_time: order.start_time,
             }));
             setOrderedItems(activeOrders);
         } catch (error) {
@@ -101,7 +102,7 @@ const AdminDashboard: React.FC = () => {
         }
     };
 
-    const fetchFinancialData = async (period = '7days') => {
+    const fetchFinancialData = async (period = 'today') => {
         try {
             setIsFinancialLoading(true);
             const response = await fetch(`/api/dashboard/financialOverview?period=${period}`);
@@ -436,6 +437,8 @@ const AdminDashboard: React.FC = () => {
                                 onChange={handlePeriodChange}
                                 value={financialData.period}
                             >
+                                <option value="today">Today</option>
+                                <option value="yesterday">Yesterday</option>
                                 <option value="7days">Last 7 days</option>
                                 <option value="30days">Last 30 days</option>
                                 <option value="month">This month</option>
@@ -661,6 +664,7 @@ const AdminDashboard: React.FC = () => {
                                             amount={(order.billing.subtotal + order.billing.subtotal * 0.18).toFixed(2)}
                                             orid={order.orderid.toString()}
                                             orderedItems={order.itemsordered}
+                                            start_time={order.start_time || 'N/A'}
                                         />
                                     ))
                                 ) : (

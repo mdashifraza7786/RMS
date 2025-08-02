@@ -10,9 +10,10 @@ interface OrderQueueCardProps {
     amount: string;
     orid: string;
     orderedItems: OrderedItems[];
+    start_time: string;
 }
 
-const OrderQueueCard: React.FC<OrderQueueCardProps> = ({ table, waiter, amount, orid, orderedItems }) => {
+const OrderQueueCard: React.FC<OrderQueueCardProps> = ({ table, waiter, amount, orid, orderedItems, start_time }) => {
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
     const subtotal = orderedItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
     const gst = subtotal * 0.18;
@@ -46,7 +47,7 @@ const OrderQueueCard: React.FC<OrderQueueCardProps> = ({ table, waiter, amount, 
                     
                     <div className="flex items-center text-sm text-gray-600 mb-3">
                         <BiTimer className="mr-2 text-gray-400" />
-                        <span>Just now</span>
+                        <span>{start_time}</span>
                     </div>
                     
                     <div className="flex items-center text-sm font-medium text-gray-900 mb-4">
@@ -90,7 +91,7 @@ const OrderQueueCard: React.FC<OrderQueueCardProps> = ({ table, waiter, amount, 
                             <p className="flex items-center"><span className="font-medium mr-1">Table:</span> <span className="text-primary font-medium">#{table}</span></p>
                             <p className="flex items-center"><span className="font-medium mr-1">Order ID:</span> <span className="text-gray-900">{orid}</span></p>
                             <p className="flex items-center"><span className="font-medium mr-1">Waiter:</span> <span className="text-gray-900">{waiter}</span></p>
-                            <p className="flex items-center"><span className="font-medium mr-1">Time:</span> <span className="text-gray-900">Just now</span></p>
+                            <p className="flex items-center"><span className="font-medium mr-1">Time:</span> <span className="text-gray-900">{start_time}</span></p>
                         </div>
    
                         {/* Ordered Items */}

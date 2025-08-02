@@ -4,7 +4,7 @@ import { getFinancialOverview } from '@/database/database';
 export async function GET(request: Request) {
   try {
     const url = new URL(request.url);
-    const period = url.searchParams.get('period') || '7days';
+    const period = url.searchParams.get('period') || 'today';
     
     const financialData = await getFinancialOverview(period);
     

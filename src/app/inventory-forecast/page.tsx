@@ -1,79 +1,36 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
-import { FaBox, FaChartLine, FaCalendarAlt, FaDownload, FaFilter } from 'react-icons/fa';
+import React, { useState } from 'react';
+import { FaBox, FaChartLine, FaCalendarAlt } from 'react-icons/fa';
 import axios from 'axios';
 import { Bars } from 'react-loader-spinner';
+import {
+  LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, Area, CartesianGrid, Legend
+} from 'recharts';
 
-interface InventoryOrderItem {
-  order_id: string;
-  order_name: string;
-  price: number;
-  quantity: number;
-  date: string;
-  total_amount: number;
-  unit: string;
-}
+const ITEMS = ["Chicken", "Rice", "Spices", "Sugar", "Potatoes", "Milk"];
 
 const InventoryForecastPage: React.FC = () => {
-  const [inventoryData, setInventoryData] = useState<InventoryOrderItem[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [selectedItem, setSelectedItem] = useState(ITEMS[0]);
+  const [days, setDays] = useState(7);
+  const [loading, setLoading] = useState(false);
+  const [forecast, setForecast] = useState<any[]>([]);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchInventoryData();
-  }, []);
-
-  const fetchInventoryData = async () => {
+  const handleFetch = async () => {
+    setLoading(true);
+    setError(null);
+    setForecast([]);
     try {
-      setLoading(true);
-      setError(null);
-      const response = await axios.get('/api/inventory/forecast');
-      
-      if (response.data.success) {
-        setInventoryData(response.data.data);
-      } else {
-        setError(response.data.message || 'Failed to fetch inventory data');
-      }
+      const res = await axios.get(
+        `https://rms-16w6.onrender.com/forecast?item=${encodeURIComponent(selectedItem)}&days=${days}`
+      );
+      setForecast(res.data);
     } catch (err: any) {
-      console.error('Error fetching inventory data:', err);
-      setError(err.message || 'An error occurred while fetching data');
+      setError("Failed to fetch forecast. Please try again.");
     } finally {
       setLoading(false);
     }
-  };
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString();
-  };
-
-  const downloadCSV = () => {
-    if (!inventoryData.length) return;
-    
-    const headers = ['Order ID', 'Item Name', 'Price', 'Quantity', 'Date', 'Total Amount', 'Unit'];
-    const csvData = [
-      headers.join(','),
-      ...inventoryData.map(item => [
-        item.order_id,
-        `"${item.order_name}"`, // Wrap with quotes to handle commas in names
-        item.price,
-        item.quantity,
-        formatDate(item.date),
-        item.total_amount,
-        item.unit
-      ].join(','))
-    ].join('\n');
-    
-    const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.setAttribute('href', url);
-    link.setAttribute('download', `inventory_history_${new Date().toISOString().split('T')[0]}.csv`);
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
   };
 
   return (
@@ -86,77 +43,108 @@ const InventoryForecastPage: React.FC = () => {
           Predict inventory needs based on historical usage patterns
         </p>
       </div>
-
-      <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-semibold text-gray-800 flex items-center">
-            <FaBox className="mr-2 text-primary" /> Inventory Order History
-          </h2>
-          <button 
-            onClick={downloadCSV}
-            disabled={loading || !inventoryData.length}
-            className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition disabled:opacity-50 disabled:cursor-not-allowed"
+      <div className="bg-white p-4 rounded shadow mb-6 flex flex-col md:flex-row gap-4 items-center">
+        <div>
+          <label className="block text-gray-700 font-medium mb-1">Item</label>
+          <select
+            className="border rounded px-3 py-2"
+            value={selectedItem}
+            onChange={e => setSelectedItem(e.target.value)}
           >
-            <FaDownload size={14} />
-            Export CSV
-          </button>
+            {ITEMS.map(item => (
+              <option key={item} value={item}>{item}</option>
+            ))}
+          </select>
         </div>
-
-        {loading ? (
-          <div className="flex justify-center items-center py-20">
-            <Bars height="50" width="50" color="#4F46E5" ariaLabel="loading-indicator" />
-          </div>
-        ) : error ? (
-          <div className="bg-red-50 text-red-600 p-4 rounded-lg text-center">
-            {error}
-          </div>
-        ) : inventoryData.length === 0 ? (
-          <div className="bg-gray-50 p-8 rounded-lg text-center text-gray-500">
-            No inventory order history found
-          </div>
-        ) : (
+        <div>
+          <label className="block text-gray-700 font-medium mb-1">Days</label>
+          <input
+            type="number"
+            min={1}
+            max={60}
+            className="border rounded px-3 py-2 w-24"
+            value={days}
+            onChange={e => setDays(Number(e.target.value))}
+          />
+        </div>
+        <button
+          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 mt-4 md:mt-6"
+          onClick={handleFetch}
+          disabled={loading}
+        >
+          {loading ? "Loading..." : "Get Forecast"}
+        </button>
+      </div>
+      {loading && (
+        <div className="flex justify-center my-8">
+          <Bars height={40} width={40} color="#2563eb" />
+        </div>
+      )}
+      {error && (
+        <div className="text-red-600 mb-4">{error}</div>
+      )}
+      {forecast.length > 0 && (
+        <>
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+            <table className="min-w-full bg-white rounded shadow">
+              <thead>
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order ID</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Item Name</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Unit</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Amount</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                  <th className="px-4 py-2 border-b">Forecasted Date</th>
+                  <th className="px-4 py-2 border-b">Predicted Value</th>
+                  <th className="px-4 py-2 border-b">Lower Bound</th>
+                  <th className="px-4 py-2 border-b">Upper Bound</th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {inventoryData.map((item) => (
-                  <tr key={item.order_id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{item.order_id}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{item.order_name}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{item.quantity}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{item.unit}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">₹{item.price.toFixed(2)}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">₹{item.total_amount.toFixed(2)}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{formatDate(item.date)}</td>
+              <tbody>
+                {forecast.map((row, idx) => (
+                  <tr key={idx}>
+                    <td className="px-4 py-2 border-b">{row["forecasted date"]?.slice(0, 10)}</td>
+                    <td className="px-4 py-2 border-b">{row["predicted value"].toFixed(2)}</td>
+                    <td className="px-4 py-2 border-b">{row["yhat_lower"].toFixed(2)}</td>
+                    <td className="px-4 py-2 border-b">{row["yhat_upper"].toFixed(2)}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
-        )}
-      </div>
-
-      <div className="bg-white rounded-xl shadow-sm p-6">
-        <h2 className="text-lg font-semibold text-gray-800 flex items-center mb-4">
-          <FaChartLine className="mr-2 text-primary" /> Forecast Analysis
-        </h2>
-        <p className="text-gray-600 mb-4">
-          This section will display forecasting analysis based on historical inventory order data.
-        </p>
-        <div className="bg-gray-50 p-8 rounded-lg text-center text-gray-500">
-          Forecasting feature coming soon...
-        </div>
-      </div>
+          <div className="my-8">
+            <h2 className="text-lg font-semibold mb-2">Forecast Chart</h2>
+            <ResponsiveContainer width="100%" height={350}>
+              <LineChart data={forecast} margin={{ top: 20, right: 30, left: 0, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="forecasted date" tickFormatter={d => d.slice(5, 10)} />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                <Area
+                  type="monotone"
+                  dataKey="yhat_upper"
+                  stroke="#82ca9d"
+                  fill="#82ca9d"
+                  fillOpacity={0.15}
+                  name="Upper Bound"
+                />
+                <Area
+                  type="monotone"
+                  dataKey="yhat_lower"
+                  stroke="#8884d8"
+                  fill="#8884d8"
+                  fillOpacity={0.15}
+                  name="Lower Bound"
+                />
+                <Line
+                  type="monotone"
+                  dataKey="predicted value"
+                  stroke="#2563eb"
+                  strokeWidth={2}
+                  dot={false}
+                  name="Predicted"
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </>
+      )}
     </div>
   );
 };

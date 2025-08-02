@@ -1,0 +1,12 @@
+Flask
+flask-cors
+joblib
+pandas
+scikit-learn
+numpy
+seaborn 
+matplotlib
+uvicorn
+fastapi
+prophet
+python-multipart

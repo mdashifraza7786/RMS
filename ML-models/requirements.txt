@@ -3,8 +3,10 @@ flask-cors
 joblib
 pandas
 scikit-learn
-gunicorn
 numpy
 seaborn 
 matplotlib
 uvicorn
+fastapi
+prophet
+python-multipart

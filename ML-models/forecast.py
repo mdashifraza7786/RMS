@@ -22,25 +22,27 @@ def generate_forecast(item_name, periods=30):
     model = Prophet()
     model.fit(item_df)
 
-    # Override: start forecasting from today's date
     last_date = max(item_df['ds'])
     today = pd.Timestamp(datetime.now().date())
 
-    if today > last_date:
-        start_date = today
-    else:
-        start_date = last_date + pd.Timedelta(days=1)
+    # How many days we need to forecast *from today*?
+    delta_days = (today - last_date).days
+    total_periods = periods + max(0, delta_days)  # adjust total periods needed
 
-    # Generate future dates starting from 'start_date'
-    future = model.make_future_dataframe(periods=periods)
-    future = future[future['ds'] >= start_date]  # filter future to start from today
+    future = model.make_future_dataframe(periods=total_periods)
+    future = future[future['ds'] >= today]
 
     forecast = model.predict(future)
 
-    # Rename columns for clarity
     forecast = forecast.rename(columns={
         'ds': 'forecasted date',
         'yhat': 'predicted value'
     })
 
-    return forecast[['forecasted date', 'predicted value', 'yhat_lower', 'yhat_upper']].head(periods).to_dict(orient='records')
+    result = forecast[['forecasted date', 'predicted value', 'yhat_lower', 'yhat_upper']]
+    if len(result) < periods:
+        return {
+            "warning": f"Only {len(result)} forecast points available from {today.date()} onward.",
+            "forecast": result.to_dict(orient='records')
+        }
+    return result.head(periods).to_dict(orient='records')

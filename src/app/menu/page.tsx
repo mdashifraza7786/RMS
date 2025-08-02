@@ -444,10 +444,12 @@ const Page: React.FC = () => {
                                     </label>
                                     <div className="flex items-center gap-4">
                                         <div className="rounded-lg overflow-hidden shadow-md border border-gray-200 w-[120px] h-[80px]">
-                                            <img
-                                                src={newThumbnail || editData.item_thumbnail}
+                                            <Image
+                                                src={newThumbnail || editData.item_thumbnail || ''}
                                                 alt={editData.item_name}
                                                 className="w-full h-full object-cover"
+                                                width={120}
+                                                height={80}
                                             />
                                         </div>
                                         <label className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg cursor-pointer transition-colors duration-200 text-sm font-medium">

@@ -46,11 +46,7 @@ const Page: React.FC = () => {
     const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
     const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
 
-    useEffect(() => {
-        document.title = "Orders";
-        fetchOrdersData();
-        fetchInvoicesData();
-    }, []);
+ 
 
     const fetchOrdersData = async () => {
         setLoading(true);
@@ -95,7 +91,7 @@ const Page: React.FC = () => {
             }
         }
     };
-
+   
     useEffect(() => {
         document.title = "Orders";
         fetchOrdersData();

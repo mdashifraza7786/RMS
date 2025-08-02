@@ -2,6 +2,7 @@ import React from 'react';
 import { FaEye, FaTrash, FaUserEdit, FaUserSlash } from "react-icons/fa";
 import { Bars } from 'react-loader-spinner';
 import { Member } from './MemberTypes';
+import Image from 'next/image';
 
 interface MembersListProps {
   members: Member[];
@@ -60,11 +61,13 @@ const MembersList: React.FC<MembersListProps> = ({
                   <div className="flex items-center">
                     <div className="h-8 w-8 rounded-full overflow-hidden mr-3 bg-gray-200 flex items-center justify-center">
                       {member.photo ? (
-                        <img 
+                        <Image 
                           src={member.photo} 
                           alt={member.name} 
                           className="h-full w-full object-cover"
                           style={{ objectPosition: 'center' }}
+                          width={32}
+                          height={32}
                         />
                       ) : (
                         <div className="h-full w-full bg-gray-300 flex items-center justify-center text-gray-500 font-medium">

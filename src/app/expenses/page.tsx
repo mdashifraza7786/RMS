@@ -307,7 +307,7 @@ const ExpensePage: React.FC = () => {
                         </div>
                         <div className="mb-5">
                             <label className="block text-sm font-medium text-gray-700 mb-2">
-                                Type "delete" to confirm
+                                Type &quot;delete&quot; to confirm
                             </label>
                             <input
                                 type="text"

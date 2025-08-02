@@ -1,6 +1,7 @@
 import React, { ChangeEvent } from 'react';
-import { FaTimes, FaUserCircle, FaCamera } from 'react-icons/fa';
+import { FaTimes, FaCamera } from 'react-icons/fa';
 import { BasicInfoFields } from '../MemberTypes';
+import Image from 'next/image';
 
 interface BasicInfoStepProps {
   basicInfoFields: BasicInfoFields;
@@ -29,11 +30,14 @@ const BasicInfoStep: React.FC<BasicInfoStepProps> = ({
         {imagePreviewUrl ? (
           <div className="relative w-32 h-32">
             <div className="w-32 h-32 rounded-full overflow-hidden border-2 border-gray-200 flex items-center justify-center bg-gray-100">
-              <img 
+              <Image 
                 src={imagePreviewUrl} 
                 alt="Selected Profile" 
                 className="h-full w-full object-cover" 
                 style={{ objectPosition: 'center' }}
+                width={128} 
+                height={128}
+                priority
               />
             </div>
             <button

@@ -116,7 +116,7 @@ const OrderCard: React.FC = () => {
                             <div className="flex flex-col items-center justify-center text-gray-500">
                                 <FaFileAlt className="w-16 h-16 mb-4 text-gray-300" />
                                 <p className="text-lg font-medium">No items added yet</p>
-                                <p className="mt-1 text-sm">Click "Add Item" to create a new order</p>
+                                <p className="mt-1 text-sm">Click &quot;Add Item&quot; to create a new order</p>
                             </div>
                         </div>
                     ) : (

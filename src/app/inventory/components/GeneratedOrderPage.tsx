@@ -1,6 +1,9 @@
+"use client";
+
 import React, { useRef } from "react";
-import html2canvas from "html2canvas";
-import jsPDF from "jspdf";
+
+  // These libraries are only used on the client side
+  // We don't need to use dynamic imports with Next.js 'use client' directive
 
 interface GeneratedOrderPageProps {
   inventoryOrder: { item_name: string; quantity: number; unit: string; remarks?: string }[];
@@ -12,15 +15,23 @@ const GeneratedOrderPage: React.FC<GeneratedOrderPageProps> = ({ inventoryOrder,
 
   const handlePrint = async () => {
     if (printRef.current) {
-      const canvas = await html2canvas(printRef.current);
-      const imgData = canvas.toDataURL("image/png");
+      try {
+        // Dynamically import the libraries when needed
+        const html2canvas = (await import('html2canvas')).default;
+        const jsPDF = (await import('jspdf')).default;
+        
+        const canvas = await html2canvas(printRef.current);
+        const imgData = canvas.toDataURL("image/png");
 
-      const pdf = new jsPDF("p", "mm", "a4");
-      const imgWidth = 190; // PDF width
-      const imgHeight = (canvas.height * imgWidth) / canvas.width; // Maintain aspect ratio
+        const pdf = new jsPDF("p", "mm", "a4");
+        const imgWidth = 190; // PDF width
+        const imgHeight = (canvas.height * imgWidth) / canvas.width; // Maintain aspect ratio
 
-      pdf.addImage(imgData, "PNG", 10, 10, imgWidth, imgHeight);
-      pdf.save("GeneratedOrder.pdf");
+        pdf.addImage(imgData, "PNG", 10, 10, imgWidth, imgHeight);
+        pdf.save("GeneratedOrder.pdf");
+      } catch (error) {
+        console.error('Error generating PDF:', error);
+      }
     }
   };
 

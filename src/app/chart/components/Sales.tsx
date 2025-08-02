@@ -14,7 +14,8 @@ type ChartKey =
     'Dish category vs sales' |
     'payment method vs sales' |
     'age group vs sales' |
-    'gender group vs sales';
+    'gender group vs sales' |
+    'revenue from sales';
 
 interface Data {
     sunday_sales: number;
@@ -40,6 +41,15 @@ interface Data {
     oct_sales: number;
     nov_sales: number;
     dec_sales: number;
+    
+    // Revenue by date (current month)
+    date_revenues: { date: string; revenue: number }[];
+    
+    // Revenue by month (current year)
+    month_revenues: { month: string; revenue: number }[];
+    
+    // Revenue by year
+    year_revenues: { year: string; revenue: number }[];
 
     orders_week_breakfast: number;
     orders_week_lunch: number;
@@ -143,7 +153,7 @@ interface Data {
 const Sales: React.FC = () => {
     const [chartXY, setChartXY] = useState<ChartKey>('week day vs sales');
     const [chartType, setChartType] = useState<'bar' | 'pie' | 'line'>('bar');
-    const [timeFrame, setTimeFrame] = useState<'weekly' | 'monthly' | 'yearly'>('weekly');
+    const [timeFrame, setTimeFrame] = useState<'weekly' | 'monthly' | 'yearly' | 'date' | 'month' | 'year'>('weekly');
     const [loading, setLoading] = useState<boolean>(true);
     const [data, setData] = useState<Data | null>(null);
     const [comparisonMode, setComparisonMode] = useState<boolean>(false);
@@ -178,6 +188,40 @@ const Sales: React.FC = () => {
 
     // Generate mock data for testing or when API fails
     const generateMockData = (): Data => {
+        // Generate date revenue data for current month
+        const currentDate = new Date();
+        const daysInMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
+        const dateRevenues = [];
+        
+        for (let i = 1; i <= currentDate.getDate(); i++) {
+            dateRevenues.push({
+                date: `${i}`,
+                revenue: Math.floor(Math.random() * 5000) + 1000
+            });
+        }
+        
+        // Generate monthly revenue data for current year
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        const monthRevenues = [];
+        
+        for (let i = 0; i <= currentDate.getMonth(); i++) {
+            monthRevenues.push({
+                month: months[i],
+                revenue: Math.floor(Math.random() * 50000) + 10000
+            });
+        }
+        
+        // Generate yearly revenue data
+        const currentYear = currentDate.getFullYear();
+        const yearRevenues = [];
+        
+        for (let i = currentYear - 4; i <= currentYear; i++) {
+            yearRevenues.push({
+                year: i.toString(),
+                revenue: Math.floor(Math.random() * 500000) + 100000
+            });
+        }
+        
         return {
             // Weekly sales by day
             sunday_sales: Math.floor(Math.random() * 5000) + 1000,
@@ -207,6 +251,11 @@ const Sales: React.FC = () => {
             oct_sales: Math.floor(Math.random() * 50000) + 10000,
             nov_sales: Math.floor(Math.random() * 50000) + 10000,
             dec_sales: Math.floor(Math.random() * 50000) + 10000,
+            
+            // Revenue data
+            date_revenues: dateRevenues,
+            month_revenues: monthRevenues,
+            year_revenues: yearRevenues,
             
             // Orders by time slot
             orders_week_breakfast: Math.floor(Math.random() * 100) + 20,
@@ -350,6 +399,116 @@ const Sales: React.FC = () => {
                 }]
             };
         }
+        
+        if (chartXY === 'revenue from sales') {
+            // Check if the revenue data is available
+            const hasDateRevenues = data.date_revenues && Array.isArray(data.date_revenues);
+            const hasMonthRevenues = data.month_revenues && Array.isArray(data.month_revenues);
+            const hasYearRevenues = data.year_revenues && Array.isArray(data.year_revenues);
+            
+            if (timeFrame === 'date') {
+                if (!hasDateRevenues) {
+                    // Return fallback data if API data is not available
+                    const currentDate = new Date();
+                    const daysInMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
+                    const days = Array.from({length: currentDate.getDate()}, (_, i) => (i + 1).toString());
+                    const revenues = Array.from({length: currentDate.getDate()}, () => Math.floor(Math.random() * 5000) + 1000);
+                    
+                    return {
+                        labels: days,
+                        datasets: [{
+                            label: 'Daily Revenue',
+                            data: revenues,
+                            backgroundColor: colors[0],
+                            borderColor: colors[0],
+                            borderWidth: 1,
+                            fill: chartType === 'line' ? false : undefined,
+                            tension: 0.4
+                        }]
+                    };
+                }
+                
+                return {
+                    labels: data.date_revenues.map(item => item.date),
+                    datasets: [{
+                        label: 'Daily Revenue',
+                        data: data.date_revenues.map(item => item.revenue),
+                        backgroundColor: colors[0],
+                        borderColor: colors[0],
+                        borderWidth: 1,
+                        fill: chartType === 'line' ? false : undefined,
+                        tension: 0.4
+                    }]
+                };
+            } else if (timeFrame === 'month') {
+                if (!hasMonthRevenues) {
+                    // Return fallback data if API data is not available
+                    const currentDate = new Date();
+                    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                    const currentMonths = months.slice(0, currentDate.getMonth() + 1);
+                    const revenues = Array.from({length: currentDate.getMonth() + 1}, () => Math.floor(Math.random() * 50000) + 10000);
+                    
+                    return {
+                        labels: currentMonths,
+                        datasets: [{
+                            label: 'Monthly Revenue',
+                            data: revenues,
+                            backgroundColor: colors,
+                            borderColor: chartType === 'line' ? colors[0] : colors,
+                            borderWidth: 1,
+                            fill: chartType === 'line' ? false : undefined,
+                            tension: 0.4
+                        }]
+                    };
+                }
+                
+                return {
+                    labels: data.month_revenues.map(item => item.month),
+                    datasets: [{
+                        label: 'Monthly Revenue',
+                        data: data.month_revenues.map(item => item.revenue),
+                        backgroundColor: colors,
+                        borderColor: chartType === 'line' ? colors[0] : colors,
+                        borderWidth: 1,
+                        fill: chartType === 'line' ? false : undefined,
+                        tension: 0.4
+                    }]
+                };
+            } else if (timeFrame === 'year') {
+                if (!hasYearRevenues) {
+                    // Return fallback data if API data is not available
+                    const currentYear = new Date().getFullYear();
+                    const years = Array.from({length: 5}, (_, i) => (currentYear - 4 + i).toString());
+                    const revenues = Array.from({length: 5}, () => Math.floor(Math.random() * 500000) + 100000);
+                    
+                    return {
+                        labels: years,
+                        datasets: [{
+                            label: 'Yearly Revenue',
+                            data: revenues,
+                            backgroundColor: colors,
+                            borderColor: chartType === 'line' ? colors[0] : colors,
+                            borderWidth: 1,
+                            fill: chartType === 'line' ? false : undefined,
+                            tension: 0.4
+                        }]
+                    };
+                }
+                
+                return {
+                    labels: data.year_revenues.map(item => item.year),
+                    datasets: [{
+                        label: 'Yearly Revenue',
+                        data: data.year_revenues.map(item => item.revenue),
+                        backgroundColor: colors,
+                        borderColor: chartType === 'line' ? colors[0] : colors,
+                        borderWidth: 1,
+                        fill: chartType === 'line' ? false : undefined,
+                        tension: 0.4
+                    }]
+                };
+            }
+        }
 
         if (chartXY === 'time slot vs orders') {
             return {
@@ -459,7 +618,8 @@ const Sales: React.FC = () => {
             'Dish category vs sales': 'Sales (₹)',
             'payment method vs sales': 'Sales (₹)',
             'age group vs sales': 'Sales (₹)',
-            'gender group vs sales': 'Sales (₹)'
+            'gender group vs sales': 'Sales (₹)',
+            'revenue from sales': 'Revenue (₹)'
         };
         
         if (comparisonMode) {
@@ -522,15 +682,25 @@ const Sales: React.FC = () => {
                 <select
                         className="p-2 border border-gray-200 rounded-md cursor-pointer text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
                     value={chartXY}
-                    onChange={(e) => setChartXY(e.target.value as ChartKey)}
+                    onChange={(e) => {
+                        const newValue = e.target.value as ChartKey;
+                        setChartXY(newValue);
+                        // Reset timeFrame to appropriate value based on selected chart
+                        if (newValue === 'revenue from sales') {
+                            setTimeFrame('date');
+                        } else {
+                            setTimeFrame('weekly');
+                        }
+                    }}
                 >
                     <option value="week day vs sales">Sales by timeline</option>
                     <option value="time slot vs orders">Orders by time of day</option>
-                        <option value="week day vs customer">Customer visits by days</option>
+                    <option value="week day vs customer">Customer visits by days</option>
                     <option value="Dish category vs sales">Sales by dish category</option>
                     <option value="payment method vs sales">Sales by payment method</option>
                     <option value="age group vs sales">Sales by age group</option>
-                        <option value="gender group vs sales">Sales by gender</option>
+                    <option value="gender group vs sales">Sales by gender</option>
+                    <option value="revenue from sales">Revenue from sales</option>
                 </select>
                 </div>
 
@@ -541,11 +711,22 @@ const Sales: React.FC = () => {
                 <select
                         className="p-2 border border-gray-200 rounded-md cursor-pointer text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
                     value={timeFrame}
-                    onChange={(e) => setTimeFrame(e.target.value as 'weekly' | 'monthly' | 'yearly')}
+                    onChange={(e) => setTimeFrame(e.target.value as 'weekly' | 'monthly' | 'yearly' | 'date' | 'month' | 'year')}
+                    disabled={chartXY !== 'revenue from sales' && (timeFrame === 'date' || timeFrame === 'month' || timeFrame === 'year')}
                 >
-                    <option value="weekly">Weekly</option>
-                    <option value="monthly">Monthly</option>
-                    <option value="yearly">Yearly</option>
+                    {chartXY !== 'revenue from sales' ? (
+                        <>
+                            <option value="weekly">Weekly</option>
+                            <option value="monthly">Monthly</option>
+                            <option value="yearly">Yearly</option>
+                        </>
+                    ) : (
+                        <>
+                            <option value="date">Date (Current Month)</option>
+                            <option value="month">Monthly (Current Year)</option>
+                            <option value="year">Yearly</option>
+                        </>
+                    )}
                 </select>
                 </div>
                 

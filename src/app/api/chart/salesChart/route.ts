@@ -188,8 +188,55 @@ export async function GET() {
             FROM invoices i 
             JOIN customer c ON i.orderid = c.order_id
         `);
+        
+        const [dailyRevenue] = await connection.execute<RowDataPacket[]>(`
+            SELECT 
+                DAY(generated_at) AS day,
+                SUM(total_amount) AS revenue
+            FROM invoices
+            WHERE 
+                MONTH(generated_at) = MONTH(CURRENT_DATE()) AND 
+                YEAR(generated_at) = YEAR(CURRENT_DATE())
+            GROUP BY DAY(generated_at)
+            ORDER BY DAY(generated_at)
+        `);
+        
+        const [monthlyRevenue] = await connection.execute<RowDataPacket[]>(`
+            SELECT 
+                MONTH(generated_at) AS month,
+                SUM(total_amount) AS revenue
+            FROM invoices
+            WHERE YEAR(generated_at) = YEAR(CURRENT_DATE())
+            GROUP BY MONTH(generated_at)
+            ORDER BY MONTH(generated_at)
+        `);
+        
+        const [yearlyRevenue] = await connection.execute<RowDataPacket[]>(`
+            SELECT 
+                YEAR(generated_at) AS year,
+                SUM(total_amount) AS revenue
+            FROM invoices
+            GROUP BY YEAR(generated_at)
+            ORDER BY YEAR(generated_at)
+        `);
 
 
+        const date_revenues = dailyRevenue.map((row: RowDataPacket) => ({
+            date: row.day.toString(),
+            revenue: Number(row.revenue)
+        }));
+        
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        const month_revenues = monthlyRevenue.map((row: RowDataPacket) => ({
+            month: months[row.month - 1],
+            revenue: Number(row.revenue)
+        }));
+        
+        const year_revenues = yearlyRevenue.map((row: RowDataPacket) => ({
+            year: row.year.toString(),
+            revenue: Number(row.revenue)
+        }));
+        
         return NextResponse.json({
             ...row1[0], 
             ...row2[0],
@@ -198,6 +245,9 @@ export async function GET() {
             ...row5[0],
             ...row6[0],
             ...row7[0],
+            date_revenues,
+            month_revenues,
+            year_revenues
         });
 
     } catch (error) {

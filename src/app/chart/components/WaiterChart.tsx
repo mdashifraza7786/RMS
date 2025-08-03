@@ -91,7 +91,7 @@ const WaiterChart: React.FC = () => {
         };
         
         return generateData(labels[chartXY]);
-    }, [chartXY, timeFrame, data, chartType]);
+    }, [chartXY, timeFrame, data, chartType, generateData]);
 
     if (loading) {
         return (

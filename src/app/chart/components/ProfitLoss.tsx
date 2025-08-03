@@ -229,7 +229,7 @@ const ProfitLoss: React.FC = () => {
             };
         }
         return generateData('Profit (₹)');
-    }, [chartXY, colors, timeFrame, comparisonMode]);
+    }, [chartXY, colors, timeFrame, comparisonMode, generateData]);
 
     const chartOptions: ChartOptions<'bar'> | ChartOptions<'line'> = useMemo(() => {
         const xAxisLabels: Record<ChartKey, string> = {
@@ -298,7 +298,7 @@ const ProfitLoss: React.FC = () => {
                 },
             },
         };
-    }, [chartType, chartXY, timeFrame]);
+    }, [chartXY, timeFrame]);
 
     const containsNegativeValues = chartData.datasets.some(dataset =>
         dataset.data.some((value) => value !== undefined && value !== null && value < 0)

@@ -6,6 +6,7 @@ import { MdOutlineAttachMoney, MdOutlineDescription } from 'react-icons/md';
 import { BiFoodMenu } from 'react-icons/bi';
 import { FiImage } from 'react-icons/fi';
 import { Bars } from 'react-loader-spinner';
+import Image from 'next/image';
 
 interface AddMenuProps {
     popuphandle: () => void;
@@ -106,14 +107,14 @@ const AddMenu: React.FC<AddMenuProps> = ({ popuphandle }) => {
                         />
                     </div>
                 )}
-                
+
                 {/* Header */}
                 <div className="flex justify-between items-center border-b border-gray-200 pb-5 mb-6">
                     <h1 className="text-2xl font-bold text-[#1e4569] flex items-center gap-2">
                         <BiFoodMenu className="text-[#1e4569]" size={28} />
                         Add New Menu Item
                     </h1>
-                    <button 
+                    <button
                         className="text-gray-400 hover:text-red-500 transition-colors duration-200 p-2 rounded-full hover:bg-gray-100"
                         onClick={popuphandle}
                     >
@@ -140,7 +141,7 @@ const AddMenu: React.FC<AddMenuProps> = ({ popuphandle }) => {
                                     required
                                 />
                             </div>
-                            
+
                             <div className="space-y-2">
                                 <label className="text-sm font-medium text-gray-700 flex items-center gap-1.5">
                                     <MdOutlineDescription /> Description
@@ -207,7 +208,7 @@ const AddMenu: React.FC<AddMenuProps> = ({ popuphandle }) => {
                                         />
                                     </div>
                                 </div>
-                                
+
                                 <div className="space-y-2">
                                     <label className="text-sm font-medium text-gray-700 flex items-center gap-1.5">
                                         <MdOutlineAttachMoney /> Making Cost
@@ -232,11 +233,11 @@ const AddMenu: React.FC<AddMenuProps> = ({ popuphandle }) => {
                                     <FiImage /> Item Image
                                 </label>
                             </div>
-                            
+
                             {imagePreviewUrl ? (
                                 <div className="relative rounded-xl overflow-hidden shadow-lg border border-gray-200 group">
-                                    <img src={imagePreviewUrl} alt="Thumbnail" className="w-full h-64 object-cover transition duration-300 group-hover:opacity-90" />
-                                    <button 
+                                    <Image src={imagePreviewUrl} alt="Thumbnail" className="w-full h-64 object-cover transition duration-300 group-hover:opacity-90" width={256} height={192} />
+                                    <button
                                         type="button"
                                         className="absolute top-2 right-2 bg-white bg-opacity-80 p-2 rounded-full shadow-md hover:bg-red-50 transition-colors"
                                         onClick={handleRemoveImage}
@@ -267,15 +268,15 @@ const AddMenu: React.FC<AddMenuProps> = ({ popuphandle }) => {
                     {/* Add Button */}
                     <div className="flex justify-end pt-3 border-t border-gray-200">
                         <div className="flex gap-3">
-                            <button 
-                                type="button" 
+                            <button
+                                type="button"
                                 className="px-6 py-2.5 rounded-lg border border-gray-300 text-gray-700 font-medium hover:bg-gray-50 transition-colors duration-200"
                                 onClick={popuphandle}
                             >
                                 Cancel
                             </button>
-                            <button 
-                                type="submit" 
+                            <button
+                                type="submit"
                                 className="bg-[#1e4569] hover:bg-[#2c5983] text-white font-semibold px-8 py-2.5 rounded-lg transition-colors duration-200 shadow-sm flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
                                 disabled={isLoading}
                             >

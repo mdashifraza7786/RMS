@@ -1,6 +1,7 @@
 import React from 'react';
 import { FaPhone, FaEnvelope, FaIdCard, FaAddressCard, FaMoneyBillAlt } from 'react-icons/fa';
 import { Member } from './MemberTypes';
+import Image from 'next/image';
 
 interface ViewMemberModalProps {
   member: Member;
@@ -35,11 +36,13 @@ const ViewMemberModal: React.FC<ViewMemberModalProps> = ({ member, isVisible, on
           <div className="flex items-center justify-center h-36 gap-6">
             <div className="h-36 w-36 rounded-full overflow-hidden border-2 border-gray-200 shadow-sm flex items-center justify-center bg-gray-100">
               {member.photo ? (
-                <img 
+                <Image 
                   src={member.photo} 
                   alt={member.name} 
                   className="h-full w-full object-cover"
                   style={{ objectPosition: 'center' }}
+                  width={144}
+                  height={144}
                 />
               ) : (
                 <div className="h-full w-full bg-gray-300 flex items-center justify-center text-gray-500 text-4xl font-medium">

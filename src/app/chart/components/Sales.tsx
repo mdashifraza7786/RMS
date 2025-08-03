@@ -633,7 +633,7 @@ const Sales: React.FC = () => {
         }
         
         return generateData(labels[chartXY]);
-    }, [chartXY, timeFrame, data, chartType, comparisonMode]);
+    }, [chartXY, timeFrame, data, chartType, comparisonMode, generateData]);
 
     const getIcon = (type: string) => {
         switch(type) {

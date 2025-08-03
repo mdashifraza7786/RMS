@@ -251,7 +251,7 @@ const Demand: React.FC = () => {
             };
         }
         return generateData(label);
-    }, [chartXY, colors, timeFrame, comparisonMode]);
+    }, [chartXY, colors, timeFrame, comparisonMode, generateData]);
 
     const chartOptions: ChartOptions<'bar'> | ChartOptions<'line'> = useMemo(() => {
         const xAxisLabels: Record<ChartKey, string> = {
@@ -317,7 +317,7 @@ const Demand: React.FC = () => {
                 },
             },
         };
-    }, [chartType, chartXY, timeFrame]);
+    }, [chartXY, timeFrame]);
 
     return (
         <div className="flex flex-col gap-4">

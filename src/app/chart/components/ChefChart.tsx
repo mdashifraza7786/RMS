@@ -180,7 +180,7 @@ const ChefChart: React.FC = () => {
         // });
         
         return result;
-    }, [chartXY, timeFrame, data, chartType]);
+    }, [chartXY, timeFrame, data, chartType, generateData]);
 
     if (loading) {
         return (

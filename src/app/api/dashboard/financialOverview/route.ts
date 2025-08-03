@@ -1,8 +1,12 @@
 import { NextResponse } from 'next/server';
 import { getFinancialOverview } from '@/database/database';
 
+// Add export config to mark this route as dynamic
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: Request) {
   try {
+    // Get the period parameter from the URL search params
     const url = new URL(request.url);
     const period = url.searchParams.get('period') || 'today';
     

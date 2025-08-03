@@ -29,11 +29,7 @@ const Page: React.FC = () => {
     const [deleteMemberId, setDeleteMemberId] = useState("");
     const [deletePopupVisible, setDeletePopupVisible] = useState(false);
 
-    useEffect(() => {
-        document.title = "Members";
-        fetchMemberData();
-    }, [page, searchQuery]);
-
+    
     const fetchMemberData = async () => {
         if (loading) return;
 
@@ -67,6 +63,10 @@ const Page: React.FC = () => {
             setLoading(false);
         }
     };
+    useEffect(() => {
+        document.title = "Members";
+        fetchMemberData();
+    }, [page, searchQuery]);
 
     const handleEditClick = (data: Member) => {
         setEditData(data);

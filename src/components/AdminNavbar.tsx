@@ -38,7 +38,7 @@ const NAV_ITEMS = [
     { href: "/chart", icon: <IoBarChartSharp />, label: "Charts" },
     { href: "/expenses", icon: <FaMoneyBillWave />, label: "Expenses" },
     { href: "/tables", icon: <FaTableCells />, label: "Tables" },
-    { href: "/inventory-forecast", icon: <FaBox />, label: "Inventory Forecast" }
+    { href: "/inventory-forecast", icon: <FaBox />, label: "Forecast" }
 ];
 
 const AdminNavbar: React.FC = () => {

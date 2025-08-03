@@ -70,19 +70,19 @@ export async function GET() {
             for (let day = 0; day < 7; day++) {
                 const invoicesSum = invoices_week
                     .filter((inv: any) => new Date(inv.generated_at).getDay() === day)
-                    .reduce((acc, inv) => acc + inv.total_amount, 0);
+                    .reduce((acc, inv) => acc + (Number(inv.total_amount) || 0), 0);
 
                 const expensesSum = expenses_week
                     .filter((exp: any) => new Date(exp.expense_date).getDay() === day)
-                    .reduce((acc, exp) => acc + exp.expense_cost, 0);
+                    .reduce((acc, exp) => acc + (Number(exp.expense_cost) || 0), 0);
 
                 const payoutsSum = payouts_week
                     .filter((p: any) => new Date(p.payout_date).getDay() === day)
-                    .reduce((acc, p) => acc + p.payout_amount, 0);
+                    .reduce((acc, p) => acc + (Number(p.payout_amount) || 0), 0);
 
                 const inventorySum = inventoryOrders_week
                     .filter((inv: any) => new Date(inv.date).getDay() === day)
-                    .reduce((acc, inv) => acc + inv.total_amount, 0);
+                    .reduce((acc, inv) => acc + (Number(inv.total_amount) || 0), 0);
 
                 const profitLoss = invoicesSum - expensesSum - payoutsSum - inventorySum;
 
@@ -215,9 +215,13 @@ export async function GET() {
         const timeBasedResults = await timeBasedBreakdown();
 
         return NextResponse.json({
-            weeklyProfitLoss: filterBasedOnWeekday(),
-            monthlyProfitLoss: filterBasedOnMonth(),
-            yearlyProfitLoss: filterBasedonYear(),
+            row1: {
+                weeklyProfitLoss: filterBasedOnWeekday(),
+                monthlyProfitLoss: filterBasedOnMonth(),
+                yearlyProfitLoss: filterBasedonYear(),
+            },
+            row2: {}, // add if needed
+            row3: {}, // add if needed
             timeBasedProfitLoss: timeBasedResults,
         });
 

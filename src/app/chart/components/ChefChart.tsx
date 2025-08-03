@@ -19,15 +19,10 @@ const ChefChart: React.FC = () => {
     const [loading, setLoading] = useState<boolean>(true);
     const [data, setData] = useState<any>(null);
 
-    const colors = [
-        'rgba(54, 162, 235, 0.8)',
-        'rgba(255, 99, 132, 0.8)',
-        'rgba(75, 192, 192, 0.8)',
-        'rgba(255, 205, 86, 0.8)',
-        'rgba(153, 102, 255, 0.8)',
-        'rgba(255, 159, 64, 0.8)',
-        'rgba(201, 203, 207, 0.8)',
-        'rgba(110, 220, 155, 0.8)',
+       const colors = [
+        '#00589C', '#016FC4', '#1891C3', '#3AC0DA', '#3DC6C3', '#50E3C2',
+        '#F3BA4D', '#F94144', '#F3722C', '#F8961E', '#F9844A', '#F9C74F',
+        '#90BE6D', '#43AA8B', '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0'
     ];
 
     useEffect(() => {

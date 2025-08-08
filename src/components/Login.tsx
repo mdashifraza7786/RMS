@@ -26,7 +26,7 @@ function Login() {
 
       const data = response.data;
       if(data.success){
-        localStorage.setItem('user', data.userdata);
+        localStorage.setItem('user', JSON.stringify(data.userdata));
         toast.success(data.message);
         window.location.href = "/";
       }else{

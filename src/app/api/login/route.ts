@@ -10,9 +10,9 @@ export async function POST(request:Request) {
   try {
     const incommingCredentials = await request.json();
     const userid = incommingCredentials.userid as string | undefined;
-    const password = incommingCredentials.password as string | undefined;
+    const incommingPassword = incommingCredentials.password as string | undefined;
 
-    if (!userid || !password) {
+    if (!userid || !incommingPassword) {
       return NextResponse.json({success:false, message: 'Please provide userid and password' });
     }
 
@@ -25,7 +25,7 @@ export async function POST(request:Request) {
     if (!user.password) {
         return NextResponse.json({ success:false, message: 'Incorrect Password' });
       }
-    const passwordMatch = await compare(password, user.password);
+    const passwordMatch = await compare(incommingPassword, user.password);
 
     if (!passwordMatch) {
       return NextResponse.json({ success:false, message: 'Incorrect password' });
@@ -34,10 +34,11 @@ export async function POST(request:Request) {
     try {
       await signIn('credentials', {
         userid,
-        password,
+        password:incommingPassword,
         redirect: false,
       });
-      return NextResponse.json({ success:true, message: 'Login successful', userdata:user });
+      const { password, aadhaar, pancard, ...userWithoutSensitiveData } = user;
+      return NextResponse.json({ success:true, message: 'Login successful', userdata:userWithoutSensitiveData });
 
     } catch (error) {
       const err = error as CredentialsSignin;

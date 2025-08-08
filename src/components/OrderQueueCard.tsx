@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { OrderedItems } from './AdminDashboard';
+import { OrderedItems } from './Dashboard';
 import { IoClose } from 'react-icons/io5';
 import { MdTableBar, MdPerson, MdOutlinePayments } from 'react-icons/md';
 import { BiTimer } from 'react-icons/bi';

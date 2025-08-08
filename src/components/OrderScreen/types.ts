@@ -1,4 +1,4 @@
-import { Table, OrderedItems, billingAmount } from "../AdminDashboard";
+import { Table, OrderedItems, billingAmount } from "../Dashboard";
 
 export interface MenuData {
     item_id: string;

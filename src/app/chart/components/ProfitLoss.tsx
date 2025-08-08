@@ -490,7 +490,7 @@ const ProfitLoss: React.FC = () => {
                         <button 
                             className={`flex-1 flex items-center justify-center p-2 text-sm rounded-md transition-colors ${
                                 chartType === 'bar' 
-                                  ? 'bg-[#FF9B26] text-white'    ? 'bg-[#FF9B26] text-white' 
+                                  ? 'bg-[#FF9B26] text-white'
                                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                             }`}
                             onClick={() => setChartType('bar')}

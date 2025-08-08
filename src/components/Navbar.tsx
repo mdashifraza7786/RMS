@@ -6,10 +6,7 @@ import { Raleway } from 'next/font/google';
 import { AiOutlineLogout } from "react-icons/ai";
 import { usePathname } from 'next/navigation';
 import { signOut } from 'next-auth/react';
-import { 
-  GrHomeRounded, 
-  GrRestaurant 
-} from "react-icons/gr";
+import { GrHomeRounded } from "react-icons/gr";
 import { 
   FaDollarSign,
   FaTableCells
@@ -28,20 +25,75 @@ const raleway = Raleway({
 });
 
 const NAV_ITEMS = [
-    { href: "/", icon: <GrHomeRounded />, label: "Dashboard" },
-    { href: "/orders", icon: <MdBorderColor />, label: "Orders" },
-    { href: "/payout", icon: <FaDollarSign />, label: "Payouts" },
-    { href: "/attendance", icon: <SlPeople />, label: "Attendance" },
-    { href: "/inventory", icon: <MdOutlineInventory />, label: "Inventory" },
-    { href: "/members", icon: <PiChefHatThin />, label: "Members" },
-    { href: "/menu", icon: <MdOutlineRestaurantMenu />, label: "Menu" },
-    { href: "/chart", icon: <IoBarChartSharp />, label: "Charts" },
-    { href: "/expenses", icon: <FaMoneyBillWave />, label: "Expenses" },
-    { href: "/tables", icon: <FaTableCells />, label: "Tables" },
-    { href: "/inventory-forecast", icon: <FaBox />, label: "Forecast" }
+    { 
+        href: "/", 
+        icon: <GrHomeRounded />, 
+        label: "Dashboard", 
+        roles: ["admin", "waiter", "chef"] 
+    },
+    { 
+        href: "/orders", 
+        icon: <MdBorderColor />, 
+        label: "Orders", 
+        roles: ["admin", "waiter", "chef"] 
+    },
+    { 
+        href: "/payout", 
+        icon: <FaDollarSign />, 
+        label: "Payouts", 
+        roles: ["admin","waiter","chef"] 
+    },
+    { 
+        href: "/attendance", 
+        icon: <SlPeople />, 
+        label: "Attendance", 
+        roles: ["admin","waiter","chef"] 
+    },
+    { 
+        href: "/inventory", 
+        icon: <MdOutlineInventory />, 
+        label: "Inventory", 
+        roles: ["admin", "chef"] 
+    },
+    { 
+        href: "/members", 
+        icon: <PiChefHatThin />, 
+        label: "Members", 
+        roles: ["admin"] 
+    },
+    { 
+        href: "/menu", 
+        icon: <MdOutlineRestaurantMenu />, 
+        label: "Menu", 
+        roles: ["admin","waiter","chef"] 
+    },
+    { 
+        href: "/chart", 
+        icon: <IoBarChartSharp />, 
+        label: "Charts", 
+        roles: ["admin"] 
+    },
+    { 
+        href: "/expenses", 
+        icon: <FaMoneyBillWave />, 
+        label: "Expenses", 
+        roles: ["admin"] 
+    },
+    { 
+        href: "/tables", 
+        icon: <FaTableCells />, 
+        label: "Tables", 
+        roles: ["admin", "waiter"] 
+    },
+    { 
+        href: "/inventory-forecast", 
+        icon: <FaBox />, 
+        label: "Forecast", 
+        roles: ["admin"] 
+    }
 ];
 
-const AdminNavbar: React.FC = () => {
+const Navbar: React.FC<{ role: string, userid: string }> = ({ role, userid }) => {
     const pathName = usePathname();
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -49,6 +101,8 @@ const AdminNavbar: React.FC = () => {
         await signOut({ callbackUrl: '/' });
         localStorage.removeItem('user');
     }
+
+    const filteredNavItems = NAV_ITEMS.filter(item => item.roles.includes(role?.toLowerCase()));
 
     return (
         <nav className="w-full sticky top-0 z-50 shadow-sm bg-white mx-auto">
@@ -61,9 +115,10 @@ const AdminNavbar: React.FC = () => {
                     </div>
 
                     <div className="flex items-center space-x-3">
+                        
                         <div className="flex items-center space-x-2 bg-primaryhover hover:bg-opacity-90 transition-all duration-200 px-4 py-2 rounded-lg cursor-pointer">
                             <BsPersonCircle className="w-4 h-4" />
-                            <span className="hidden sm:block">Admin</span>
+                            <span className="hidden sm:block">{userid}</span>
                         </div>
                         <button
                             onClick={handleLogout}
@@ -85,7 +140,7 @@ const AdminNavbar: React.FC = () => {
             <div className={`bg-white border-b transition-all duration-300 ${isMobileMenuOpen ? 'max-h-screen' : 'max-h-14 overflow-hidden'}`}>
                 <div className="container mx-auto px-2">
                     <div className="flex flex-col lg:flex-row lg:items-center lg:h-14 overflow-x-auto scrollbar-hide px-[8vw] [@media(min-width:1920px)]:px-0">
-                        {NAV_ITEMS.map((item) => (
+                        {filteredNavItems.map((item) => (
                             <NavItem
                                 key={item.href}
                                 href={item.href}
@@ -127,4 +182,4 @@ const NavItem: React.FC<NavItemProps> = ({ href, icon, label, isActive }) => {
     );
 };
 
-export default AdminNavbar;
+export default Navbar;

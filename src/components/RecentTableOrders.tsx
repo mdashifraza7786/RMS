@@ -67,7 +67,7 @@ export default function OrdersComponent() {
 
     useEffect(() => {
         getRecentOrders();
-    }, [getRecentOrders]);
+    }, []);
     
     useEffect(() => {
         setCurrentPage(1);

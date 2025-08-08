@@ -1,11 +1,11 @@
 "use client";
 
 import React, { Suspense } from "react";
-import AdminNavbar from "@/components/AdminNavbar";
 import NextTopLoader from "nextjs-toploader";
 import Login from "@/components/Login";
 import { useSession, SessionProvider } from "next-auth/react";
 import Loading from "@/app/loading";
+import Navbar from "@/components/Navbar";
 
 const MiddleWare: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { data: session, status } = useSession();
@@ -15,7 +15,10 @@ const MiddleWare: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       {status === "authenticated" ? (
         <>
           <NextTopLoader color="white" />
-          <AdminNavbar />
+          <Navbar
+            role={(session?.user as { role: string })?.role}
+            userid={(session?.user as { userid: string })?.userid}
+          />
           <div className="min-h-screen px-[8vw]">
             {children}
           </div>

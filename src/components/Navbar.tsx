@@ -93,6 +93,15 @@ const NAV_ITEMS = [
     }
 ];
 
+const isPathActive = (href: string, path: string | null) => {
+    if (!path) return false;
+    if (href === '/') return path === '/';
+    // Build a boundary-aware regex: ^/inventory(?:/|$) will NOT match /inventory-forecast
+    const escapedHref = href.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const pattern = new RegExp(`^${escapedHref}(?:/|$)`);
+    return pattern.test(path);
+};
+
 const Navbar: React.FC<{ role: string, userid: string }> = ({ role, userid }) => {
     const pathName = usePathname();
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -146,7 +155,7 @@ const Navbar: React.FC<{ role: string, userid: string }> = ({ role, userid }) =>
                                 href={item.href}
                                 icon={React.cloneElement(item.icon, { className: "w-4 h-4" })}
                                 label={item.label}
-                                isActive={item.href === '/' ? pathName === '/' : pathName?.includes(item.href)}
+                                isActive={isPathActive(item.href, pathName)}
                             />
                         ))}
                     </div>

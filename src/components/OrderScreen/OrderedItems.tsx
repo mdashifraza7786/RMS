@@ -1,11 +1,13 @@
 import { IoClose } from "react-icons/io5";
+import axios from "axios";
 import { FaShoppingBag } from "react-icons/fa";
 import { OrderedItemsProps } from "./types";
 
 const OrderedItems: React.FC<OrderedItemsProps> = ({
     tableNumber,
     orderedItem,
-    removeOrderedItems
+    removeOrderedItems,
+    onUpdateItemStatus,
 }) => {
     const currentOrders = orderedItem.filter(order => order.tablenumber === tableNumber);
 
@@ -46,7 +48,7 @@ const OrderedItems: React.FC<OrderedItemsProps> = ({
                     <ul className="space-y-3 overflow-y-auto pr-2 h-full">
                         {currentOrders.flatMap(order =>
                             order.itemsordered.map((item) => (
-                                <li 
+                            <li 
                                     key={item.item_id} 
                                     className="flex justify-between items-center bg-white p-3 rounded-lg shadow-sm border border-gray-100 hover:border-primary/30 transition-all"
                                 >
@@ -61,6 +63,23 @@ const OrderedItems: React.FC<OrderedItemsProps> = ({
                                     </div>
                                     
                                     <div className="flex items-center gap-3">
+                                        <select
+                                            disabled={false}
+                                            value={(item as any).status || 'pending'}
+                                            onChange={async (e) => {
+                                                const status = e.target.value;
+                                                try {
+                                                    await axios.post('/api/order/updateItemStatus', { orderid: order.orderid, itemid: item.item_id, status });
+                                                    onUpdateItemStatus && onUpdateItemStatus(order.orderid, item.item_id, status);
+                                                } catch {}
+                                            }}
+                                            className="text-xs border border-gray-300 rounded-md px-2 py-1 text-gray-700"
+                                        >
+                                            <option value="pending">Pending</option>
+                                            <option value="preparing">Preparing</option>
+                                            <option value="ready">Ready</option>
+                                            <option value="served">Served</option>
+                                        </select>
                                         <span className="font-medium text-primary">
                                             ₹{(item.price * item.quantity).toFixed(2)}
                                         </span>

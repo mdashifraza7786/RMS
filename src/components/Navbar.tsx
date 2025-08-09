@@ -83,7 +83,7 @@ const NAV_ITEMS = [
         href: "/tables", 
         icon: <FaTableCells />, 
         label: "Tables", 
-        roles: ["admin", "waiter"] 
+        roles: ["admin"] 
     },
     { 
         href: "/inventory-forecast", 

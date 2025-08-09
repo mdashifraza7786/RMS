@@ -3,7 +3,6 @@ import { CredentialsSignin } from 'next-auth';
 import { NextResponse } from 'next/server';
 import { getUserByUserid } from '@/database/database';
 import { compare } from 'bcrypt';
-import bcrypt from 'bcrypt'
 
 
 export async function POST(request:Request) {

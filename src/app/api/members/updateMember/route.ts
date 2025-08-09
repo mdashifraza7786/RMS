@@ -1,11 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
-import {updateMember} from "@/database/database";
+import {updateMember, updatePassword} from "@/database/database";
+import bcrypt from 'bcrypt'
 
 export async function PUT(request: NextRequest) {
     try {
         const data = await request.json();
-        // console.log(data.photo);
-        await updateMember(data);
+        if(data.type === 'passwordChange'){
+            const hashedPassword = await bcrypt.hash(data.newPassword, 10);
+            await updatePassword({...data, newPassword: hashedPassword});
+        }else{
+            await updateMember(data);
+        }
 
         return NextResponse.json({ message: 'Member updated successfully' }, { status: 200 });
     } catch (error) {

@@ -3,11 +3,13 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { Bars } from "react-loader-spinner";
-import { FaSearch, FaFileInvoiceDollar, FaFilter, FaUserSlash } from "react-icons/fa";
+import { FaSearch, FaFileInvoiceDollar, FaUserSlash } from "react-icons/fa";
 import { IoFastFoodOutline } from "react-icons/io5";
 import { BsClock, BsClockHistory } from "react-icons/bs";
 import { BiTable } from "react-icons/bi";
-import { MdDashboard, MdPerson } from "react-icons/md";
+import { MdPerson } from "react-icons/md";
+import Link from "next/link";
+import { useSession } from "next-auth/react";
 
 interface OrderItem {
   item_id: string;
@@ -45,24 +47,57 @@ interface Invoice {
 const OrdersPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(false);
+  const [everLoaded, setEverLoaded] = useState(false);
   const [orders, setOrders] = useState<Order[]>([]);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [activeTab, setActiveTab] = useState<string>("all");
   const [detailsPopup, setDetailsPopup] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [pageSize, setPageSize] = useState<number>(10);
 
   useEffect(() => {
     document.title = "Orders";
-    fetchOrders(activeTab);
+    fetchOrders();
     fetchInvoices();
-  }, [activeTab]);
 
-  const fetchOrders = async (status: string) => {
-    setLoading(true);
+    // Poll every 20s and refresh on tab focus
+    const intervalId = setInterval(() => {
+      fetchOrders(true);
+      fetchInvoices(true);
+    }, 20000);
+
+    const onVisibility = () => {
+      if (document.visibilityState === 'visible') {
+        fetchOrders(true);
+        fetchInvoices(true);
+      }
+    };
+    document.addEventListener('visibilitychange', onVisibility);
+
+    return () => {
+      clearInterval(intervalId);
+      document.removeEventListener('visibilitychange', onVisibility);
+    };
+  }, []);
+  const { data: session } = useSession();
+  const role = session?.user?.role;
+  const userid = session?.user?.userid;
+  const fetchOrders = async (silent: boolean = false) => {
+    if (!silent && !everLoaded) setLoading(true);
     try {
-      const response = await axios.get(`/api/orders?status=${status}`);
-
+      let response;
+      if(role === 'waiter' || role === 'chef'){
+      response = await axios.get(`/api/orders`, {
+        params: {
+          role: role,
+          userid: userid
+        }
+      });
+    }else{
+      response = await axios.get(`/api/orders`);
+    }
       if (response.data?.orders) {
         const formattedData: Order[] = response.data.orders.map((order: any) => ({
           ...order,
@@ -71,6 +106,7 @@ const OrdersPage: React.FC = () => {
         }));
 
         setOrders(formattedData);
+        if (!everLoaded) setEverLoaded(true);
       } else {
         console.error("Failed to fetch orders:", response.data);
         setOrders([]);
@@ -79,10 +115,10 @@ const OrdersPage: React.FC = () => {
       console.error("Error fetching orders:", error);
       setOrders([]);
     }
-    setLoading(false);
+    if (!silent && !everLoaded) setLoading(false);
   };
 
-  const fetchInvoices = async () => {
+  const fetchInvoices = async (silent: boolean = false) => {
     try {
       const response = await axios.get('/api/order/orderInvoice');
 
@@ -222,7 +258,11 @@ const OrdersPage: React.FC = () => {
     printWindow.document.close();
   };
 
-  const filteredOrders = orders.filter((order) =>
+  const statusFiltered = activeTab === 'all'
+    ? orders
+    : orders.filter((o) => o.status?.toLowerCase() === activeTab);
+
+  const filteredOrders = statusFiltered.filter((order) =>
     order.id.toString().includes(searchTerm) ||
     order.table_id.toString().includes(searchTerm) ||
     order.waiter_name?.toString().toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -230,6 +270,15 @@ const OrdersPage: React.FC = () => {
     order.status.toString().toLowerCase().includes(searchTerm.toLowerCase()) ||
     order.order_items.some((item) => item.item_name.toString().toLowerCase().includes(searchTerm.toLowerCase()))
   );
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, activeTab, orders]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredOrders.length / pageSize));
+  const pageStart = (currentPage - 1) * pageSize;
+  const pageEnd = Math.min(pageStart + pageSize, filteredOrders.length);
+  const paginatedOrders = filteredOrders.slice(pageStart, pageEnd);
 
   const formatCurrency = (amount: number | null | undefined) => {
     if (amount === null || amount === undefined) return '₹ 0.00';
@@ -288,6 +337,14 @@ const OrdersPage: React.FC = () => {
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
+            <div>
+              <Link
+                href="/orders/active"
+                className="inline-flex items-center px-4 py-2 bg-primary text-white rounded-lg shadow hover:bg-primary/90 transition-colors text-sm font-medium"
+              >
+                View Active Orders
+              </Link>
+            </div>
           </div>
 
           <div className="flex flex-wrap gap-2 border-b border-gray-200">
@@ -336,8 +393,8 @@ const OrdersPage: React.FC = () => {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {filteredOrders.length > 0 ? (
-                  filteredOrders.map((order) => (
+                {paginatedOrders.length > 0 ? (
+                  paginatedOrders.map((order) => (
                     <tr key={order.id} className="hover:bg-gray-50 transition duration-150">
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                         #{order.id}
@@ -417,6 +474,47 @@ const OrdersPage: React.FC = () => {
               </tbody>
             </table>
           )}
+        </div>
+
+        <div className="px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-gray-100">
+          <div className="text-sm text-gray-600">
+            Showing <span className="font-medium text-gray-800">{filteredOrders.length === 0 ? 0 : pageStart + 1}</span>
+            
+            -<span className="font-medium text-gray-800">{pageEnd}</span> of
+            
+            <span className="font-medium text-gray-800"> {filteredOrders.length}</span>
+          </div>
+          <div className="flex items-center gap-3">
+            <label className="text-sm text-gray-600">Rows per page</label>
+            <select
+              value={pageSize}
+              onChange={(e) => setPageSize(parseInt(e.target.value, 10))}
+              className="text-sm border border-gray-300 rounded-md px-2 py-1 focus:ring-primary focus:border-primary"
+            >
+              {[5, 10, 20, 50].map((n) => (
+                <option key={n} value={n}>{n}</option>
+              ))}
+            </select>
+            <div className="flex items-center gap-2">
+              <button
+                className="px-3 py-1.5 text-sm rounded-md border border-gray-300 text-gray-700 bg-white disabled:opacity-50"
+                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+              >
+                Previous
+              </button>
+              <span className="text-sm text-gray-700">
+                Page <span className="font-medium">{currentPage}</span> of <span className="font-medium">{totalPages}</span>
+              </span>
+              <button
+                className="px-3 py-1.5 text-sm rounded-md border border-gray-300 text-gray-700 bg-white disabled:opacity-50"
+                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                disabled={currentPage === totalPages}
+              >
+                Next
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 

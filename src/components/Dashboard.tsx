@@ -11,6 +11,8 @@ import ActiveOrders from '@/components/Admin/ActiveOrders';
 import TableManagement from '@/components/Admin/TableManagement';
 import Title from '@/components/Admin/Title';
 import { useSession } from 'next-auth/react';
+import WaiterStats from '@/components/Waiter/WaiterStats';
+import ChefStats from '@/components/Chef/ChefStats';
 
 export interface Table {
     id: number;
@@ -22,6 +24,7 @@ export interface OrderedItems {
     item_name: string;
     quantity: number;
     price: number;
+    status?: string;
 }
 export interface billingAmount {
     subtotal: number;
@@ -44,15 +47,22 @@ const Dashboard: React.FC = () => {
     const [showLeftArrow, setShowLeftArrow] = useState(false);
     const [showRightArrow, setShowRightArrow] = useState(true);
     const [selectedTable, setSelectedTable] = useState<number | null>(null);
-    const [orderedItems, setOrderedItems] = useState<{ orderid: number, billing: billingAmount; tablenumber: number; itemsordered: OrderedItems[]; start_time?: string }[]>([]);
+    const [orderedItems, setOrderedItems] = useState<{ orderid: number, billing: billingAmount; tablenumber: number; itemsordered: OrderedItems[]; start_time?: string; chef_id?: string }[]>([]);
     const [tableLoaded, setTableLoaded] = useState(false);
+    const [tablesEverLoaded, setTablesEverLoaded] = useState(false);
+    const [allowedTables, setAllowedTables] = useState<Set<number>>(new Set());
 
     const { data: session } = useSession();
     const role = session?.user?.role as string;
 
     const fetchActiveOrders = async () => {
         try {
-            const response = await axios.get("/api/order/activeOrders");
+            let response;
+            if(role === 'admin'){   
+                response = await axios.get("/api/order/activeOrders");
+            }else{
+                response = await axios.get("/api/order/activeOrders?role="+role+"&userid="+session?.user?.userid);
+            }
             const activeOrders = response.data.map((order: any) => ({
                 orderid: order.orderId,
                 billing: {
@@ -64,7 +74,11 @@ const Dashboard: React.FC = () => {
                     item_name: item.item_name,
                     quantity: item.quantity,
                     price: item.price,
+                    status: item.status ?? 'pending',
                 })),
+                chef_id: order.chef_id || undefined,
+                waiter_name: order.waiter_name || null,
+                chef_name: order.chef_name || null,
                 start_time: order.start_time,
             }));
             setOrderedItems(activeOrders);
@@ -77,11 +91,38 @@ const Dashboard: React.FC = () => {
         fetchActiveOrders();
         fetchTables();
         fetchFinancialData();
+
+        // Poll for active orders and tables every 10s; financials every 60s
+        const ordersInterval = setInterval(() => {
+            fetchActiveOrders();
+            fetchTables(true);
+        }, 10000);
+
+        const financialInterval = setInterval(() => {
+            fetchFinancialData(financialData.period);
+        }, 60000);
+
+        // Refresh immediately when the tab gains focus
+        const onVisibility = () => {
+            if (document.visibilityState === 'visible') {
+                fetchActiveOrders();
+                fetchTables(true);
+            }
+        };
+        document.addEventListener('visibilitychange', onVisibility);
+
+        return () => {
+            clearInterval(ordersInterval);
+            clearInterval(financialInterval);
+            document.removeEventListener('visibilitychange', onVisibility);
+        };
     }, []);
     
-    const fetchTables = async () => {
+    const fetchTables = async (silent: boolean = false) => {
         try {
-            setTableLoaded(true);
+            if (!silent && !tablesEverLoaded) {
+                setTableLoaded(true);
+            }
 
             const response = await fetch("/api/tables");
 
@@ -91,10 +132,13 @@ const Dashboard: React.FC = () => {
 
             const data = await response.json();
             setTableData(data.tables);
+            if (!tablesEverLoaded) setTablesEverLoaded(true);
         } catch (error: any) {
             console.error("Error fetching tables:", error.message);
         } finally {
-            setTableLoaded(false);
+            if (!silent && !tablesEverLoaded) {
+                setTableLoaded(false);
+            }
         }
     };
 
@@ -156,6 +200,31 @@ const Dashboard: React.FC = () => {
 
         return updatedItems;
     }
+
+    const updateOrderItemStatus = (orderId: number, itemId: string, newStatus: string) => {
+        setOrderedItems((prev) =>
+            prev.map(order => {
+                if (order.orderid !== orderId) return order;
+                return {
+                    ...order,
+                    itemsordered: order.itemsordered.map(item =>
+                        item.item_id === itemId ? { ...item, status: newStatus } : item
+                    )
+                };
+            })
+        );
+    };
+
+    useEffect(() => {
+        const next = new Set<number>();
+        if (role === 'admin') {
+            tableData.forEach(t => next.add(t.tablenumber));
+        } else {
+            tableData.forEach(t => { if (t.availability === 0) next.add(t.tablenumber); });
+            orderedItems.forEach(o => next.add(o.tablenumber));
+        }
+        setAllowedTables(next);
+    }, [role, tableData, orderedItems]);
 
 
     const removeOrderedItem = async (itemId: string, tableNumber: number, orderID: number) => {
@@ -234,6 +303,9 @@ const Dashboard: React.FC = () => {
     };
 
     const handleOrder = (tablenumber: number) => {
+        if (!allowedTables.has(tablenumber)) {
+            return;
+        }
         setSelectedTable(tablenumber);
     };
     
@@ -247,6 +319,7 @@ const Dashboard: React.FC = () => {
             <Title role={role} />
 
             <div className="container mx-auto px-6 py-4">
+                {role === 'admin' && (
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                     <FinancialOverview
                         financialData={financialData}
@@ -278,6 +351,14 @@ const Dashboard: React.FC = () => {
                         }
                     />
                 </div>
+                )}
+
+                {role !== 'admin' && role === 'waiter' && (
+                  <WaiterStats orderedItems={orderedItems as any} />
+                )}
+                {role === 'chef' && (
+                  <ChefStats orderedItems={orderedItems as any} />
+                )}
 
                 <ActiveOrders
                     showLeftArrow={showLeftArrow}
@@ -288,23 +369,30 @@ const Dashboard: React.FC = () => {
                     tableLoaded={tableLoaded}
                     orderedItems={orderedItems}
                     OrderQueueCard={OrderQueueCard as any}
+                    onViewOrder={handleOrder}
+                    canAssignChef={role === 'admin' || role === 'waiter'}
                 />
-
-                <TableManagement
-                    tableLoaded={tableLoaded}
-                    tableData={tableData}
-                    TableStatusCard={TableStatusCard as any}
-                    handleOrder={handleOrder}
-                />
-
+                {role !== 'chef' && (
+                  <TableManagement
+                      tableLoaded={tableLoaded}
+                      tableData={tableData}
+                      TableStatusCard={TableStatusCard as any}
+                      handleOrder={handleOrder}
+                      clickableTables={Array.from(allowedTables)}
+                  />
+                )}
+                {role === 'admin' && (
                 <div className="flex gap-6 w-full">
                     <RecentTableOrders />
                     <RecentPaymentCard />
                 </div>
+                )}
             </div>
 
             {selectedTable !== null && (
-                <OrderScreen 
+                <OrderScreen
+                    role={role}
+                    userid={session?.user?.userid}
                     tableNumber={selectedTable} 
                     orderedItem={orderedItems} 
                     setorderitemsfun={updateOrderedItems} 
@@ -312,6 +400,7 @@ const Dashboard: React.FC = () => {
                     removeOrderedItems={removeOrderedItem} 
                     tabledata={tableData} 
                     closeOrderScreen={closeOrderScreen} 
+                    updateItemStatus={updateOrderItemStatus}
                 />
             )}
         </div>

@@ -4,11 +4,12 @@ import { FaCheck, FaCalendarAlt, FaSearch } from "react-icons/fa";
 import { RxCross2 } from "react-icons/rx";
 import { FiRefreshCcw } from "react-icons/fi";
 import { HiOutlineChevronLeft, HiOutlineChevronRight } from "react-icons/hi";
-import { IoMdClose } from "react-icons/io";
 import axios from 'axios';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { Bars } from 'react-loader-spinner';
+import { useSession } from 'next-auth/react';
+import AttendanceHistory from '@/components/Attendance';
 
 interface AttendanceItem {
     userid: string;
@@ -39,6 +40,9 @@ const Page: React.FC = () => {
     const [availableDates, setAvailableDates] = useState<string[]>([]);
     const [showCalendar, setShowCalendar] = useState<boolean>(false);
     const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
+    const { data: session } = useSession();
+    const role = session?.user?.role;
+    const userid = session?.user?.userid;
 
     const giveAttendance = async (id: string, status: string, type: string) => {
         setAttendanceData(prevData => {
@@ -90,9 +94,18 @@ const Page: React.FC = () => {
             setAttendanceloading(true);
 
             try {
-                const response = await axios.post("/api/attendance/byDate", {
-                    byDate: getdate
-                });
+                let response;
+                if(role === 'waiter' || role === 'chef'){
+                    response = await axios.post("/api/attendance/byDate", {
+                        byDate: getdate,
+                        userid: userid,
+                        role: role
+                    });
+                }else{
+                    response = await axios.post("/api/attendance/byDate", {
+                        byDate: getdate
+                    });
+                }
 
                 if (response.status === 500 || response.status === 209) {
                     toast.error(response.data.message);
@@ -135,8 +148,18 @@ const Page: React.FC = () => {
         const fetchTodayAttendance = async () => {
             setAttendanceloading(true);
             try {
-                const response = await axios.get("/api/attendance");
-        
+                let response;
+                if(role === 'waiter' || role === 'chef'){
+                    response = await axios.get("/api/attendance", {
+                        params: {
+                            userid: userid,
+                            role: role
+                        }
+                    });
+                }else{
+                    response = await axios.get("/api/attendance");
+                }
+                
                 if (response.status === 500 || response.status === 209) {
                     toast.error(response.data.message);
                 } else {
@@ -161,15 +184,12 @@ const Page: React.FC = () => {
                             return new Date(date).toISOString().split('T')[0];
                         });
                         
-                        console.log("Formatted available dates:", formattedDates);
                         setAvailableDates(formattedDates);
                     } else {
-                        console.warn("No available dates in response or not an array:", response.data);
                     }
                 }
             } catch (error) {
                 toast.error('Failed to fetch attendance.');
-                console.error("Attendance fetch error:", error);
             } finally {
                 setAttendanceloading(false);
             }
@@ -204,12 +224,10 @@ const Page: React.FC = () => {
         
         const monthLength = lastDay.getDate();
         
-        const numRows = Math.ceil((startingDay + monthLength) / 7);
         
         const days = [];
         let day = 1;
         
-        const minDateObj = availableDate.minDate ? new Date(availableDate.minDate) : new Date(2000, 0, 1);
         const maxDateObj = availableDate.maxDate ? new Date(availableDate.maxDate) : new Date();
         
         const totalRows = 6;
@@ -221,22 +239,15 @@ const Page: React.FC = () => {
                     row.push(null);
                 } else {
                     const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-                    const cellDate = new Date(dateStr);
-                    
-                    const isInRange = cellDate >= minDateObj && cellDate <= maxDateObj;
                     
                     const hasRecords = hasAttendanceRecords(dateStr);
-                    
-                    if (hasRecords || dateStr === today) {
-                        console.log(`Calendar date ${dateStr} - hasRecords: ${hasRecords}, isToday: ${dateStr === today}`);
-                    }
                     
                     row.push({
                         day,
                         dateStr,
                         isToday: dateStr === today,
                         isSelected: dateStr === getdate,
-                        isInRange,
+                        isInRange: true,
                         hasRecords
                     });
                     day++;
@@ -282,7 +293,6 @@ const Page: React.FC = () => {
                         ))}
                     </div>
                     
-                    {/* Calendar grid */}
                     <div className="flex-1">
                         {days.map((row, rowIndex) => (
                             <div key={rowIndex} className="grid grid-cols-7 h-[52px]">
@@ -293,16 +303,12 @@ const Page: React.FC = () => {
                                     
                                     let cellClasses = "border-r border-b last:border-r-0 p-1 flex flex-col items-center justify-start relative";
                                     
-                                    // Determine if cell should be clickable based on attendance records or if it's today
-                                    const isClickable = cell.hasRecords || cell.dateStr === today;
-                                    console.log(`Cell date: ${cell.dateStr}, hasRecords: ${cell.hasRecords}, isToday: ${cell.dateStr === today}, isClickable: ${isClickable}`);
+                                    const isClickable = cell.hasRecords || (new Date(cell.dateStr) <= maxDateObj && cell.dateStr === today) || cell.hasRecords;
                                     
                                     if (cell.isSelected) {
                                         cellClasses += " bg-[#1e4569] text-white";
                                     } else if (cell.isToday) {
                                         cellClasses += " bg-blue-50";
-                                    } else if (!cell.isInRange) {
-                                        cellClasses += " bg-gray-100 text-gray-400 cursor-not-allowed";
                                     } else if (isClickable) {
                                         cellClasses += " hover:bg-blue-50 cursor-pointer";
                                     } else {
@@ -314,8 +320,8 @@ const Page: React.FC = () => {
                                             key={cellIndex}
                                             className={cellClasses}
                                         onClick={() => {
-                                                if (cell.isInRange && isClickable) {
-                                                setGetdate(cell.dateStr);
+                                                if (isClickable) {
+                                                    setGetdate(cell.dateStr);
                                                     setShowCalendar(false);
                                                 }
                                             }}
@@ -332,7 +338,6 @@ const Page: React.FC = () => {
                     </div>
                 </div>
                 
-                {/* Footer */}
                 <div className="p-3 border-t flex justify-between items-center">
                     <button 
                         className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-medium rounded transition-colors"
@@ -354,7 +359,6 @@ const Page: React.FC = () => {
         );
     };
 
-    // Modal for calendar
     const CalendarModal = () => {
         if (!showCalendar) return null;
         
@@ -367,7 +371,6 @@ const Page: React.FC = () => {
         );
     };
 
-    // Tab configuration
     const tabs = [
         { id: 'All', label: 'All Staff' },
         { id: 'Present', label: 'Present' },
@@ -386,7 +389,9 @@ const Page: React.FC = () => {
                         <h1 className="text-xl font-semibold text-gray-800">Staff Attendance</h1>
                     </div>
                 </div>
-
+                {(role === 'waiter' || role === 'chef') ? (
+                  <AttendanceHistory userid={userid as string} />
+                ) : (
                 <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                     <div className="p-6 border-b border-gray-100">
                         <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-6">
@@ -399,7 +404,6 @@ const Page: React.FC = () => {
                                     <span className="font-medium">{formatDisplayDate(getdate)}</span>
                                 </button>
 
-                                {/* Generate attendance button */}
                                 <button 
                                     className={`inline-flex items-center px-4 py-2 rounded-lg font-medium transition-colors ${
                                         getdate === today 
@@ -428,7 +432,6 @@ const Page: React.FC = () => {
                             </div>
                         </div>
 
-                        {/* Tabs */}
                         <div className="flex flex-wrap gap-2 border-b border-gray-200 overflow-x-auto">
                             {tabs.map((tab) => (
                                 <button
@@ -445,7 +448,6 @@ const Page: React.FC = () => {
                         </div>
                     </div>
 
-                    {/* Table */}
                     <div className="overflow-x-auto">
                         {attendanceloading ? (
                             <div className="flex justify-center items-center py-12">
@@ -501,9 +503,7 @@ const Page: React.FC = () => {
                                                     )}
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
-                                                    {/* Action buttons */}
                                                     <div className="flex justify-center space-x-2">
-                                                        {/* Present button */}
                                                         <button
                                                             disabled={getdate !== today || item.status === 'present'}
                                                             onClick={() => giveAttendance(item.userid, 'present', 'update')}
@@ -519,7 +519,6 @@ const Page: React.FC = () => {
                                                             Present
                                                         </button>
                                                         
-                                                        {/* Absent button */}
                                                         <button
                                                             disabled={getdate !== today || item.status === 'absent'}
                                                             onClick={() => giveAttendance(item.userid, 'absent', 'update')}
@@ -567,9 +566,9 @@ const Page: React.FC = () => {
                         )}
                     </div>
                     </div>
+                )}
         </div>
 
-            {/* Calendar Modal */}
             <CalendarModal />
 
             <style jsx global>{`

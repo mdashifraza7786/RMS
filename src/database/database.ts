@@ -8,14 +8,31 @@ const dbConfig = {
     user: process.env.DB_USER || 'root',
     password: process.env.DB_PASSWORD || '',
     database: process.env.DB_NAME || 'rms',
-};
+    waitForConnections: true,
+    connectionLimit: Number(process.env.DB_CONN_LIMIT || 10),
+    queueLimit: 0,
+} as const;
+
+// Reuse a single pool instance across hot reloads in dev
+declare global {
+    // eslint-disable-next-line no-var
+    var mysqlPool: mysql.Pool | undefined;
+}
+
+const pool: mysql.Pool = global.mysqlPool || mysql.createPool(dbConfig);
+if (!global.mysqlPool) {
+    global.mysqlPool = pool;
+}
 
 export async function dbConnect() {
     try {
-        const connection = await mysql.createConnection(dbConfig);
+        const connection = await pool.getConnection();
+        // Map .end() calls in existing code to .release() to return the connection to the pool
+        const release = connection.release.bind(connection);
+        (connection as any).end = release;
         return connection;
     } catch (error) {
-        console.error('Error connecting to the MySQL database:', error);
+        console.error('Error getting MySQL connection from pool:', error);
         throw error;
     }
 }
@@ -419,6 +436,23 @@ export async function updateMember(data: any) {
     }
 }
 
+export async function updatePassword(data: any) {
+    const connection = await dbConnect();
+    const { userid, newPassword } = data;
+    try {
+        await connection.query('UPDATE user SET password = ? WHERE userid = ?', [newPassword, userid]);
+
+        return NextResponse.json({ success: true, message: 'Password updated successfully' });
+
+    } catch (error: any) {
+        console.error('Error updating password:', error);
+        return NextResponse.json({ success: false, message: 'Error updating password' });
+
+    } finally {
+        await connection.end();
+    }
+}
+
 export async function updateMenu(data: any) {
     const connection = await dbConnect();
     const { item_id, item_description, item_name, item_foodtype, item_price, item_thumbnail, item_type } = data;
@@ -765,10 +799,9 @@ export async function getFinancialOverview(period: string) {
     };
 }
 
-export async function getOrdersByStatus(status?: string) {
+export async function getOrdersByStatus(role?: string, userid?: string) {
     const connection = await dbConnect();
     try {
-        // Base query
         let query = `
             SELECT 
                 o.id, 
@@ -786,17 +819,16 @@ export async function getOrdersByStatus(status?: string) {
             LEFT JOIN user u2 ON o.chef_id = u2.userid
         `;
         
-        // Add WHERE clause if status is provided
-        if (status && status !== 'all') {
-            query += ` WHERE o.status = ?`;
+        if (role === 'waiter') {
+            query += ` WHERE o.waiter_id = ?`;
+        } else if (role === 'chef') {
+            query += ` WHERE o.chef_id = ?`;
         }
         
-        // Add ORDER BY to show newest orders first
         query += ` ORDER BY o.start_time DESC`;
         
-        // Execute the query with or without the status parameter
-        const [rows] = status && status !== 'all' 
-            ? await connection.query<RowDataPacket[]>(query, [status])
+        const [rows] = role === 'waiter' || role === 'chef'
+            ? await connection.query<RowDataPacket[]>(query, [userid])
             : await connection.query<RowDataPacket[]>(query);
 
         return {

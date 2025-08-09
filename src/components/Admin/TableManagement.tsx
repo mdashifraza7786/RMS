@@ -9,6 +9,7 @@ interface TableManagementProps {
   tableData: { tablenumber: number; availability: number }[];
   TableStatusCard: React.ComponentType<any>;
   handleOrder: (tablenumber: number) => void;
+  clickableTables?: number[];
 }
 
 const TableManagement: React.FC<TableManagementProps> = ({
@@ -16,6 +17,7 @@ const TableManagement: React.FC<TableManagementProps> = ({
   tableData,
   TableStatusCard,
   handleOrder,
+  clickableTables = [],
 }) => {
   return (
     <section className="bg-white rounded-xl shadow-sm p-6 border border-gray-100 mb-8">
@@ -60,6 +62,7 @@ const TableManagement: React.FC<TableManagementProps> = ({
                 tablestatus={item.availability === 0 ? "available" : "notavailable"}
                 tableno={Number(item.tablenumber)}
                 doOrder={handleOrder}
+                isClickable={clickableTables.includes(Number(item.tablenumber))}
               />
             ))
           ) : (

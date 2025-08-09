@@ -9,15 +9,19 @@ import OrderedItems from "./OrderedItems";
 import BillSummary from "./BillSummary";
 import CompleteOrderModal from "./CompleteOrderModal";
 import ConfirmationModal from "./ConfirmationModal";
+import { OrderedItems as OrderedItemType } from "../Dashboard";
 
 const OrderScreen: React.FC<OrderScreenProps> = ({
+    role,
+    userid,
     tableNumber,
     tabledata,
     orderedItem,
     setorderitemsfun,
     removeOrderedItems,
     resettable,
-    closeOrderScreen
+    closeOrderScreen,
+    updateItemStatus
 }) => {
     // State variables
     const [menuData, setMenuData] = useState<MenuData[]>([]);
@@ -28,7 +32,8 @@ const OrderScreen: React.FC<OrderScreenProps> = ({
     const [booked, setBooked] = useState<boolean>(false);
     const [completeOrderPopup, setCompleteOrderPopup] = useState<boolean>(false);
     const [currentCompleteOrder, setCurrentCompleteOrder] = useState<{ tablenumber: number, orderid: number }>({} as { tablenumber: number, orderid: number });
-    const [activeTab, setActiveTab] = useState<'menu' | 'order'>('menu');
+    const [activeTab, setActiveTab] = useState<'menu' | 'order'>(role === 'chef' ? 'order' : 'menu');
+    const isChef = role === 'chef';
 
     // Effects
     useEffect(() => {
@@ -76,8 +81,8 @@ const OrderScreen: React.FC<OrderScreenProps> = ({
             setModal({ visible: true, message: "Please add items to place an order!", success: false });
             return;
         }
-
-        const orderData = {
+            const orderData = {
+            ...(role === 'waiter' && userid ? { role, userid } : {}),
             tableNumber,
             items: selectedItems.map(({ item, quantity }) => ({
                 item_id: item.item_id,
@@ -327,7 +332,7 @@ const OrderScreen: React.FC<OrderScreenProps> = ({
 
     return (
         <div className="fixed inset-0 bg-gray-900 bg-opacity-80 backdrop-blur-sm flex justify-center items-center z-50">
-            <div className="w-[90%] h-[90%] bg-white font-normal flex flex-col relative shadow-2xl rounded-2xl p-6 overflow-hidden">
+                <div className={`${isChef ? 'w-[60%] max-w-5xl' : 'w-[90%]'} h-[90%] bg-white font-normal flex flex-col relative shadow-2xl rounded-2xl p-6 overflow-hidden`}>
                 {/* Header */}
                 <div className="flex justify-between items-center pb-4 border-b border-gray-100">
                     <div className="font-bold text-xl text-gray-800 flex items-center">
@@ -345,87 +350,107 @@ const OrderScreen: React.FC<OrderScreenProps> = ({
                 </div>
 
                 {/* Main content */}
-                <div className="grid grid-cols-3 gap-6 h-[calc(100%-80px)] overflow-hidden">
-                    {/* Left column: Menu search and tabs */}
-                    <div className="flex flex-col col-span-2 gap-4 h-full overflow-hidden">
-                        {/* Tabs */}
-                        <div className="flex border-b flex-shrink-0">
-                            <button 
-                                className={`flex items-center py-3 px-5 gap-2 font-medium border-b-2 transition-all ${
-                                    activeTab === 'menu' 
-                                        ? 'border-primary text-primary' 
-                                        : 'border-transparent text-gray-500 hover:text-gray-700'
-                                }`}
-                                onClick={() => setActiveTab('menu')}
-                            >
-                                <FaSearch size={16} />
-                                <span>Menu</span>
-                            </button>
-                            {booked && (
-                                <button 
-                                    className={`flex items-center py-3 px-5 gap-2 font-medium border-b-2 transition-all ${
-                                        activeTab === 'order' 
-                                            ? 'border-primary text-primary' 
-                                            : 'border-transparent text-gray-500 hover:text-gray-700'
-                                    }`}
-                                    onClick={() => setActiveTab('order')}
-                                >
-                                    <FaReceipt size={16} />
-                                    <span>Current Order</span>
-                                </button>
-                            )}
-                        </div>
+                <div className={`grid ${isChef ? 'grid-cols-1' : 'grid-cols-3'} gap-6 h-[calc(100%-80px)] overflow-hidden`}>
+                    {/* Left column */}
+                    <div className={`flex flex-col ${isChef ? 'col-span-1' : 'col-span-2'} gap-4 h-full overflow-hidden`}>
+                        {/* Tabs (hidden for chef) */}
+                        {!isChef && (
+                          <div className="flex border-b flex-shrink-0">
+                              <button 
+                                  className={`flex items-center py-3 px-5 gap-2 font-medium border-b-2 transition-all ${
+                                      activeTab === 'menu' 
+                                          ? 'border-primary text-primary' 
+                                          : 'border-transparent text-gray-500 hover:text-gray-700'
+                                  }`}
+                                  onClick={() => setActiveTab('menu')}
+                              >
+                                  <FaSearch size={16} />
+                                  <span>Menu</span>
+                              </button>
+                              {booked && (
+                                  <button 
+                                      className={`flex items-center py-3 px-5 gap-2 font-medium border-b-2 transition-all ${
+                                          activeTab === 'order' 
+                                              ? 'border-primary text-primary' 
+                                              : 'border-transparent text-gray-500 hover:text-gray-700'
+                                      }`}
+                                      onClick={() => setActiveTab('order')}
+                                  >
+                                      <FaReceipt size={16} />
+                                      <span>Current Order</span>
+                                  </button>
+                              )}
+                          </div>
+                        )}
 
-                        {/* Content based on active tab */}
+                        {/* Content */}
                         <div className="flex-grow overflow-hidden">
-                            {activeTab === 'menu' ? (
-                                <div className="flex flex-col gap-4 h-full">
-                                    <div className="flex-shrink-0">
-                                        <MenuSearch 
-                                            searchTerm={searchTerm}
-                                            setSearchTerm={setSearchTerm}
-                                            isDropdownVisible={isDropdownVisible}
-                                            filteredData={filteredData}
-                                            handleItemSelect={handleItemSelect}
-                                        />
-                                    </div>
-                                    <div className="flex-grow overflow-hidden">
-                                        <SelectedItems 
-                                            selectedItems={selectedItems}
-                                            handleQuantityChange={handleQuantityChange}
-                                            handleBlur={handleBlur}
-                                            removeSelectedItem={removeSelectedItem}
-                                        />
-                                    </div>
-                                </div>
+                            {isChef ? (
+                              <OrderedItems 
+                                  tableNumber={tableNumber}
+                                  orderedItem={orderedItem}
+                                  removeOrderedItems={removeOrderedItems}
+                                  onUpdateItemStatus={(orderId, itemId, status) =>
+                                      updateItemStatus && updateItemStatus(orderId, itemId, status)
+                                  }
+                              />
+                            ) : activeTab === 'menu' ? (
+                              <div className="flex flex-col gap-4 h-full">
+                                  <div className="flex-shrink-0">
+                                      <MenuSearch 
+                                          searchTerm={searchTerm}
+                                          setSearchTerm={setSearchTerm}
+                                          isDropdownVisible={isDropdownVisible}
+                                          filteredData={filteredData}
+                                          handleItemSelect={handleItemSelect}
+                                      />
+                                  </div>
+                                  <div className="flex-grow overflow-hidden">
+                                      <SelectedItems 
+                                          selectedItems={selectedItems}
+                                          handleQuantityChange={handleQuantityChange}
+                                          handleBlur={handleBlur}
+                                          removeSelectedItem={removeSelectedItem}
+                                      />
+                                  </div>
+                              </div>
                             ) : (
-                                <OrderedItems 
-                                    tableNumber={tableNumber}
-                                    orderedItem={orderedItem}
-                                    removeOrderedItems={removeOrderedItems}
-                                />
+                              <OrderedItems 
+                                  tableNumber={tableNumber}
+                                  orderedItem={orderedItem}
+                                  removeOrderedItems={removeOrderedItems}
+                                  onUpdateItemStatus={(orderId, itemId, status) =>
+                                      updateItemStatus && updateItemStatus(orderId, itemId, status)
+                                  }
+                              />
                             )}
                         </div>
                     </div>
 
-                    {/* Right column: Bill summary */}
-                    <div className="h-full flex flex-col">
-                        <div className="flex items-center mb-3 text-gray-800 flex-shrink-0">
-                            <FaShoppingCart className="mr-2" />
-                            <h2 className="font-medium text-lg">Order Summary</h2>
-                        </div>
-                        <div className="flex-grow">
-                            <BillSummary 
-                                subtotal={subtotal}
-                                gst={gst}
-                                totalAmount={totalAmount}
-                                booked={booked}
-                                handlePlaceOrder={placeOrder}
-                                handleCompleteOrder={handleCompleteOrder}
-                                tableNumber={tableNumber}
-                            />
-                        </div>
-                    </div>
+                    {/* Right column: hidden for chef */}
+                    {!isChef && (
+                      <div className="h-full flex flex-col">
+                          <div className="flex items-center mb-3 text-gray-800 flex-shrink-0">
+                              <FaShoppingCart className="mr-2" />
+                              <h2 className="font-medium text-lg">Order Summary</h2>
+                          </div>
+                          <div className="flex-grow">
+                              <BillSummary 
+                                  subtotal={subtotal}
+                                  gst={gst}
+                                  totalAmount={totalAmount}
+                                  booked={booked}
+                                  handlePlaceOrder={placeOrder}
+                                  handleCompleteOrder={handleCompleteOrder}
+                                  tableNumber={tableNumber}
+                                  items={[
+                                    ...(orderedItem.find(t => t.tablenumber === tableNumber)?.itemsordered || []),
+                                    ...selectedItems.map(({ item, quantity }) => ({ item_id: item.item_id, item_name: item.item_name, quantity, price: item.item_price }))
+                                  ]}
+                              />
+                          </div>
+                      </div>
+                    )}
                 </div>
 
                 {/* Modals */}

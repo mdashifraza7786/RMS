@@ -11,6 +11,8 @@ export interface MenuData {
 }
 
 export interface OrderScreenProps {
+    role?: string | undefined;
+    userid?: string | undefined;
     tableNumber: number;
     tabledata: Table[];
     orderedItem: { 
@@ -28,6 +30,7 @@ export interface OrderScreenProps {
     removeOrderedItems: (itemId: string, tableNumber: number, orderID: number) => void;
     resettable: (tablenumber: any) => void;
     closeOrderScreen: () => void;
+    updateItemStatus?: (orderId: number, itemId: string, status: string) => void;
 }
 
 export interface MenuSearchProps {
@@ -49,6 +52,7 @@ export interface OrderedItemsProps {
     tableNumber: number;
     orderedItem: OrderScreenProps['orderedItem'];
     removeOrderedItems: (itemId: string, tableNumber: number, orderID: number) => void;
+    onUpdateItemStatus?: (orderId: number, itemId: string, status: string) => void;
 }
 
 export interface BillSummaryProps {
@@ -59,6 +63,7 @@ export interface BillSummaryProps {
     handlePlaceOrder: () => void;
     handleCompleteOrder: () => void;
     tableNumber: number;
+    items?: { item_id?: string; item_name: string; quantity: number; price: number }[];
 }
 
 export interface CompleteOrderModalProps {

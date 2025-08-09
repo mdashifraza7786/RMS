@@ -2,12 +2,11 @@ import { getOrdersByStatus } from "@/database/database";
 import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
-    // Get the status from the query parameters
     const { searchParams } = new URL(request.url);
-    const status = searchParams.get('status') || undefined;
-    
+    const role = searchParams.get('role') || undefined;
+    const userid = searchParams.get('userid') || undefined;
     try {
-        const orders = await getOrdersByStatus(status);
+        const orders = await getOrdersByStatus(role, userid);
         return NextResponse.json(orders);
     } catch (error) {
         console.error("Error fetching orders:", error);

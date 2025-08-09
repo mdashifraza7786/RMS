@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Bars } from 'react-loader-spinner';
 import { Member } from './MemberTypes';
-import { FaUser, FaIdCard, FaMoneyBill, FaMapMarkerAlt } from 'react-icons/fa';
+import { FaEye, FaEyeSlash } from 'react-icons/fa';
 
 interface EditMemberModalProps {
   isVisible: boolean;
@@ -23,6 +23,98 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
   onFileChange
 }) => {
   if (!isVisible) return null;
+
+  // Local-only password change UI state (no backend integration)
+  const [newPassword, setNewPassword] = useState<string>('');
+  const [confirmPassword, setConfirmPassword] = useState<string>('');
+  const [showNewPassword, setShowNewPassword] = useState<boolean>(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState<boolean>(false);
+  const [passwordFeedback, setPasswordFeedback] = useState<{ message: string; success: boolean } | null>(null);
+  const [passwordLoading, setPasswordLoading] = useState<boolean>(false);
+
+  const generateStrongPassword = (length: number = 12): string => {
+    const upper = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    const lower = 'abcdefghijklmnopqrstuvwxyz';
+    const digits = '0123456789';
+    const symbols = '!@#$%^&*()-_=+[]{};:,.<>?';
+    const all = upper + lower + digits + symbols;
+
+    const pick = (chars: string) => chars[Math.floor(Math.random() * chars.length)];
+
+    // Ensure at least one from each set
+    const req = [pick(upper), pick(lower), pick(digits), pick(symbols)];
+    const remaining = Array.from({ length: Math.max(0, length - req.length) }, () => pick(all));
+    const combined = [...req, ...remaining];
+
+    // Shuffle
+    for (let i = combined.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [combined[i], combined[j]] = [combined[j], combined[i]];
+    }
+    return combined.join('');
+  };
+
+  const handleGeneratePassword = () => {
+    const pwd = generateStrongPassword(12);
+    setNewPassword(pwd);
+    setConfirmPassword(pwd);
+    setPasswordFeedback({ message: 'Generated a strong password. You can update now.', success: true });
+  };
+
+  const handleCopyPassword = async () => {
+    try {
+      if (!newPassword) {
+        setPasswordFeedback({ message: 'Nothing to copy. Generate or enter a password first.', success: false });
+        return;
+      }
+      await navigator.clipboard.writeText(newPassword);
+      setPasswordFeedback({ message: 'Password copied to clipboard.', success: true });
+    } catch (e) {
+      setPasswordFeedback({ message: 'Failed to copy password.', success: false });
+    }
+  };
+
+  const handleLocalPasswordUpdate = () => {
+    if (newPassword.length < 6) {
+      setPasswordFeedback({ message: 'Password must be at least 6 characters.', success: false });
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setPasswordFeedback({ message: 'Passwords do not match.', success: false });
+      return;
+    }
+    setPasswordLoading(true);
+    fetch('/api/members/updateMember', {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        userid: memberData.userid,
+        newPassword: newPassword,
+        type: 'passwordChange',
+      }),
+    })
+      .then(async (res) => {
+        const data = await res.json();
+        if (data.success) {
+          setPasswordFeedback({ message: 'Password updated successfully.', success: true });
+        } else {
+          setPasswordFeedback({ message: data.message || 'Failed to update password.', success: false });
+        }
+      })
+      .catch(() => {
+        setPasswordFeedback({ message: 'Failed to update password.', success: false });
+      })
+      .finally(() => {
+        setPasswordLoading(false);
+      });
+    setPasswordFeedback({ message: 'Password updated successfully.', success: true });
+    setNewPassword('');
+    setConfirmPassword('');
+    setShowNewPassword(false);
+    setShowConfirmPassword(false);
+  };
 
   return (
     <div className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-60 z-50 p-4 animate-fadeIn">
@@ -64,7 +156,6 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
           <div className="space-y-6">
             <div className="bg-gray-50 p-4 rounded-lg">
               <h4 className="flex items-center text-gray-700 font-medium mb-4 pb-2 border-b border-gray-200">
-                <FaUser className="mr-2 text-primary" />
                 Personal Information
               </h4>
               
@@ -127,7 +218,6 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
 
             <div className="bg-gray-50 p-4 rounded-lg">
               <h4 className="flex items-center text-gray-700 font-medium mb-4 pb-2 border-b border-gray-200">
-                <FaIdCard className="mr-2 text-primary" />
                 ID Documents
               </h4>
               
@@ -156,7 +246,6 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
 
             <div className="bg-gray-50 p-4 rounded-lg">
               <h4 className="flex items-center text-gray-700 font-medium mb-4 pb-2 border-b border-gray-200">
-                <FaMoneyBill className="mr-2 text-primary" />
                 Bank Details
               </h4>
               
@@ -211,11 +300,91 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
                   />
                 </div>
               </div>
+            
+            <div className="bg-gray-50 py-4 rounded-lg">
+              <h4 className="flex items-center text-gray-700 font-medium mb-4 pb-2 border-b border-gray-200">
+                Change Password
+              </h4>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="relative">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">New Password</label>
+                  <input
+                    type={showNewPassword ? 'text' : 'password'}
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 pr-10 focus:ring-primary focus:border-primary focus:outline-none"
+                    placeholder="Enter new password"
+                  />
+                  <button
+                    type="button"
+                    aria-label="Toggle password visibility"
+                    onClick={() => setShowNewPassword(!showNewPassword)}
+                    className="absolute right-3 top-9 text-gray-500 hover:text-gray-700"
+                    tabIndex={-1}
+                  >
+                    {showNewPassword ? <FaEyeSlash /> : <FaEye />}
+                  </button>
+                </div>
+
+                <div className="relative">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Confirm Password</label>
+                  <input
+                    type={showConfirmPassword ? 'text' : 'password'}
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 pr-10 focus:ring-primary focus:border-primary focus:outline-none"
+                    placeholder="Re-enter new password"
+                  />
+                  <button
+                    type="button"
+                    aria-label="Toggle password visibility"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-3 top-9 text-gray-500 hover:text-gray-700"
+                    tabIndex={-1}
+                  >
+                    {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
+                  </button>
+                </div>
+              </div>
+
+              {passwordFeedback && (
+                <div className={`mt-3 text-sm ${passwordFeedback.success ? 'text-green-700' : 'text-red-700'}`}>
+                  {passwordFeedback.message}
+                </div>
+              )}
+
+              <div className="mt-4">
+                <button
+                  type="button"
+                  onClick={handleLocalPasswordUpdate}
+                  className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+                  disabled={loading || passwordLoading}
+                >
+                  Update Password
+                </button>
+                <button
+                  type="button"
+                  onClick={handleGeneratePassword}
+                  className="ml-3 px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+                  disabled={loading || passwordLoading}
+                >
+                  Generate
+                </button>
+                <button
+                  type="button"
+                  onClick={handleCopyPassword}
+                  className="ml-3 px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+                  disabled={loading || passwordLoading}
+                >
+                  Copy
+                </button>
+              </div>
+            </div>
             </div>
         
             <div className="bg-gray-50 p-4 rounded-lg">
               <h4 className="flex items-center text-gray-700 font-medium mb-4 pb-2 border-b border-gray-200">
-                <FaMapMarkerAlt className="mr-2 text-primary" />
                 Address Details
               </h4>
               

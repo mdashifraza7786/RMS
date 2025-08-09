@@ -7,11 +7,15 @@ export async function GET() {
 
     try {
         const now = new Date();
-        // Allow generation any day, but scope idempotency by month
+        const fmt = (d: Date) => {
+            const y = d.getFullYear();
+            const m = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            return `${y}-${m}-${day}`;
+        };
         const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-        const monthStartStr = monthStart.toISOString().split('T')[0];
+        const monthStartStr = fmt(monthStart);
 
-        // Check if payouts for this month are already generated
         const [existingRecords] = await connection.query<RowDataPacket[]>(
             `SELECT COUNT(*) as count
              FROM payout
@@ -25,44 +29,45 @@ export async function GET() {
 
         await connection.beginTransaction();
 
-        // Prepare previous month for attendance computation
         const prevMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-        const prevMonthStartStr = prevMonthStart.toISOString().split('T')[0];
+        const prevMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0); // last day of previous month
+        const prevMonthStartStr = fmt(prevMonthStart);
+        const prevMonthEndStr = fmt(prevMonthEnd);
 
-        // Insert payout rows following schema: userid, account_number, upi_id, amount, status, date
-        // amount = (salary / 30) * total_attendance_in_previous_month + balance
+        // for reference: amount = (salary / 30) * total_attendance_in_previous_month + balance
         await connection.query(
           `INSERT INTO payout (userid, account_number, upi_id, amount, status, date)
            SELECT 
-             u.userid,
+             pd.userid,
              pd.account_number,
              pd.upiid AS upi_id,
-             (
-               (COALESCE(CAST(pd.salary AS DECIMAL(12,2)), 0) / 30)
-               * COALESCE((
-                   SELECT COUNT(*)
-                   FROM attendance a
-                   WHERE a.userid = u.userid
-                     AND DATE_FORMAT(STR_TO_DATE(a.date, '%Y-%m-%d'), '%Y-%m') = DATE_FORMAT(?, '%Y-%m')
-                     AND LOWER(a.status) = 'present'
-               ), 0)
-               + COALESCE(CAST(pd.balance AS DECIMAL(12,2)), 0)
+             ROUND(
+               (
+                 (COALESCE(CAST(pd.salary AS DECIMAL(12,2)), 0) / 30)
+                 * COALESCE((
+                     SELECT COUNT(*)
+                     FROM attendance a
+                     WHERE a.userid = pd.userid
+                       AND DATE(COALESCE(STR_TO_DATE(a.date, '%Y-%m-%d'), a.date)) BETWEEN DATE(?) AND DATE(?)
+                       AND LOWER(a.status) = 'present'
+                 ), 0)
+                 + COALESCE(CAST(pd.balance AS DECIMAL(12,2)), 0)
+               ), 2
              ) AS amount,
              'pending' AS status,
              ? AS date
-           FROM user u
-           LEFT JOIN payout_details pd ON pd.userid = u.userid
+           FROM payout_details pd
+           LEFT JOIN user u ON u.userid = pd.userid
            WHERE NOT EXISTS (
              SELECT 1 FROM payout p
-             WHERE p.userid = u.userid
+             WHERE p.userid = pd.userid
                AND DATE_FORMAT(p.date, '%Y-%m') = DATE_FORMAT(?, '%Y-%m')
            )`,
-          [prevMonthStartStr, monthStartStr, monthStartStr]
+           [prevMonthStartStr, prevMonthEndStr, monthStartStr, monthStartStr]
         );
 
         await connection.commit();
 
-        // Retrieve and return all payout records for the month
         const [rows1] = await connection.query<RowDataPacket[]>(
           `SELECT userid, account_number, upi_id, amount, status, date
            FROM payout

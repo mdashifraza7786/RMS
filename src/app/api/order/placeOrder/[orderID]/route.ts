@@ -1,24 +1,32 @@
 import { dbConnect } from "@/database/database";
 import { NextResponse } from "next/server";
-import { OrderRequestBody } from "../route";
 
 export async function POST(
   request: Request,
   { params }: { params: { orderID: string } }
 ) {
-  const { gst, items, subtotal, totalAmount }: OrderRequestBody =
-    await request.json();
+  const body = await request.json();
+  const { gst, items, subtotal, totalAmount } = body;
+  const role = body.hasOwnProperty('role') ? body.role : null;
+  const userid = body.hasOwnProperty('userid') ? body.userid : null;
 
   const connection = await dbConnect();
   const orderID = Number(params.orderID);
 
   try {
     await connection.beginTransaction();
-
-    const [existingOrder]: any = await connection.query(
-      "SELECT order_items FROM orders WHERE id = ? LIMIT 1",
-      [orderID]
-    );
+    let existingOrder: any;
+    if (role === 'waiter' && userid) {
+      [existingOrder] = await connection.query(
+        "SELECT order_items FROM orders WHERE id = ? AND waiter_id = ? LIMIT 1",
+        [orderID, userid]
+      );
+    } else {
+      [existingOrder] = await connection.query(
+        "SELECT order_items FROM orders WHERE id = ? LIMIT 1",
+        [orderID]
+      );
+    }
 
     if (existingOrder.length === 0) {
       return NextResponse.json(
@@ -43,10 +51,17 @@ export async function POST(
 
     const updatedItemsString = JSON.stringify(existingItems);
 
-    await connection.query(
-      "UPDATE orders SET order_items = ? WHERE id = ?",
-      [updatedItemsString, orderID]
-    );
+    if (role === 'waiter' && userid) {
+      await connection.query(
+        "UPDATE orders SET order_items = ? WHERE id = ? AND waiter_id = ?",
+        [updatedItemsString, orderID, userid]
+      );
+    } else {
+      await connection.query(
+        "UPDATE orders SET order_items = ? WHERE id = ?", 
+        [updatedItemsString, orderID]
+      );
+    }
 
     await connection.query(
       "UPDATE invoices SET subtotal = ?, gst = ?, total_amount = ? WHERE orderid = ?",

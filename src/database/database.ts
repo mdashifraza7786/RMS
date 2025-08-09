@@ -2,7 +2,6 @@ import mysql, { RowDataPacket } from 'mysql2/promise';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { NextResponse } from 'next/server';
 
-// Next.js automatically loads environment variables from .env
 const dbConfig = {
     host: process.env.DB_HOST || 'localhost',
     user: process.env.DB_USER || 'root',
@@ -13,9 +12,7 @@ const dbConfig = {
     queueLimit: 0,
 } as const;
 
-// Reuse a single pool instance across hot reloads in dev
 declare global {
-    // eslint-disable-next-line no-var
     var mysqlPool: mysql.Pool | undefined;
 }
 
@@ -27,7 +24,6 @@ if (!global.mysqlPool) {
 export async function dbConnect() {
     try {
         const connection = await pool.getConnection();
-        // Map .end() calls in existing code to .release() to return the connection to the pool
         const release = connection.release.bind(connection);
         (connection as any).end = release;
         return connection;
@@ -117,17 +113,14 @@ export async function getInventoryOrderById(orderID: string) {
 export async function getMembers() {
     const connection = await dbConnect();
     try {
-        // Fetch data from the 'user' table
         const [userRows] = await connection.query<RowDataPacket[]>(
             'SELECT userid, name, role, mobile, email, photo, aadhaar, pancard FROM user'
         );
 
-        // Fetch data from the 'payout_details' table
         const [payoutRows] = await connection.query<RowDataPacket[]>(
             'SELECT account_name, account_number, ifsc_code, branch_name, upiid FROM payout_details'
         );
 
-        //fetch data from the 'user_address' table
         const [addressRows] = await connection.query<RowDataPacket[]>(
             'SELECT street_or_house_no,landmark,address_one,address_two,city,state,pin FROM user_address'
         );
@@ -152,7 +145,6 @@ export async function getMembers() {
 export async function getMenu() {
     const connection = await dbConnect();
     try {
-        // Fetch data from the 'menu' table
         const [userRows] = await connection.query<RowDataPacket[]>(
             'SELECT item_id,item_description,item_name,item_foodtype,making_cost,item_price,item_thumbnail,item_type FROM menu'
         );
@@ -175,7 +167,6 @@ export async function getMenu() {
 export async function getExpenses() {
     const connection = await dbConnect();
     try {
-        // Fetch data from the 'expenses' table
         const [userRows] = await connection.query<RowDataPacket[]>(
             'SELECT id,expenses_for,frequency,cost,date FROM expenses'
         );
@@ -198,7 +189,6 @@ export async function getExpenses() {
 export async function getTableOrders() {
     const connection = await dbConnect();
     try {
-        // Fetch data from the 'orders' table
         const [userRows] = await connection.query<RowDataPacket[]>(
             `SELECT 
                 o.id, 
@@ -242,7 +232,6 @@ export async function getRecentPayments() {
     const connection = await dbConnect();
 
     try {
-        // Fetch data from 'invoices', 'orders', 'users', and 'customers' tables
         const [userRows] = await connection.query<RowDataPacket[]>(`
             SELECT 
                 i.id,
@@ -282,7 +271,6 @@ export async function getRecentPayments() {
 export async function getInvoice() {
     const connection = await dbConnect();
     try {
-        // Fetch data from the 'invoice' table
         const [userRows] = await connection.query<RowDataPacket[]>(
             'SELECT id,orderid,table_id,subtotal,gst,total_amount,discount,payment_method,payment_status,generated_at FROM invoices'
         );
@@ -305,7 +293,6 @@ export async function getInvoice() {
 export async function getPayout() {
     const connection = await dbConnect();
     try {
-        // Fetch data from the 'payout' table
         const [userRows] = await connection.query<RowDataPacket[]>(
             'SELECT userid,account_number,upi_id,amount,status FROM payout'
         );
@@ -328,7 +315,6 @@ export async function getPayout() {
 export async function getPayoutDetails() {
     const connection = await dbConnect();
         try {
-            // Fetch data from the 'payout_details' table
         const [userRows] = await connection.query<RowDataPacket[]>(
             'SELECT userid,account_name,account_number,ifsc_code,branch_name,upiid,salary,balance FROM payout_details'
         );
@@ -374,7 +360,6 @@ export async function payPayout(data: any) {
 export async function getTables() {
     const connection = await dbConnect();
     try {
-        // Fetch data from the 'menu' table
         const [tablesRow] = await connection.query<RowDataPacket[]>(
             'SELECT * FROM tables'
         );
@@ -420,37 +405,31 @@ export async function updateMember(data: any) {
         street_or_house_no, landmark, address_one, address_two, city, state, pin } = data;
 
     try {
-        // Start transaction
         await connection.beginTransaction();
 
-        // Update user information
         await connection.query(
             `UPDATE user SET name = ?, role = ?, mobile = ?, email = ?, photo = ?, aadhaar = ?, pancard = ?
              WHERE userid = ?`,
             [name, role, mobile, email, photo, aadhaar, pancard, userid]
         );
 
-        // Update payout details
         await connection.query(
             `UPDATE payout_details SET account_name = ?, account_number = ?, ifsc_code = ?, branch_name = ?, upiid = ?
              WHERE userid = ?`,
             [account_name, account_number, ifsc_code, branch_name, upiid, userid]
         );
 
-        // Update address details
         await connection.query(
             `UPDATE user_address SET street_or_house_no = ?, landmark = ?, address_one = ?, address_two = ?, city = ?, state = ?, pin = ?
              WHERE userid = ?`,
             [street_or_house_no, landmark, address_one, address_two, city, state, pin, userid]
         );
 
-        // Commit transaction
         await connection.commit();
 
         return NextResponse.json({ success: true, message: 'Member updated successfully' });
 
     } catch (error: any) {
-        // Rollback transaction in case of error
         await connection.rollback();
         console.error('Error updating member:', error);
         return NextResponse.json({ success: false, message: 'Error updating member' });
@@ -482,23 +461,19 @@ export async function updateMenu(data: any) {
     const { item_id, item_description, item_name, item_foodtype, item_price, item_thumbnail, item_type } = data;
 
     try {
-        // Start transaction
         await connection.beginTransaction();
 
-        // Update menu information
         await connection.query(
             `UPDATE menu SET item_description = ?, item_name = ?, item_foodtype = ?, item_price = ?, item_thumbnail = ?,item_type = ?
              WHERE item_id = ?`,
             [item_id, item_description, item_name, item_foodtype, item_type, item_price, item_thumbnail, item_type]
         );
 
-        // Commit transaction
         await connection.commit();
 
         return NextResponse.json({ success: true, message: 'Menu updated successfully' });
 
     } catch (error: any) {
-        // Rollback transaction in case of error
         await connection.rollback();
         console.error('Error updating menu:', error.message);
         return NextResponse.json({ success: false, message: 'Error updating menu' });
@@ -511,7 +486,6 @@ export async function updateMenu(data: any) {
 export async function getInventory() {
     const connection = await dbConnect();
     try {
-        // Fetch data from the 'inventory' table
         const [userRows] = await connection.query<RowDataPacket[]>(
             'SELECT item_id,item_name,current_stock,low_limit,unit FROM inventory'
         );
@@ -536,10 +510,8 @@ export async function updateInventory(data: any) {
     const { item_id, item_name, current_stock, low_limit, unit } = data;
 
     try {
-        // Start transaction
         await connection.beginTransaction();
 
-        // Update inventory information
         const query = `
             UPDATE inventory 
             SET item_name = ?, current_stock = ?, low_limit = ?, unit = ?
@@ -548,19 +520,17 @@ export async function updateInventory(data: any) {
 
         const [result] = await connection.query(query, values);
 
-        // Commit transaction
         await connection.commit();
 
         return NextResponse.json({ success: true, message: 'Kitchen Order updated successfully' });
 
     } catch (error: any) {
-        // Rollback transaction in case of error
         await connection.rollback();
         console.error('Error updating inventory:', error.message);
         return false;
 
     } finally {
-        // Ensure the connection is closed
+
         await connection.end();
     }
 }
@@ -569,7 +539,6 @@ export async function updateInventory(data: any) {
 export async function getKitchenOrders() {
     const connection = await dbConnect();
     try {
-        // Fetch data from the 'kitchen_order' table
         const [userRows] = await connection.query<RowDataPacket[]>(
             'SELECT order_id,item_name,time,date,remarks,quantity,status,unit FROM kitchen_order WHERE status = "pending"'
         );
@@ -594,10 +563,8 @@ export async function updateKitchenOrders(data: any) {
     const { order_id, item_name, quantity, status, unit } = data;
 
     try {
-        // Start transaction
         await connection.beginTransaction();
 
-        // Update kitchen order information
         const query = `
             UPDATE kitchen_order 
             SET item_name = ?, quantity = ?, status = ?, unit = ?
@@ -606,18 +573,14 @@ export async function updateKitchenOrders(data: any) {
 
         const [result] = await connection.query(query, values);
 
-        // Commit transaction
         await connection.commit();
 
-        // Check if any rows were affected
         return NextResponse.json({ success: true, message: 'Kitchen Order updated successfully' });
     } catch (error: any) {
-        // Rollback transaction in case of error
         await connection.rollback();
         console.error('Error updating kitchen orders:', error.message);
         return false;
     } finally {
-        // Ensure the connection is closed
         await connection.end();
     }
 }
@@ -625,7 +588,6 @@ export async function updateKitchenOrders(data: any) {
 export async function getRecentOrders() {
     const connection = await dbConnect();
     try {
-        // Fetch data from the 'recent_inventory_order' table
         const [userRows] = await connection.query<RowDataPacket[]>(
             'SELECT order_id,order_name,price,quantity,date,total_amount,unit FROM recent_inventory_order'
         );
@@ -650,10 +612,8 @@ export async function updateRecentOrders(data: any) {
     const { order_id, order_name, price, quantity, date, total_amount, unit } = data;
 
     try {
-        // Start transaction
         await connection.beginTransaction();
 
-        // Update menu information
         const query = `
             UPDATE recent_inventory_order 
             SET order_name = ?, price = ?, quantity = ?, date = ?, total_amount = ?, unit = ?
@@ -662,33 +622,28 @@ export async function updateRecentOrders(data: any) {
 
         await connection.query(query, values);
 
-        // Commit transaction
         await connection.commit();
 
         return NextResponse.json({ success: true, message: 'Recent Orders updated successfully' });
 
     } catch (error: any) {
-        // Rollback transaction in case of error
         await connection.rollback();
         console.error('Error updating Recent Orders:', error.message);
         return NextResponse.json({ success: false, message: 'Error updating Recent Orders' });
     } finally {
-        // Ensure the connection is closed
         await connection.end();
     }
 }
 
-// Financial Overview Functions
 
 export async function getTotalRevenue(startDate: string, endDate: string) {
     const connection = await dbConnect();
     
     try {
-        // Convert string dates to MySQL date format with proper timestamps
         const startDateTime = `${startDate} 00:00:00`;
         const endDateTime = `${endDate} 23:59:59`;
                 
-        // Get revenue from invoices table with paid status
+
         const [rows] = await connection.execute<RowDataPacket[]>(
             `SELECT COALESCE(SUM(total_amount), 0) as total_revenue
              FROM invoices
@@ -709,11 +664,9 @@ export async function getOrdersCount(startDate: string, endDate: string) {
     const connection = await dbConnect();
     
     try {
-        // Convert string dates to MySQL date format with proper timestamps
         const startDateTime = `${startDate} 00:00:00`;
         const endDateTime = `${endDate} 23:59:59`;
                 
-        // Count completed orders from invoices with paid status
         const [rows] = await connection.execute<RowDataPacket[]>(
             `SELECT COUNT(*) as count 
              FROM invoices 
@@ -723,7 +676,6 @@ export async function getOrdersCount(startDate: string, endDate: string) {
             [startDateTime, endDateTime]
         );
         
-        // Ensure we're returning a number
         return rows[0]?.count !== null ? Number(rows[0].count) : 0;
     } finally {
         await connection.end();
@@ -731,7 +683,6 @@ export async function getOrdersCount(startDate: string, endDate: string) {
 }
 
 export async function getFinancialOverview(period: string) {
-    // Calculate date range based on period
     const endDate = new Date();
     let startDate = new Date();
     
@@ -755,17 +706,14 @@ export async function getFinancialOverview(period: string) {
             startDate.setDate(endDate.getDate() - 7);
     }
     
-    // Format dates for MySQL queries
     const formatDate = (date: Date) => date.toISOString().split('T')[0];
     const startDateStr = formatDate(startDate);
     const endDateStr = formatDate(endDate);
     
-    // Get current period data
     const revenue = await getTotalRevenue(startDateStr, endDateStr);
     const ordersCount = await getOrdersCount(startDateStr, endDateStr);
     const averageOrderValue = ordersCount > 0 ? revenue / ordersCount : 0;
     
-    // Calculate previous period
     const prevEndDate = new Date(startDate);
     let prevStartDate = new Date();
     
@@ -778,7 +726,7 @@ export async function getFinancialOverview(period: string) {
             break;
         case 'month':
             prevStartDate = new Date(prevEndDate.getFullYear(), prevEndDate.getMonth() - 1, 1);
-            prevEndDate.setDate(0); // Last day of previous month
+            prevEndDate.setDate(0);
             break;
         default:
             prevStartDate.setDate(prevEndDate.getDate() - 7);
@@ -787,12 +735,10 @@ export async function getFinancialOverview(period: string) {
     const prevStartDateStr = formatDate(prevStartDate);
     const prevEndDateStr = formatDate(prevEndDate);
     
-    // Get previous period data
     const prevRevenue = await getTotalRevenue(prevStartDateStr, prevEndDateStr);
     const prevOrdersCount = await getOrdersCount(prevStartDateStr, prevEndDateStr);
     const prevAverageOrderValue = prevOrdersCount > 0 ? prevRevenue / prevOrdersCount : 0;
     
-    // Calculate percentage changes
     const revenueChange = prevRevenue > 0
         ? ((revenue - prevRevenue) / prevRevenue) * 100
         : 0;
@@ -805,7 +751,6 @@ export async function getFinancialOverview(period: string) {
         ? ((averageOrderValue - prevAverageOrderValue) / prevAverageOrderValue) * 100
         : 0;
     
-    // Format results
     return {
         revenue: {
             value: revenue,

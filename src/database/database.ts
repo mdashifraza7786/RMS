@@ -324,6 +324,30 @@ export async function getPayout() {
         await connection.end();
     }
 }
+
+export async function getPayoutDetails() {
+    const connection = await dbConnect();
+        try {
+            // Fetch data from the 'payout_details' table
+        const [userRows] = await connection.query<RowDataPacket[]>(
+            'SELECT userid,account_name,account_number,ifsc_code,branch_name,upiid,salary,balance FROM payout_details'
+        );
+
+        if (userRows.length > 0) {
+            return {
+                payout_details: userRows,
+            };
+        } else {
+            return false;
+        }
+
+    } catch (error: any) {
+        throw error;
+    } finally {
+        await connection.end();
+    }
+}
+
 export async function payPayout(data: any) {
     const connection = await dbConnect();
     try {

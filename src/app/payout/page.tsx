@@ -55,6 +55,7 @@ const Page = () => {
     const [selectedItem, setSelectedItem] = useState<MergedUserPayout | null>(null);
     const [loading, setLoading] = useState(true);
     const [actionLoading, setActionLoading] = useState(false);
+      const [generating, setGenerating] = useState(false);
     const [debugInfo, setDebugInfo] = useState<string | null>(null);
 
     const filteredData = mergedData.filter(item =>
@@ -118,6 +119,27 @@ const Page = () => {
             setLoading(false);
         }
     };
+
+      const handleGeneratePayouts = async () => {
+          if (generating) return;
+          setGenerating(true);
+          try {
+              const res = await axios.get('/api/payout/generate');
+              if (res.status === 200) {
+                  toast.success('Payout generated for this month');
+              } else if (res.status === 209) {
+                  toast.info(res.data?.message || 'Payout already generated for this month');
+              } else {
+                  toast.warn(res.data?.message || 'Unexpected response from server');
+              }
+              await fetchData();
+          } catch (error) {
+              console.error('Error generating payouts:', error);
+              toast.error(`Failed to generate payouts: ${error instanceof Error ? error.message : 'Unknown error'}`);
+          } finally {
+              setGenerating(false);
+          }
+      };
 
     const updatePayoutStatus = async (userId: string, newStatus: string) => {
         setActionLoading(true);
@@ -245,6 +267,20 @@ const Page = () => {
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                             />
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <button
+                                onClick={handleGeneratePayouts}
+                                disabled={generating || loading}
+                                className={`inline-flex items-center px-4 py-2 rounded-lg text-white transition ${
+                                    generating || loading
+                                        ? 'bg-primary/60 cursor-not-allowed'
+                                        : 'bg-primary hover:bg-primary/80'
+                                }`}
+                            >
+                                <FaFileInvoiceDollar className="mr-2" />
+                                {generating ? 'Generating...' : 'Generate Payouts'}
+                            </button>
                         </div>
                     </div>
 

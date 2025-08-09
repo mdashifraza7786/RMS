@@ -17,6 +17,7 @@ interface PayoutInfo {
     upi_id: string,
     amount: string,
     status: string,
+    date?: string,
 }
 
 interface User {
@@ -57,6 +58,12 @@ const Page = () => {
     const [actionLoading, setActionLoading] = useState(false);
       const [generating, setGenerating] = useState(false);
     const [debugInfo, setDebugInfo] = useState<string | null>(null);
+
+    // Secondary table filters (raw payout list)
+    const [filterMode, setFilterMode] = useState<'all' | 'date' | 'month' | 'year'>('all');
+    const [filterDate, setFilterDate] = useState<string>(''); // YYYY-MM-DD
+    const [filterMonth, setFilterMonth] = useState<string>(''); // YYYY-MM
+    const [filterYear, setFilterYear] = useState<string>(''); // YYYY
 
     const filteredData = mergedData.filter(item =>
         (activeTab === 'all' || item.status === activeTab.toLowerCase()) &&
@@ -462,6 +469,115 @@ const Page = () => {
                         </nav>
                     </div>
                 )}
+            </div>
+
+            {/* Raw Payout Records (from /api/payout) */}
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mt-6">
+                <div className="p-6 border-b border-gray-100">
+                    <div className="flex items-center justify-between mb-4">
+                        <h2 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
+                            All Payout Records
+                        </h2>
+                        <div className="flex flex-wrap items-center gap-2">
+                            <select
+                                className="text-sm border rounded-lg px-3 py-1.5 text-gray-600 bg-gray-50"
+                                value={filterMode}
+                                onChange={(e) => setFilterMode(e.target.value as any)}
+                            >
+                                <option value="all">All</option>
+                                <option value="date">By Date</option>
+                                <option value="month">By Month</option>
+                                <option value="year">By Year</option>
+                            </select>
+                            {filterMode === 'date' && (
+                                <input
+                                    type="date"
+                                    className="text-sm border rounded-lg px-3 py-1.5 text-gray-600 bg-gray-50"
+                                    value={filterDate}
+                                    onChange={(e) => setFilterDate(e.target.value)}
+                                />
+                            )}
+                            {filterMode === 'month' && (
+                                <input
+                                    type="month"
+                                    className="text-sm border rounded-lg px-3 py-1.5 text-gray-600 bg-gray-50"
+                                    value={filterMonth}
+                                    onChange={(e) => setFilterMonth(e.target.value)}
+                                />
+                            )}
+                            {filterMode === 'year' && (
+                                <select
+                                    className="text-sm border rounded-lg px-3 py-1.5 text-gray-600 bg-gray-50"
+                                    value={filterYear}
+                                    onChange={(e) => setFilterYear(e.target.value)}
+                                >
+                                    <option value="">Select year</option>
+                                    {Array.from(new Set((payoutInfo || []).map(p => (p.date ? new Date(p.date).getFullYear() : undefined)).filter(Boolean) as number[])).sort((a,b)=>b-a).map(y => (
+                                        <option key={y} value={y}>{y}</option>
+                                    ))}
+                                </select>
+                            )}
+                        </div>
+                    </div>
+                    <p className="text-xs text-gray-500">This table shows raw records from the payout table. Filters work when a date is available.</p>
+                </div>
+
+                <div className="overflow-x-auto">
+                    {loading ? (
+                        <div className="flex justify-center items-center py-12">
+                            <Bars height="50" width="50" color="primary" ariaLabel="bars-loading" />
+                        </div>
+                    ) : (
+                        <table className="min-w-full divide-y divide-gray-200">
+                            <thead className="bg-gray-50">
+                                <tr>
+                                    {[
+                                        { id: 'userid', label: 'User ID' },
+                                        { id: 'account', label: 'Account Number' },
+                                        { id: 'upi', label: 'UPI ID' },
+                                        { id: 'amount', label: 'Amount' },
+                                        { id: 'status', label: 'Status' },
+                                        { id: 'date', label: 'Date' },
+                                    ].map((h) => (
+                                        <th key={h.id} className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{h.label}</th>
+                                    ))}
+                                </tr>
+                            </thead>
+                            <tbody className="bg-white divide-y divide-gray-200">
+                                {(
+                                    (() => {
+                                        const list = payoutInfo || [];
+                                        const normalize = (d?: string) => {
+                                            if (!d) return '';
+                                            const dt = new Date(d);
+                                            if (isNaN(dt.getTime())) return (d.split('T')[0] || '').trim();
+                                            return dt.toISOString().split('T')[0];
+                                        };
+                                        return list.filter(p => {
+                                            if (!p.date || filterMode === 'all') return true;
+                                            const iso = normalize(p.date);
+                                            if (filterMode === 'date' && filterDate) return iso === filterDate;
+                                            if (filterMode === 'month' && filterMonth) return iso.startsWith(filterMonth);
+                                            if (filterMode === 'year' && filterYear) return iso.startsWith(filterYear + '-');
+                                            return true;
+                                        });
+                                    })()
+                                ).map((p) => (
+                                    <tr key={`${p.userid}-${p.date ?? ''}`}>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#{p.userid}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{p.account_number || '—'}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{p.upi_id || '—'}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{formatCurrency(p.amount)}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(p.status)}`}>{(p.status || '').toUpperCase()}</span>
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{p.date ? (new Date(p.date).toISOString().split('T')[0]) : '—'}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    )}
+                </div>
             </div>
 
             {detailsPopupVisible && selectedItem && (

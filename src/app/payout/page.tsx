@@ -60,8 +60,7 @@ const Page = () => {
     const [debugInfo, setDebugInfo] = useState<string | null>(null);
 
     // Secondary table filters (raw payout list)
-    const [filterMode, setFilterMode] = useState<'all' | 'date' | 'month' | 'year'>('all');
-    const [filterDate, setFilterDate] = useState<string>(''); // YYYY-MM-DD
+    const [filterMode, setFilterMode] = useState<'all' | 'month' | 'year'>('all');
     const [filterMonth, setFilterMonth] = useState<string>(''); // YYYY-MM
     const [filterYear, setFilterYear] = useState<string>(''); // YYYY
 
@@ -485,18 +484,9 @@ const Page = () => {
                                 onChange={(e) => setFilterMode(e.target.value as any)}
                             >
                                 <option value="all">All</option>
-                                <option value="date">By Date</option>
                                 <option value="month">By Month</option>
                                 <option value="year">By Year</option>
                             </select>
-                            {filterMode === 'date' && (
-                                <input
-                                    type="date"
-                                    className="text-sm border rounded-lg px-3 py-1.5 text-gray-600 bg-gray-50"
-                                    value={filterDate}
-                                    onChange={(e) => setFilterDate(e.target.value)}
-                                />
-                            )}
                             {filterMode === 'month' && (
                                 <input
                                     type="month"
@@ -547,18 +537,28 @@ const Page = () => {
                                 {(
                                     (() => {
                                         const list = payoutInfo || [];
-                                        const normalize = (d?: string) => {
-                                            if (!d) return '';
-                                            const dt = new Date(d);
-                                            if (isNaN(dt.getTime())) return (d.split('T')[0] || '').trim();
-                                            return dt.toISOString().split('T')[0];
+                                        const toParts = (d?: string) => {
+                                            if (!d) return { ym: '', y: '' };
+                                            const dt = new Date(d as any);
+                                            if (!isNaN(dt.getTime())) {
+                                                const y = dt.getFullYear();
+                                                const m = String(dt.getMonth() + 1).padStart(2, '0');
+                                                return { ym: `${y}-${m}` , y: String(y)};
+                                            }
+                                            // fallback if backend sends string not parsed by Date
+                                            const iso = (String(d).split('T')[0] || '').trim(); // YYYY-MM-DD
+                                            if (/^\d{4}-\d{2}/.test(iso)) {
+                                                const ym = iso.slice(0,7);
+                                                const y = iso.slice(0,4);
+                                                return { ym, y };
+                                            }
+                                            return { ym: '', y: '' };
                                         };
                                         return list.filter(p => {
                                             if (!p.date || filterMode === 'all') return true;
-                                            const iso = normalize(p.date);
-                                            if (filterMode === 'date' && filterDate) return iso === filterDate;
-                                            if (filterMode === 'month' && filterMonth) return iso.startsWith(filterMonth);
-                                            if (filterMode === 'year' && filterYear) return iso.startsWith(filterYear + '-');
+                                            const { ym, y } = toParts(p.date);
+                                            if (filterMode === 'month' && filterMonth) return ym === filterMonth;
+                                            if (filterMode === 'year' && filterYear) return y === filterYear;
                                             return true;
                                         });
                                     })()

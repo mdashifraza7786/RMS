@@ -294,7 +294,7 @@ export async function getPayout() {
     const connection = await dbConnect();
     try {
         const [userRows] = await connection.query<RowDataPacket[]>(
-            'SELECT userid,account_number,upi_id,amount,status FROM payout'
+            'SELECT userid,account_number,upi_id,amount,status,date FROM payout'
         );
 
         if (userRows.length > 0) {

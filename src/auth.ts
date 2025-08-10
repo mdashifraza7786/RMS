@@ -1,6 +1,6 @@
 import NextAuth from "next-auth"
 import Credentials from "next-auth/providers/credentials"
-import { dbConnect, getUserByUserid } from "./database/database";
+import { dbConnect, getUserByUserid, getCustomerByMobile } from "./database/database";
  
 export const { handlers, signIn, signOut, auth } = NextAuth({
   session: { strategy: "jwt" },
@@ -16,6 +16,21 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
         if (!userid || !password) {
           throw new Error("Please provide email and password.");
+        }
+
+        // Special case: customer flow uses synthetic userid `cust:<mobile>` and a dummy password
+        if (userid.startsWith("cust:")) {
+          const mobile = userid.replace("cust:", "");
+          const customer = await getCustomerByMobile(mobile);
+          if (!customer) throw new Error("Customer not found");
+          return {
+            userid: `cust:${mobile}`,
+            name: customer.name,
+            role: "customer",
+            mobile: customer.mobile,
+            age: customer.age ?? null,
+            gender: customer.gender ?? null,
+          } as any;
         }
 
         const user = await getUserByUserid(userid);

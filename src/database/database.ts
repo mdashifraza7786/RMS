@@ -10,6 +10,7 @@ const dbConfig = {
     waitForConnections: true,
     connectionLimit: Number(process.env.DB_CONN_LIMIT || 10),
     queueLimit: 0,
+    connectTimeout: Number(process.env.DB_CONNECT_TIMEOUT || 5000),
 } as const;
 
 declare global {
@@ -50,6 +51,41 @@ export async function getUserByUserid(userID: string) {
     } finally {
         await connection.end();
     }
+}
+
+// CUSTOMER HELPERS
+export async function getCustomerByMobile(mobile: string) {
+    const connection = await dbConnect();
+    try {
+        const [rows] = await connection.execute<RowDataPacket[]>(
+            'SELECT id, name, mobile, age, gender FROM customer WHERE mobile = ? LIMIT 1',
+            [mobile]
+        );
+        return (rows as any[])[0] || null;
+    } finally {
+        await connection.end();
+    }
+}
+
+export async function createCustomer(name: string, mobile: string, age?: number | null, gender?: string | null) {
+    const connection = await dbConnect();
+    try {
+        await connection.execute(
+            'INSERT INTO customer (name, mobile, age, gender) VALUES (?, ?, ?, ?)',
+            [name, mobile, age ?? null, gender ?? null]
+        );
+        const [rows] = await connection.execute<RowDataPacket[]>(
+            'SELECT id, name, mobile, age, gender FROM customer WHERE mobile = ? LIMIT 1',
+            [mobile]
+        );
+        return (rows as any[])[0] || null;
+    } finally {
+        await connection.end();
+    }
+}
+
+export async function getCustomerByMobileOrCreate(mobile: string) {
+    return await getCustomerByMobile(mobile);
 }
 
 export async function getMenuById(foodID: string) {

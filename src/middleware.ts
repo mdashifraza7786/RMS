@@ -13,7 +13,14 @@ export default async function middleware(req:any) {
     });
   }
 
-  const session = await auth(req);
+  const url = new URL(req.url);
+  const pathname = url.pathname;
+
+  // Allow unauthenticated access to auth/login and customer APIs
+  const isPublicApi =
+    pathname.startsWith("/api/auth/") ||
+    pathname === "/api/login" ||
+    pathname.startsWith("/api/customer/");
 
   const response = NextResponse.next();
 
@@ -21,6 +28,12 @@ export default async function middleware(req:any) {
   response.headers.set("Access-Control-Allow-Origin", "*"); // Change to your frontend domain in production
   response.headers.set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
   response.headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
+
+  if (isPublicApi) {
+    return response;
+  }
+
+  const session = await auth(req);
 
   if (!session) {
     return new NextResponse(JSON.stringify({ error: "Unauthorized" }), {

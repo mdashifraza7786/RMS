@@ -19,7 +19,7 @@ export async function POST(request:Request) {
                 [byDate, userid]
             );
         }else{
-            records = await connection.query<RowDataPacket[]>(
+            [records] = await connection.query<RowDataPacket[]>(
                 'SELECT userid,name,role,status,date,time FROM attendance WHERE date = ?',
                 [byDate]
             );

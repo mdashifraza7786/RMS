@@ -197,7 +197,8 @@ const KitchenOrdersCard: React.FC = () => {
                         </button>
                     </div>
                     
-                    <div className="overflow-x-auto">
+                    {/* Desktop Table View */}
+                    <div className="hidden md:block overflow-x-auto">
                         <table className="min-w-full divide-y divide-gray-200">
                             <thead className="bg-gray-50">
                                 <tr>
@@ -289,6 +290,92 @@ const KitchenOrdersCard: React.FC = () => {
                                 )}
                             </tbody>
                         </table>
+                    </div>
+
+                    {/* Mobile Card View */}
+                    <div className="md:hidden px-4">
+                        {kitchenOrders.length > 0 ? (
+                            <div className="space-y-4">
+                                {kitchenOrders.map((item) => (
+                                    <div key={item.order_id} className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                                        <div className="bg-gray-50 p-3 flex justify-between items-center">
+                                            <div className="flex items-center">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={selectedItems.includes(item.order_id)}
+                                                    onChange={() => handleCheckboxChange(item.order_id)}
+                                                    className="h-4 w-4 text-[#1e4569] border-gray-300 rounded focus:ring-[#1e4569] mr-3"
+                                                />
+                                                <div className="font-medium text-gray-800">{item.item_name}</div>
+                                            </div>
+                                            <div className="text-sm">{item.quantity} {item.unit}</div>
+                                        </div>
+                                        <div className="p-4 space-y-3">
+                                            <div className="flex justify-between items-center">
+                                                <span className="text-sm text-gray-500">Order ID</span>
+                                                <span className="text-sm font-medium">{item.order_id}</span>
+                                            </div>
+                                            <div className="flex justify-between items-center">
+                                                <span className="text-sm text-gray-500">Date</span>
+                                                <span className="text-sm">{formatDate(item.date)}</span>
+                                            </div>
+                                            <div className="flex justify-between items-center">
+                                                <span className="text-sm text-gray-500">Time</span>
+                                                <span className="text-sm">{item.time}</span>
+                                            </div>
+                                            {item.remarks && (
+                                                <div className="flex justify-between items-center">
+                                                    <span className="text-sm text-gray-500">Remarks</span>
+                                                    <span className="text-sm">{item.remarks}</span>
+                                                </div>
+                                            )}
+                                        </div>
+                                        <div className="border-t border-gray-100 p-3 bg-gray-50 flex justify-end space-x-2">
+                                            <button
+                                                className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-[#1e4569] hover:bg-[#2c5983] transition"
+                                                onClick={() => handleEditClick(item)}
+                                            >
+                                                <FaPenToSquare className="mr-1.5" size={12} />
+                                                Edit
+                                            </button>
+                                            <button
+                                                className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-red-600 hover:bg-red-700 transition"
+                                                onClick={() => {
+                                                    setDeletePopupVisible(true);
+                                                    setDeleteItemName(item.item_name);
+                                                    setDeleteItemId(item.order_id);
+                                                    setEditData({ ...item, status: 'cancelled' });
+                                                }}
+                                            >
+                                                <FaTrash className="mr-1.5" size={12} />
+                                                Cancel
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="py-12 text-center">
+                                <div className="flex flex-col items-center justify-center text-gray-500">
+                                    <svg 
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        fill="none" 
+                                        viewBox="0 0 24 24" 
+                                        stroke="currentColor" 
+                                        className="w-16 h-16 mb-4 text-gray-300"
+                                    >
+                                        <path 
+                                            strokeLinecap="round" 
+                                            strokeLinejoin="round" 
+                                            strokeWidth="1" 
+                                            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                                        />
+                                    </svg>
+                                    <p className="text-lg font-medium">No kitchen orders found</p>
+                                    <p className="mt-1 text-sm">There are currently no pending orders from the kitchen.</p>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </>
             )}

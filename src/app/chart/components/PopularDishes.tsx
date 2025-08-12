@@ -77,7 +77,7 @@ const PopularDishes: React.FC = () => {
     const chartData = useMemo(() => {
         const label = dishType ? `${dishType} Orders` : 'Orders';
         return generateData(label);
-    }, [chartXY, timeFrame, dishType, chartType, generateData]);
+    }, [dishType, generateData]);
 
     return (
         <div className="flex flex-col gap-4">

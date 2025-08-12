@@ -114,7 +114,7 @@ const Navbar: React.FC<{ role: string, userid: string }> = ({ role, userid }) =>
     const filteredNavItems = NAV_ITEMS.filter(item => item.roles.includes(role?.toLowerCase()));
 
     return (
-        <nav className="w-full sticky top-0 z-50 shadow-sm bg-white mx-auto">
+        <nav className="w-full sticky top-0 z-50 shadow-sm bg-white mx-auto hidden lg:block">
             <div className="bg-primary text-white px-[8vw]">
                 <div className="container mx-auto px-6 flex justify-between items-center h-16">
                     <div className={`flex items-center ${raleway.className}`}>
@@ -124,31 +124,24 @@ const Navbar: React.FC<{ role: string, userid: string }> = ({ role, userid }) =>
                     </div>
 
                     <div className="flex items-center space-x-3">
-                        
                         <div className="flex items-center space-x-2 bg-primaryhover hover:bg-opacity-90 transition-all duration-200 px-4 py-2 rounded-lg cursor-pointer">
                             <BsPersonCircle className="w-4 h-4" />
-                            <span className="hidden sm:block">{userid}</span>
+                            <span>{userid}</span>
                         </div>
                         <button
                             onClick={handleLogout}
                             className="flex items-center space-x-2 bg-primaryhover hover:bg-opacity-90 transition-all duration-200 px-4 py-2 rounded-lg"
                         >
                             <AiOutlineLogout className="w-4 h-4" />
-                            <span className="hidden sm:block">Logout</span>
-                        </button>
-                        <button
-                            className="lg:hidden bg-primaryhover p-2 rounded-lg"
-                            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                        >
-                            <RiMenu3Line className="w-5 h-5" />
+                            <span>Logout</span>
                         </button>
                     </div>
                 </div>
             </div>
 
-            <div className={`bg-white border-b transition-all duration-300 ${isMobileMenuOpen ? 'max-h-screen' : 'max-h-14 overflow-hidden'}`}>
+            <div className="bg-white border-b">
                 <div className="container mx-auto px-2">
-                    <div className="flex flex-col lg:flex-row lg:items-center lg:h-14 overflow-x-auto scrollbar-hide px-[8vw] [@media(min-width:1920px)]:px-0">
+                    <div className="flex items-center h-14 overflow-x-auto scrollbar-hide px-[8vw] [@media(min-width:1920px)]:px-0">
                         {filteredNavItems.map((item) => (
                             <NavItem
                                 key={item.href}

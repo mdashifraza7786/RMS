@@ -142,12 +142,12 @@ const OrderQueueCard: React.FC<OrderQueueCardProps> = ({ table, waiter, amount, 
                                             <div className="flex flex-col">
                                                 <span className="font-medium text-gray-800">{item.item_name}</span>
                                                 <div className="flex items-center gap-2">
-                                                    <span className="text-xs text-gray-500">₹{item.price.toFixed(2)} per item</span>
+                                                    <span className="text-xs text-gray-500">₹{Number((item as any).price).toFixed(2)} per item</span>
                                                     {statusChip((item as any).status)}
                                                 </div>
                                             </div>
                                             <span className="bg-primary/10 text-primary px-2 py-1 rounded text-sm font-medium">
-                                                {item.quantity}x
+                                                {Number((item as any).quantity)}x
                                             </span>
                                         </li>
                                     ))

@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, useCallback } from "react";
 import CustomerHeader from "@/components/customer/Header";
 import LoadingBar from "@/components/customer/LoadingBar";
 import { useSession } from "next-auth/react";
@@ -41,7 +41,7 @@ export default function TrackOrder() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const load = async () => {
+  const load = useCallback(async () => {
     if (!mobile) return;
     setLoading(true);
     try {
@@ -84,13 +84,13 @@ export default function TrackOrder() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [mobile]);
 
   useEffect(() => {
     load();
     const id = setInterval(load, 10000);
     return () => clearInterval(id);
-  }, [mobile]);
+  }, [load]);
 
   return (
     <div className="max-w-md mx-auto pb-16 bg-white">

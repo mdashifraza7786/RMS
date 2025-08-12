@@ -363,118 +363,189 @@ const OrdersPage: React.FC = () => {
           </div>
         </div>
 
-        <div className="overflow-x-auto">
-          {loading ? (
-            <div className="flex justify-center items-center py-12">
-              <Bars height="50" width="50" color="primary" ariaLabel="bars-loading" />
-            </div>
-          ) : (
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  {[
-                    { id: "orderId", label: "Order ID" },
-                    { id: "tableId", label: "Table" },
-                    { id: "waiter", label: "Waiter" },
-                    { id: "chef", label: "Chef" },
-                    { id: "totalPrice", label: "Total" },
-                    { id: "startTime", label: "Start Time" },
-                    { id: "endTime", label: "End Time" },
-                    { id: "status", label: "Status" },
-                    { id: "action", label: "Action" }
-                  ].map((header) => (
-                    <th
-                      key={header.id}
-                      className={`px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider ${header.label === "Start Time" || header.label === "End Time" ? "hidden [@media(min-width:1915px)]:table-cell" : ""}`}
-                    >
-                      {header.label}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {paginatedOrders.length > 0 ? (
-                  paginatedOrders.map((order) => (
-                    <tr key={order.id} className="hover:bg-gray-50 transition duration-150">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        #{order.id}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        <div className="flex items-center">
-                          <BiTable className="mr-1 text-gray-400" />
-                          {order.table_id}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        <div className="flex items-center">
-                          <MdPerson className="mr-1 text-gray-400" />
-                          {order.waiter_name || "Not assigned"}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {order.chef_name || "Not assigned"}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        {formatCurrency(order.order_items.reduce((sum, item) => sum + item.price * item.quantity, 0))}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 hidden [@media(min-width:1915px)]:table-cell">
-                        <div className="flex items-center">
-                          <BsClock className="mr-1 text-gray-400" />
-                          {new Date(order.start_time).toLocaleString('en-US', {
-                            month: 'short',
-                            day: 'numeric',
-                            hour: '2-digit',
-                            minute: '2-digit'
-                          })}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 hidden [@media(min-width:1915px)]:table-cell">
-                        {order.end_time ? (
+        {loading ? (
+          <div className="flex justify-center items-center py-12">
+            <Bars height="50" width="50" color="primary" ariaLabel="bars-loading" />
+          </div>
+        ) : (
+          <>
+            {/* Desktop Table View */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    {[
+                      { id: "orderId", label: "Order ID" },
+                      { id: "tableId", label: "Table" },
+                      { id: "waiter", label: "Waiter" },
+                      { id: "chef", label: "Chef" },
+                      { id: "totalPrice", label: "Total" },
+                      { id: "startTime", label: "Start Time" },
+                      { id: "endTime", label: "End Time" },
+                      { id: "status", label: "Status" },
+                      { id: "action", label: "Action" }
+                    ].map((header) => (
+                      <th
+                        key={header.id}
+                        className={`px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider ${header.label === "Start Time" || header.label === "End Time" ? "hidden [@media(min-width:1915px)]:table-cell" : ""}`}
+                      >
+                        {header.label}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {paginatedOrders.length > 0 ? (
+                    paginatedOrders.map((order) => (
+                      <tr key={order.id} className="hover:bg-gray-50 transition duration-150">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                          #{order.id}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                           <div className="flex items-center">
-                            <BsClockHistory className="mr-1 text-gray-400" />
-                            {new Date(order.end_time).toLocaleString('en-US', {
+                            <BiTable className="mr-1 text-gray-400" />
+                            {order.table_id}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          <div className="flex items-center">
+                            <MdPerson className="mr-1 text-gray-400" />
+                            {order.waiter_name || "Not assigned"}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {order.chef_name || "Not assigned"}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                          {formatCurrency(order.order_items.reduce((sum, item) => sum + item.price * item.quantity, 0))}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 hidden [@media(min-width:1915px)]:table-cell">
+                          <div className="flex items-center">
+                            <BsClock className="mr-1 text-gray-400" />
+                            {new Date(order.start_time).toLocaleString('en-US', {
                               month: 'short',
                               day: 'numeric',
                               hour: '2-digit',
                               minute: '2-digit'
                             })}
                           </div>
-                        ) : (
-                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                            In Progress
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 hidden [@media(min-width:1915px)]:table-cell">
+                          {order.end_time ? (
+                            <div className="flex items-center">
+                              <BsClockHistory className="mr-1 text-gray-400" />
+                              {new Date(order.end_time).toLocaleString('en-US', {
+                                month: 'short',
+                                day: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                              })}
+                            </div>
+                          ) : (
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                              In Progress
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}>
+                            {order.status.toUpperCase()}
                           </span>
-                        )}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          <button
+                            className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-primary hover:bg-primary/80 transition"
+                            onClick={() => handleDetailsClick(order)}
+                          >
+                            View Details
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={9} className="py-12 text-center">
+                        <div className="flex flex-col items-center justify-center text-gray-500">
+                          <FaUserSlash className="text-primary text-2xl mb-2" />
+                          <p className="text-lg font-medium">No orders available</p>
+                          <p className="mt-1 text-sm">Try adjusting your search or selecting a different tab.</p>
+                        </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile Card View */}
+            <div className="md:hidden px-4">
+              {paginatedOrders.length > 0 ? (
+                <div className="space-y-4">
+                  {paginatedOrders.map((order) => (
+                    <div key={order.id} className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                      <div className="bg-gray-50 p-3 flex justify-between items-center">
+                        <div className="font-medium text-gray-800">#{order.id}</div>
                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}>
                           {order.status.toUpperCase()}
                         </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      </div>
+                      <div className="p-4 space-y-3">
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm text-gray-500">Table</span>
+                          <span className="text-sm font-medium flex items-center">
+                            <BiTable className="mr-1 text-gray-400" />
+                            {order.table_id}
+                          </span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm text-gray-500">Waiter</span>
+                          <span className="text-sm">{order.waiter_name || "Not assigned"}</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm text-gray-500">Chef</span>
+                          <span className="text-sm">{order.chef_name || "Not assigned"}</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm text-gray-500">Total</span>
+                          <span className="text-sm font-medium">
+                            {formatCurrency(order.order_items.reduce((sum, item) => sum + item.price * item.quantity, 0))}
+                          </span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm text-gray-500">Start Time</span>
+                          <span className="text-sm">
+                            {new Date(order.start_time).toLocaleString('en-US', {
+                              month: 'short',
+                              day: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="border-t border-gray-100 p-3 bg-gray-50 flex justify-end">
                         <button
                           className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-primary hover:bg-primary/80 transition"
                           onClick={() => handleDetailsClick(order)}
                         >
                           View Details
                         </button>
-                      </td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan={9} className="py-12 text-center">
-                      <div className="flex flex-col items-center justify-center text-gray-500">
-                        <FaUserSlash className="text-primary text-2xl mb-2" />
-                        <p className="text-lg font-medium">No orders available</p>
-                        <p className="mt-1 text-sm">Try adjusting your search or selecting a different tab.</p>
                       </div>
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          )}
-        </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="py-12 text-center">
+                  <div className="flex flex-col items-center justify-center text-gray-500">
+                    <FaUserSlash className="text-primary text-2xl mb-2" />
+                    <p className="text-lg font-medium">No orders available</p>
+                    <p className="mt-1 text-sm">Try adjusting your search or selecting a different tab.</p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </>
+        )}
 
         <div className="px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-gray-100">
           <div className="text-sm text-gray-600">

@@ -86,7 +86,7 @@ const WaiterChart: React.FC = () => {
         };
         
         return generateData(labels[chartXY]);
-    }, [chartXY, timeFrame, data, chartType, generateData]);
+    }, [chartXY, generateData]);
 
     if (loading) {
         return (

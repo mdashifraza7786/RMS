@@ -22,8 +22,6 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
   onChange,
   onFileChange
 }) => {
-  if (!isVisible) return null;
-
   // Local-only password change UI state (no backend integration)
   const [newPassword, setNewPassword] = useState<string>('');
   const [confirmPassword, setConfirmPassword] = useState<string>('');
@@ -31,6 +29,8 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
   const [showConfirmPassword, setShowConfirmPassword] = useState<boolean>(false);
   const [passwordFeedback, setPasswordFeedback] = useState<{ message: string; success: boolean } | null>(null);
   const [passwordLoading, setPasswordLoading] = useState<boolean>(false);
+  
+  if (!isVisible) return null;
 
   const generateStrongPassword = (length: number = 12): string => {
     const upper = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';

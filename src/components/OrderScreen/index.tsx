@@ -332,51 +332,51 @@ const OrderScreen: React.FC<OrderScreenProps> = ({
 
     return (
         <div className="fixed inset-0 bg-gray-900 bg-opacity-80 backdrop-blur-sm flex justify-center items-center z-50">
-                <div className={`${isChef ? 'w-[60%] max-w-5xl' : 'w-[90%]'} h-[90%] bg-white font-normal flex flex-col relative shadow-2xl rounded-2xl p-6 overflow-hidden`}>
+                <div className={`${isChef ? 'w-[95%] sm:w-[80%] md:w-[60%] max-w-5xl' : 'w-[95%] sm:w-[90%]'} h-[95%] sm:h-[90%] bg-white font-normal flex flex-col relative shadow-2xl rounded-2xl p-3 sm:p-6 overflow-hidden`}>
                 {/* Header */}
-                <div className="flex justify-between items-center pb-4 border-b border-gray-100">
-                    <div className="font-bold text-xl text-gray-800 flex items-center">
-                        <span className="bg-primary text-white px-3 py-1 rounded-lg mr-3">
+                <div className="flex justify-between items-center pb-3 sm:pb-4 border-b border-gray-100">
+                    <div className="font-bold text-base sm:text-xl text-gray-800 flex flex-wrap items-center gap-2">
+                        <span className="bg-primary text-white px-2 sm:px-3 py-1 rounded-lg">
                             {tableNumber === 0 ? "Parcel" : `Table #${tableNumber}`}
                         </span>
-                        {booked && <span className="text-sm bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Active Order</span>}
+                        {booked && <span className="text-xs sm:text-sm bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Active Order</span>}
                     </div>
                     <button 
                         onClick={closeOrderScreen} 
-                        className="text-gray-500 hover:text-red-500 hover:bg-red-50 p-2 rounded-full transition-all"
+                        className="text-gray-500 hover:text-red-500 hover:bg-red-50 p-1.5 sm:p-2 rounded-full transition-all"
                     >
-                        <IoClose size={24} />
+                        <IoClose size={20} className="sm:text-2xl" />
                     </button>
                 </div>
 
                 {/* Main content */}
-                <div className={`grid ${isChef ? 'grid-cols-1' : 'grid-cols-3'} gap-6 h-[calc(100%-80px)] overflow-hidden`}>
+                <div className={`grid ${isChef ? 'grid-cols-1' : 'grid-cols-1 lg:grid-cols-3'} gap-4 sm:gap-6 h-[calc(100%-60px)] sm:h-[calc(100%-80px)] overflow-hidden`}>
                     {/* Left column */}
-                    <div className={`flex flex-col ${isChef ? 'col-span-1' : 'col-span-2'} gap-4 h-full overflow-hidden`}>
+                    <div className={`flex flex-col ${isChef ? 'col-span-1' : 'lg:col-span-2'} gap-3 sm:gap-4 h-full overflow-hidden`}>
                         {/* Tabs (hidden for chef) */}
                         {!isChef && (
                           <div className="flex border-b flex-shrink-0">
                               <button 
-                                  className={`flex items-center py-3 px-5 gap-2 font-medium border-b-2 transition-all ${
+                                  className={`flex items-center py-2 sm:py-3 px-3 sm:px-5 gap-1 sm:gap-2 text-sm sm:text-base font-medium border-b-2 transition-all ${
                                       activeTab === 'menu' 
                                           ? 'border-primary text-primary' 
                                           : 'border-transparent text-gray-500 hover:text-gray-700'
                                   }`}
                                   onClick={() => setActiveTab('menu')}
                               >
-                                  <FaSearch size={16} />
+                                  <FaSearch size={14} className="sm:text-base" />
                                   <span>Menu</span>
                               </button>
                               {booked && (
                                   <button 
-                                      className={`flex items-center py-3 px-5 gap-2 font-medium border-b-2 transition-all ${
+                                      className={`flex items-center py-2 sm:py-3 px-3 sm:px-5 gap-1 sm:gap-2 text-sm sm:text-base font-medium border-b-2 transition-all ${
                                           activeTab === 'order' 
                                               ? 'border-primary text-primary' 
                                               : 'border-transparent text-gray-500 hover:text-gray-700'
                                       }`}
                                       onClick={() => setActiveTab('order')}
                                   >
-                                      <FaReceipt size={16} />
+                                      <FaReceipt size={14} className="sm:text-base" />
                                       <span>Current Order</span>
                                   </button>
                               )}
@@ -430,9 +430,9 @@ const OrderScreen: React.FC<OrderScreenProps> = ({
                     {/* Right column: hidden for chef */}
                     {!isChef && (
                       <div className="h-full flex flex-col">
-                          <div className="flex items-center mb-3 text-gray-800 flex-shrink-0">
-                              <FaShoppingCart className="mr-2" />
-                              <h2 className="font-medium text-lg">Order Summary</h2>
+                          <div className="flex items-center mb-2 sm:mb-3 text-gray-800 flex-shrink-0">
+                              <FaShoppingCart className="mr-1.5 sm:mr-2 text-sm sm:text-base" />
+                              <h2 className="font-medium text-base sm:text-lg">Order Summary</h2>
                           </div>
                           <div className="flex-grow">
                               <BillSummary 

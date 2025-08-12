@@ -301,28 +301,59 @@ const InventoryForecastPage: React.FC = () => {
 
           {/* Table card (stacked) */}
           <section className="mt-6 bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-              <div className="p-6 overflow-x-auto">
+              <div className="p-6">
                 <h2 className="text-lg font-semibold text-gray-800 mb-3">Revenue Forecast Details</h2>
-                <table className="min-w-full">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Predicted Revenue</th>
-                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Lower</th>
-                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Upper</th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {revForecast.map((row, idx) => (
-                      <tr key={idx}>
-                        <td className="px-4 py-2 text-sm">{row['forecasted date']?.slice(0, 10)}</td>
-                        <td className="px-4 py-2 text-sm">₹ {Number(row['predicted revenue']).toFixed(2)}</td>
-                        <td className="px-4 py-2 text-sm">₹ {Number(row['yhat_lower']).toFixed(2)}</td>
-                        <td className="px-4 py-2 text-sm">₹ {Number(row['yhat_upper']).toFixed(2)}</td>
+                
+                {/* Desktop Table View */}
+                <div className="hidden md:block overflow-x-auto">
+                  <table className="min-w-full">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Predicted Revenue</th>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Lower</th>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Upper</th>
                       </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {revForecast.map((row, idx) => (
+                        <tr key={idx}>
+                          <td className="px-4 py-2 text-sm">{row['forecasted date']?.slice(0, 10)}</td>
+                          <td className="px-4 py-2 text-sm">₹ {Number(row['predicted revenue']).toFixed(2)}</td>
+                          <td className="px-4 py-2 text-sm">₹ {Number(row['yhat_lower']).toFixed(2)}</td>
+                          <td className="px-4 py-2 text-sm">₹ {Number(row['yhat_upper']).toFixed(2)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                
+                {/* Mobile Card View */}
+                <div className="md:hidden">
+                  <div className="space-y-4">
+                    {revForecast.map((row, idx) => (
+                      <div key={idx} className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                        <div className="bg-gray-50 p-3">
+                          <div className="font-medium text-gray-800">{row['forecasted date']?.slice(0, 10)}</div>
+                        </div>
+                        <div className="p-4 space-y-3">
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm text-gray-500">Predicted Revenue</span>
+                            <span className="text-sm font-medium">₹ {Number(row['predicted revenue']).toFixed(2)}</span>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm text-gray-500">Lower Bound</span>
+                            <span className="text-sm">₹ {Number(row['yhat_lower']).toFixed(2)}</span>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm text-gray-500">Upper Bound</span>
+                            <span className="text-sm">₹ {Number(row['yhat_upper']).toFixed(2)}</span>
+                          </div>
+                        </div>
+                      </div>
                     ))}
-                  </tbody>
-                </table>
+                  </div>
+                </div>
               </div>
           </section>
         </>
@@ -368,28 +399,59 @@ const InventoryForecastPage: React.FC = () => {
 
           {/* Table card (stacked) */}
           <section className="mt-6 bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-              <div className="p-6 overflow-x-auto">
+              <div className="p-6">
                 <h2 className="text-lg font-semibold text-gray-800 mb-3">Forecast Details</h2>
-                <table className="min-w-full">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Predicted</th>
-                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Lower</th>
-                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Upper</th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {forecast.map((row, idx) => (
-                      <tr key={idx}>
-                        <td className="px-4 py-2 text-sm">{row['forecasted date']?.slice(0, 10)}</td>
-                        <td className="px-4 py-2 text-sm">{Number(row['predicted value']).toFixed(2)}</td>
-                        <td className="px-4 py-2 text-sm">{Number(row['yhat_lower']).toFixed(2)}</td>
-                        <td className="px-4 py-2 text-sm">{Number(row['yhat_upper']).toFixed(2)}</td>
+                
+                {/* Desktop Table View */}
+                <div className="hidden md:block overflow-x-auto">
+                  <table className="min-w-full">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Predicted</th>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Lower</th>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Upper</th>
                       </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {forecast.map((row, idx) => (
+                        <tr key={idx}>
+                          <td className="px-4 py-2 text-sm">{row['forecasted date']?.slice(0, 10)}</td>
+                          <td className="px-4 py-2 text-sm">{Number(row['predicted value']).toFixed(2)}</td>
+                          <td className="px-4 py-2 text-sm">{Number(row['yhat_lower']).toFixed(2)}</td>
+                          <td className="px-4 py-2 text-sm">{Number(row['yhat_upper']).toFixed(2)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                
+                {/* Mobile Card View */}
+                <div className="md:hidden">
+                  <div className="space-y-4">
+                    {forecast.map((row, idx) => (
+                      <div key={idx} className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                        <div className="bg-gray-50 p-3">
+                          <div className="font-medium text-gray-800">{row['forecasted date']?.slice(0, 10)}</div>
+                        </div>
+                        <div className="p-4 space-y-3">
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm text-gray-500">Predicted</span>
+                            <span className="text-sm font-medium">{Number(row['predicted value']).toFixed(2)}</span>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm text-gray-500">Lower Bound</span>
+                            <span className="text-sm">{Number(row['yhat_lower']).toFixed(2)}</span>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm text-gray-500">Upper Bound</span>
+                            <span className="text-sm">{Number(row['yhat_upper']).toFixed(2)}</span>
+                          </div>
+                        </div>
+                      </div>
                     ))}
-                  </tbody>
-                </table>
+                  </div>
+                </div>
               </div>
             </section>
         </>

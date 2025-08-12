@@ -220,30 +220,110 @@ const Page: React.FC = () => {
                     </div>
                 </div>
 
-                <div className="overflow-x-auto">
-                    {loading ? (
-                        <div className="flex justify-center items-center py-12">
-                            <Bars height="50" width="50" color="primary" ariaLabel="bars-loading" />
+                {loading ? (
+                    <div className="flex justify-center items-center py-12">
+                        <Bars height="50" width="50" color="primary" ariaLabel="bars-loading" />
+                    </div>
+                ) : (
+                    <>
+                        {/* Desktop Table View */}
+                        <div className="hidden md:block overflow-x-auto">
+                            <table className="min-w-full divide-y divide-gray-200 table-fixed">
+                                <thead className="bg-gray-50">
+                                    <tr>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Image</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Item ID</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Item Name</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="bg-white divide-y divide-gray-200">
+                                    {filteredData.length > 0 ? (
+                                        filteredData.map((item) => (
+                                            <tr key={item.item_id} className="hover:bg-gray-50 transition duration-150">
+                                                <td className="px-6 py-4 whitespace-nowrap">
+                                                    <div className="w-16 h-16 rounded-md overflow-hidden bg-gray-100 border border-gray-200">
+                                                        {item.item_thumbnail ? (
+                                                            <Image
+                                                                src={item.item_thumbnail}
+                                                                alt={item.item_name}
+                                                                width={64}
+                                                                height={64}
+                                                                className="w-full h-full object-cover"
+                                                            />
+                                                        ) : (
+                                                            <div className="w-full h-full flex items-center justify-center text-gray-400">
+                                                                No image
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                                    {item.item_id}
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                                                    <div>
+                                                        <div className="font-medium">{item.item_name}</div>
+                                                        <div className="text-xs text-gray-500 mt-1 line-clamp-1">{item.item_description}</div>
+                                                    </div>
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                    {item.item_type}
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap">
+                                                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getFoodTypeBadge(item.item_foodtype)}`}>
+                                                        {item.item_foodtype === "veg" ? "Vegetarian" : "Non-Vegetarian"}
+                                                    </span>
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                                    {formatCurrency(item.item_price)}
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                    <div className="flex items-center space-x-2">
+                                                        <button
+                                                            className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-primary hover:bg-primary/90 transition"
+                                                            onClick={() => handleEditClick(item)}
+                                                        >
+                                                            <FaPenToSquare className="mr-1.5" size={12} />
+                                                            Edit
+                                                        </button>
+                                                        <button
+                                                            className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-red-600 hover:bg-red-700 transition"
+                                                            onClick={() => handleDeleteClick(item.item_id, item.item_name)}
+                                                        >
+                                                            <FaTrash className="mr-1.5" size={12} />
+                                                            Delete
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))
+                                    ) : (
+                                        <tr>
+                                            <td colSpan={8} className="py-12 text-center">
+                                                <div className="flex flex-col items-center justify-center text-gray-500">
+                                                    <MdOutlineRestaurantMenu className="text-primary text-4xl mb-2" />
+                                                    <p className="text-lg font-medium">No menu items found</p>
+                                                    <p className="mt-1 text-sm">Try adjusting your search or adding a new item.</p>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
                         </div>
-                    ) : (
-                        <table className="min-w-full divide-y divide-gray-200 table-fixed">
-                            <thead className="bg-gray-50">
-                                <tr>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Image</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Item ID</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Item Name</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody className="bg-white divide-y divide-gray-200">
-                                {filteredData.length > 0 ? (
-                                    filteredData.map((item) => (
-                                        <tr key={item.item_id} className="hover:bg-gray-50 transition duration-150">
-                                            <td className="px-6 py-4 whitespace-nowrap">
-                                                <div className="w-16 h-16 rounded-md overflow-hidden bg-gray-100 border border-gray-200">
+
+                        {/* Mobile Card View */}
+                        <div className="md:hidden px-4">
+                            {filteredData.length > 0 ? (
+                                <div className="space-y-4">
+                                    {filteredData.map((item) => (
+                                        <div key={item.item_id} className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                                            <div className="flex p-4 items-center">
+                                                <div className="w-16 h-16 rounded-md overflow-hidden bg-gray-100 border border-gray-200 mr-4 flex-shrink-0">
                                                     {item.item_thumbnail ? (
                                                         <Image
                                                             src={item.item_thumbnail}
@@ -258,29 +338,20 @@ const Page: React.FC = () => {
                                                         </div>
                                                     )}
                                                 </div>
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                                {item.item_id}
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                                                <div>
-                                                    <div className="font-medium">{item.item_name}</div>
-                                                    <div className="text-xs text-gray-500 mt-1 line-clamp-1">{item.item_description}</div>
+                                                <div className="flex-grow">
+                                                    <div className="font-medium text-gray-800">{item.item_name}</div>
+                                                    <div className="text-sm text-gray-500 mt-1 line-clamp-1">{item.item_description}</div>
+                                                    <div className="flex items-center justify-between mt-2">
+                                                        <span className="text-sm font-medium text-gray-900">{formatCurrency(item.item_price)}</span>
+                                                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${getFoodTypeBadge(item.item_foodtype)}`}>
+                                                            {item.item_foodtype === "veg" ? "Veg" : "Non-Veg"}
+                                                        </span>
+                                                    </div>
                                                 </div>
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                {item.item_type}
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap">
-                                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getFoodTypeBadge(item.item_foodtype)}`}>
-                                                    {item.item_foodtype === "veg" ? "Vegetarian" : "Non-Vegetarian"}
-                                                </span>
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                                {formatCurrency(item.item_price)}
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                <div className="flex items-center space-x-2">
+                                            </div>
+                                            <div className="border-t border-gray-100 p-3 bg-gray-50 flex justify-between items-center">
+                                                <div className="text-xs text-gray-500">{item.item_type}</div>
+                                                <div className="flex space-x-2">
                                                     <button
                                                         className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-primary hover:bg-primary/90 transition"
                                                         onClick={() => handleEditClick(item)}
@@ -296,24 +367,23 @@ const Page: React.FC = () => {
                                                         Delete
                                                     </button>
                                                 </div>
-                                            </td>
-                                        </tr>
-                                    ))
-                                ) : (
-                                    <tr>
-                                        <td colSpan={8} className="py-12 text-center">
-                                            <div className="flex flex-col items-center justify-center text-gray-500">
-                                                <FaUserSlash className="text-primary text-2xl" />
-                                                <p className="text-lg font-medium">No menu items found</p>
-                                                <p className="mt-1 text-sm">Try adjusting your search or adding a new item.</p>
                                             </div>
-                                        </td>
-                                    </tr>
-                                )}
-                            </tbody>
-                        </table>
-                    )}
-                </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="py-12 text-center">
+                                    <div className="flex flex-col items-center justify-center text-gray-500">
+                                        <MdOutlineRestaurantMenu className="text-primary text-4xl mb-2" />
+                                        <p className="text-lg font-medium">No menu items found</p>
+                                        <p className="mt-1 text-sm">Try adjusting your search or adding a new item.</p>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </>
+                )
+                }
             </div>
 
             {popupOpened && (

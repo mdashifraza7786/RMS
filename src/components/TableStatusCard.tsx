@@ -17,26 +17,26 @@ const TableStatusCard: React.FC<TableStatusCardProps> = ({ tableno, tablestatus,
     
     return (
         <div 
-            className={`flex flex-col items-center justify-center p-3 rounded-xl shadow-sm border ${bgClass} ${isClickable ? 'cursor-pointer hover:shadow-md' : 'cursor-not-allowed opacity-60'}`}
+            className={`flex flex-col items-center justify-center p-2 sm:p-3 rounded-xl shadow-sm border ${bgClass} ${isClickable ? 'cursor-pointer hover:shadow-md' : 'cursor-not-allowed opacity-60'}`}
             onClick={() => { if (isClickable) doOrder(tableno); }}
         >
-            <div className={`w-10 h-10 rounded-full ${iconBgClass} flex items-center justify-center mb-2`}>
+            <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full ${iconBgClass} flex items-center justify-center mb-1 sm:mb-2`}>
                 {tableno === 0 ? (
-                    <MdDeliveryDining size={22} />
+                    <MdDeliveryDining size={18} className="sm:text-[22px]" />
                 ) : (
-                    <MdTableBar size={20} />
+                    <MdTableBar size={16} className="sm:text-[20px]" />
                 )}
             </div>
             
             <div className="text-center">
-                <p className={`text-sm font-medium ${textClass}`}>
+                <p className={`text-xs sm:text-sm font-medium ${textClass}`}>
                     {tableno === 0 ? "Parcel" : `Table #${tableno}`}
                 </p>
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-[10px] sm:text-xs text-gray-500 mt-0.5 sm:mt-1">
                     {isAvailable ? 'Available' : 'Occupied'}
                 </p>
                 {!isClickable && (
-                  <p className="text-[11px] text-gray-400 mt-1">Not assigned to you</p>
+                  <p className="text-[9px] sm:text-[11px] text-gray-400 mt-0.5 sm:mt-1">Not assigned</p>
                 )}
             </div>
         </div>

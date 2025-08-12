@@ -79,7 +79,7 @@ const WaiterStats: React.FC<WaiterStatsProps> = ({ orderedItems }) => {
 
       <div className="p-4 bg-white rounded-xl shadow-sm border border-gray-100">
         <div className="flex items-center justify-between mb-2">
-          <span className="text-sm text-gray-600">Today's Orders</span>
+          <span className="text-sm text-gray-600">Today&apos;s Orders</span>
           <span className="p-2 rounded-lg bg-blue-50 text-blue-600">
             <FaCalendarDay />
           </span>

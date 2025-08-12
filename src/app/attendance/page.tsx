@@ -123,7 +123,7 @@ const Page: React.FC = () => {
         if (getdate) {
             getAttendanceByDate();
         }
-    }, [getdate]);
+    }, [getdate, role, userid]);
 
     useEffect(() => {
         const filtered = attendanceData.filter(item =>
@@ -197,7 +197,7 @@ const Page: React.FC = () => {
         
         fetchTodayAttendance();
         document.title = "Staff Attendance";
-    }, []);
+    }, [role, userid]);
 
     const hasAttendanceRecords = (date: string) => {
         return Array.isArray(availableDates) && availableDates.some(d => d === date);
@@ -448,51 +448,138 @@ const Page: React.FC = () => {
                         </div>
                     </div>
 
-                    <div className="overflow-x-auto">
-                        {attendanceloading ? (
-                            <div className="flex justify-center items-center py-12">
-                                <Bars height="50" width="50" color="#1e4569" ariaLabel="bars-loading" />
+                    {attendanceloading ? (
+                        <div className="flex justify-center items-center py-12">
+                            <Bars height="50" width="50" color="#1e4569" ariaLabel="bars-loading" />
+                        </div>
+                    ) : (
+                        <>
+                            {/* Desktop Table View */}
+                            <div className="hidden md:block overflow-x-auto">
+                                <table className="min-w-full divide-y divide-gray-200 table-fixed">
+                                    <thead className="bg-gray-50">
+                                        <tr>
+                                            <th className="w-24 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                ID
+                                            </th>
+                                            <th className="w-48 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Name
+                                            </th>
+                                            <th className="w-32 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Role
+                                            </th>
+                                            <th className="w-48 px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Status
+                                            </th>
+                                            <th className="w-36 px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Action
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="bg-white divide-y divide-gray-200">
+                                        {filteredData.length > 0 ? (
+                                            filteredData.map((item, index) => (
+                                                <tr key={index} className="hover:bg-gray-50 transition duration-150">
+                                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                                        {item.userid}
+                                                    </td>
+                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                        {item.name}
+                                                    </td>
+                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                        {item.role}
+                                                    </td>
+                                                    <td className="px-6 py-4 whitespace-nowrap text-center">
+                                                        {item.status === 'present' ? (
+                                                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                                PRESENT
+                                                            </span>
+                                                        ) : item.status === 'absent' ? (
+                                                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                                                ABSENT
+                                                            </span>
+                                                        ) : (
+                                                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
+                                                                NOT MARKED
+                                                            </span>
+                                                        )}
+                                                    </td>
+                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
+                                                        <div className="flex justify-center space-x-2">
+                                                            <button
+                                                                disabled={getdate !== today || item.status === 'present'}
+                                                                onClick={() => giveAttendance(item.userid, 'present', 'update')}
+                                                                className={`inline-flex items-center px-3 py-1 rounded text-xs font-medium ${
+                                                                    item.status === 'present'
+                                                                        ? 'bg-green-500 text-white cursor-not-allowed'
+                                                                        : getdate !== today
+                                                                        ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                                                                        : 'bg-green-100 text-green-800 hover:bg-green-200'
+                                                                } transition-colors`}
+                                                            >
+                                                                <FaCheck className="mr-1" />
+                                                                Present
+                                                            </button>
+                                                            
+                                                            <button
+                                                                disabled={getdate !== today || item.status === 'absent'}
+                                                                onClick={() => giveAttendance(item.userid, 'absent', 'update')}
+                                                                className={`inline-flex items-center px-3 py-1 rounded text-xs font-medium ${
+                                                                    item.status === 'absent'
+                                                                        ? 'bg-red-500 text-white cursor-not-allowed'
+                                                                        : getdate !== today
+                                                                        ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                                                                        : 'bg-red-100 text-red-800 hover:bg-red-200'
+                                                                } transition-colors`}
+                                                            >
+                                                                <RxCross2 className="mr-1" />
+                                                                Absent
+                                                            </button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            ))
+                                        ) : (
+                                            <tr>
+                                                <td colSpan={5} className="py-12 text-center">
+                                                    <div className="flex flex-col items-center justify-center text-gray-500">
+                                                        <svg 
+                                                            xmlns="http://www.w3.org/2000/svg"
+                                                            fill="none" 
+                                                            viewBox="0 0 24 24" 
+                                                            stroke="currentColor" 
+                                                            className="w-16 h-16 mb-4 text-gray-300"
+                                                        >
+                                                            <path 
+                                                                strokeLinecap="round" 
+                                                                strokeLinejoin="round" 
+                                                                strokeWidth="1" 
+                                                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                                                            />
+                                                        </svg>
+                                                        <p className="text-lg font-medium">No attendance records found</p>
+                                                        <p className="mt-1 text-sm">Try adjusting your search criteria or generate attendance for today.</p>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        )}
+                                    </tbody>
+                                </table>
                             </div>
-                        ) : (
-                            <table className="min-w-full divide-y divide-gray-200 table-fixed">
-                                <thead className="bg-gray-50">
-                                    <tr>
-                                        <th className="w-24 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            ID
-                                        </th>
-                                        <th className="w-48 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            Name
-                                        </th>
-                                        <th className="w-32 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            Role
-                                        </th>
-                                        <th className="w-48 px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            Status
-                                        </th>
-                                        <th className="w-36 px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            Action
-                                        </th>
-                            </tr>
-                        </thead>
-                                <tbody className="bg-white divide-y divide-gray-200">
-                                    {filteredData.length > 0 ? (
-                                        filteredData.map((item, index) => (
-                                            <tr key={index} className="hover:bg-gray-50 transition duration-150">
-                                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                                    {item.userid}
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                    {item.name}
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                    {item.role}
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-center">
-                                        {item.status === 'present' ? (
+
+                            {/* Mobile Card View */}
+                            <div className="md:hidden px-4">
+                                {filteredData.length > 0 ? (
+                                    <div className="space-y-4">
+                                        {filteredData.map((item, index) => (
+                                            <div key={index} className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                                                <div className="bg-gray-50 p-3 flex justify-between items-center">
+                                                    <div className="font-medium text-gray-800">{item.userid}</div>
+                                                    {item.status === 'present' ? (
                                                         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                                                             PRESENT
                                                         </span>
-                                        ) : item.status === 'absent' ? (
+                                                    ) : item.status === 'absent' ? (
                                                         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
                                                             ABSENT
                                                         </span>
@@ -501,17 +588,25 @@ const Page: React.FC = () => {
                                                             NOT MARKED
                                                         </span>
                                                     )}
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
-                                                    <div className="flex justify-center space-x-2">
+                                                </div>
+                                                <div className="p-4 space-y-3">
+                                                    <div className="flex justify-between items-center">
+                                                        <span className="text-sm text-gray-500">Name</span>
+                                                        <span className="text-sm font-medium">{item.name}</span>
+                                                    </div>
+                                                    <div className="flex justify-between items-center">
+                                                        <span className="text-sm text-gray-500">Role</span>
+                                                        <span className="text-sm">{item.role}</span>
+                                                    </div>
+                                                </div>
+                                                {getdate === today && (
+                                                    <div className="border-t border-gray-100 p-3 bg-gray-50 flex justify-end space-x-2">
                                                         <button
-                                                            disabled={getdate !== today || item.status === 'present'}
+                                                            disabled={item.status === 'present'}
                                                             onClick={() => giveAttendance(item.userid, 'present', 'update')}
                                                             className={`inline-flex items-center px-3 py-1 rounded text-xs font-medium ${
                                                                 item.status === 'present'
                                                                     ? 'bg-green-500 text-white cursor-not-allowed'
-                                                                    : getdate !== today
-                                                                    ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
                                                                     : 'bg-green-100 text-green-800 hover:bg-green-200'
                                                             } transition-colors`}
                                                         >
@@ -520,13 +615,11 @@ const Page: React.FC = () => {
                                                         </button>
                                                         
                                                         <button
-                                                            disabled={getdate !== today || item.status === 'absent'}
+                                                            disabled={item.status === 'absent'}
                                                             onClick={() => giveAttendance(item.userid, 'absent', 'update')}
                                                             className={`inline-flex items-center px-3 py-1 rounded text-xs font-medium ${
                                                                 item.status === 'absent'
                                                                     ? 'bg-red-500 text-white cursor-not-allowed'
-                                                                    : getdate !== today
-                                                                    ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
                                                                     : 'bg-red-100 text-red-800 hover:bg-red-200'
                                                             } transition-colors`}
                                                         >
@@ -534,37 +627,35 @@ const Page: React.FC = () => {
                                                             Absent
                                                         </button>
                                                     </div>
-                                                </td>
-                                            </tr>
-                                        ))
-                                    ) : (
-                                        <tr>
-                                            <td colSpan={5} className="py-12 text-center">
-                                                <div className="flex flex-col items-center justify-center text-gray-500">
-                                                    <svg 
-                                                        xmlns="http://www.w3.org/2000/svg"
-                                                        fill="none" 
-                                                        viewBox="0 0 24 24" 
-                                                        stroke="currentColor" 
-                                                        className="w-16 h-16 mb-4 text-gray-300"
-                                                    >
-                                                        <path 
-                                                            strokeLinecap="round" 
-                                                            strokeLinejoin="round" 
-                                                            strokeWidth="1" 
-                                                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                                                        />
-                                                    </svg>
-                                                    <p className="text-lg font-medium">No attendance records found</p>
-                                                    <p className="mt-1 text-sm">Try adjusting your search criteria or generate attendance for today.</p>
-                                                </div>
-                                    </td>
-                                </tr>
-                                    )}
-                        </tbody>
-                    </table>
-                        )}
-                    </div>
+                                                )}
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="py-12 text-center">
+                                        <div className="flex flex-col items-center justify-center text-gray-500">
+                                            <svg 
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                fill="none" 
+                                                viewBox="0 0 24 24" 
+                                                stroke="currentColor" 
+                                                className="w-16 h-16 mb-4 text-gray-300"
+                                            >
+                                                <path 
+                                                    strokeLinecap="round" 
+                                                    strokeLinejoin="round" 
+                                                    strokeWidth="1" 
+                                                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                                                />
+                                            </svg>
+                                            <p className="text-lg font-medium">No attendance records found</p>
+                                            <p className="mt-1 text-sm">Try adjusting your search criteria or generate attendance for today.</p>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </>
+                    )}
                     </div>
                 )}
         </div>

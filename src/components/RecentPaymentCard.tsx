@@ -63,7 +63,7 @@ export default function PaymentsComponent() {
     };
 
     return (
-        <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100 h-full flex flex-col w-[50%]">
+        <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100 h-full flex flex-col w-full">
             <div className="flex justify-between items-center mb-6">
                 <h2 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
                     <MdPayment className="text-primary" />

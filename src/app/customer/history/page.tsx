@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import CustomerHeader from "@/components/customer/Header";
 import LoadingBar from "@/components/customer/LoadingBar";
 import { useSession } from "next-auth/react";
@@ -10,7 +10,7 @@ export default function CustomerHistory() {
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const load = async () => {
+  const load = useCallback(async () => {
     if (!mobile) return;
     setLoading(true);
     try {
@@ -21,11 +21,11 @@ export default function CustomerHistory() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [mobile]);
 
   useEffect(() => {
     load();
-  }, [mobile]);
+  }, [load]);
 
   return (
     <div className="max-w-md mx-auto pb-16 bg-white">

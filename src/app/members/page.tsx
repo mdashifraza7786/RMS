@@ -158,20 +158,22 @@ const Page: React.FC = () => {
             <MemberHeader />
 
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                <div className="p-6 border-b border-gray-100 flex justify-between items-center">
-                    <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-4">
-                        <MemberSearch
-                            searchQuery={searchQuery}
-                            setSearchQuery={setSearchQuery}
-                        />
+                <div className="p-6 border-b border-gray-100">
+                    <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
+                        <div className="flex-1">
+                            <MemberSearch
+                                searchQuery={searchQuery}
+                                setSearchQuery={setSearchQuery}
+                            />
+                        </div>
+                        <button
+                            onClick={handleAddMemberPopup}
+                            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-primary/90 transition shadow-sm"
+                        >
+                            <FaUserPlus className="mr-2" />
+                            <span>Add Member</span>
+                        </button>
                     </div>
-                    <button
-                        onClick={handleAddMemberPopup}
-                        className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-primary/90 transition shadow-sm"
-                    >
-                        <FaUserPlus className="mr-2" />
-                        <span>Add Member</span>
-                    </button>
                 </div>
 
                 <MembersList

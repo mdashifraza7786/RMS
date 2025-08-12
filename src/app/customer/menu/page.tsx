@@ -50,7 +50,7 @@ export default function CustomerMenu() {
       }
     };
     load();
-  }, []);
+  }, [session?.user]);
 
   const addToCart = (m: any) => {
     setCart(prev => {

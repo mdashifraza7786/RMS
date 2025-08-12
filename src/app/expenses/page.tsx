@@ -187,95 +187,162 @@ const ExpensePage: React.FC = () => {
                     </div>
                 </div>
 
-                <div className="overflow-x-auto">
-                    {isLoading ? (
-                        <div className="flex justify-center items-center py-12">
-                            <Bars height="50" width="50" color="primary" ariaLabel="bars-loading" />
-                        </div>
-                    ) : (
-                        <table className="min-w-full divide-y divide-gray-200">
-                            <thead className="bg-gray-50">
-                                <tr>
-                                    {[
-                                        { id: "date", label: "Date" },
-                                        { id: "expenseType", label: "Expense Type" },
-                                        { id: "frequency", label: "Frequency" },
-                                        { id: "cost", label: "Amount" },
-                                        { id: "actions", label: "Actions" }
-                                    ].map((header) => (
-                                        <th
-                                            key={header.id}
-                                            className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                                        >
-                                            {header.label}
-                                        </th>
-                                    ))}
-                                </tr>
-                            </thead>
-                            <tbody className="bg-white divide-y divide-gray-200">
-                                {filteredExpenses.length > 0 ? (
-                                    filteredExpenses.map((expense) => (
-                                        <tr key={expense.id} className="hover:bg-gray-50 transition duration-150">
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                {formatDate(expense.date)}
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                                {formatExpenseType(expense.expenses_for)}
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                <span className="capitalize">{expense.frequency}</span>
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                                {formatCurrency(expense.cost)}
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                <div className="flex gap-2">
-                                                    <button
-                                                        className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-primary hover:bg-primary/90 transition"
-                                                        onClick={() => handleEditClick(expense)}
+                {isLoading ? (
+                    <div className="flex justify-center items-center py-12">
+                        <Bars height="50" width="50" color="primary" ariaLabel="bars-loading" />
+                    </div>
+                ) : (
+                    <>
+                        {/* Desktop Table View */}
+                        <div className="hidden md:block overflow-x-auto">
+                            <table className="min-w-full divide-y divide-gray-200">
+                                <thead className="bg-gray-50">
+                                    <tr>
+                                        {[
+                                            { id: "date", label: "Date" },
+                                            { id: "expenseType", label: "Expense Type" },
+                                            { id: "frequency", label: "Frequency" },
+                                            { id: "cost", label: "Amount" },
+                                            { id: "actions", label: "Actions" }
+                                        ].map((header) => (
+                                            <th
+                                                key={header.id}
+                                                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                                            >
+                                                {header.label}
+                                            </th>
+                                        ))}
+                                    </tr>
+                                </thead>
+                                <tbody className="bg-white divide-y divide-gray-200">
+                                    {filteredExpenses.length > 0 ? (
+                                        filteredExpenses.map((expense) => (
+                                            <tr key={expense.id} className="hover:bg-gray-50 transition duration-150">
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                    {formatDate(expense.date)}
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                                    {formatExpenseType(expense.expenses_for)}
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                    <span className="capitalize">{expense.frequency}</span>
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                                    {formatCurrency(expense.cost)}
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                    <div className="flex gap-2">
+                                                        <button
+                                                            className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-primary hover:bg-primary/90 transition"
+                                                            onClick={() => handleEditClick(expense)}
+                                                        >
+                                                            <FaPenToSquare className="mr-1.5" />
+                                                            Edit
+                                                        </button>
+                                                        <button
+                                                            className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-red-600 hover:bg-red-700 transition"
+                                                            onClick={() => handleDeleteClick(expense.id, expense.expenses_for)}
+                                                        >
+                                                            <FaTrash className="mr-1.5" />
+                                                            Delete
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))
+                                    ) : (
+                                        <tr>
+                                            <td colSpan={5} className="py-12 text-center">
+                                                <div className="flex flex-col items-center justify-center text-gray-500">
+                                                    <svg
+                                                        xmlns="http://www.w3.org/2000/svg"
+                                                        fill="none"
+                                                        viewBox="0 0 24 24"
+                                                        stroke="currentColor"
+                                                        className="w-16 h-16 mb-4 text-gray-300"
                                                     >
-                                                        <FaPenToSquare className="mr-1.5" />
-                                                        Edit
-                                                    </button>
-                                                    <button
-                                                        className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-red-600 hover:bg-red-700 transition"
-                                                        onClick={() => handleDeleteClick(expense.id, expense.expenses_for)}
-                                                    >
-                                                        <FaTrash className="mr-1.5" />
-                                                        Delete
-                                                    </button>
+                                                        <path
+                                                            strokeLinecap="round"
+                                                            strokeLinejoin="round"
+                                                            strokeWidth="1"
+                                                            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                                                        />
+                                                    </svg>
+                                                    <p className="text-lg font-medium">No expenses found</p>
+                                                    <p className="mt-1 text-sm">Try adjusting your search or adding a new expense.</p>
                                                 </div>
                                             </td>
                                         </tr>
-                                    ))
-                                ) : (
-                                    <tr>
-                                        <td colSpan={5} className="py-12 text-center">
-                                            <div className="flex flex-col items-center justify-center text-gray-500">
-                                                <svg
-                                                    xmlns="http://www.w3.org/2000/svg"
-                                                    fill="none"
-                                                    viewBox="0 0 24 24"
-                                                    stroke="currentColor"
-                                                    className="w-16 h-16 mb-4 text-gray-300"
-                                                >
-                                                    <path
-                                                        strokeLinecap="round"
-                                                        strokeLinejoin="round"
-                                                        strokeWidth="1"
-                                                        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
-                                                    />
-                                                </svg>
-                                                <p className="text-lg font-medium">No expenses found</p>
-                                                <p className="mt-1 text-sm">Try adjusting your search or adding a new expense.</p>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        {/* Mobile Card View */}
+                        <div className="md:hidden px-4">
+                            {filteredExpenses.length > 0 ? (
+                                <div className="space-y-4">
+                                    {filteredExpenses.map((expense) => (
+                                        <div key={expense.id} className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                                            <div className="bg-gray-50 p-3 flex justify-between items-center">
+                                                <div className="font-medium text-gray-800">{formatExpenseType(expense.expenses_for)}</div>
+                                                <span className="text-sm font-medium text-gray-900">{formatCurrency(expense.cost)}</span>
                                             </div>
-                                        </td>
-                                    </tr>
-                                )}
-                            </tbody>
-                        </table>
-                    )}
-                </div>
+                                            <div className="p-4 space-y-3">
+                                                <div className="flex justify-between items-center">
+                                                    <span className="text-sm text-gray-500">Date</span>
+                                                    <span className="text-sm">{formatDate(expense.date)}</span>
+                                                </div>
+                                                <div className="flex justify-between items-center">
+                                                    <span className="text-sm text-gray-500">Frequency</span>
+                                                    <span className="text-sm capitalize">{expense.frequency}</span>
+                                                </div>
+                                            </div>
+                                            <div className="border-t border-gray-100 p-3 bg-gray-50 flex justify-end space-x-2">
+                                                <button
+                                                    className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-primary hover:bg-primary/90 transition"
+                                                    onClick={() => handleEditClick(expense)}
+                                                >
+                                                    <FaPenToSquare className="mr-1.5" />
+                                                    Edit
+                                                </button>
+                                                <button
+                                                    className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-red-600 hover:bg-red-700 transition"
+                                                    onClick={() => handleDeleteClick(expense.id, expense.expenses_for)}
+                                                >
+                                                    <FaTrash className="mr-1.5" />
+                                                    Delete
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="py-12 text-center">
+                                    <div className="flex flex-col items-center justify-center text-gray-500">
+                                        <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            fill="none"
+                                            viewBox="0 0 24 24"
+                                            stroke="currentColor"
+                                            className="w-16 h-16 mb-4 text-gray-300"
+                                        >
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth="1"
+                                                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                                            />
+                                        </svg>
+                                        <p className="text-lg font-medium">No expenses found</p>
+                                        <p className="mt-1 text-sm">Try adjusting your search or adding a new expense.</p>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </>
+                )
+                }
             </div>
 
             {addPopupVisible && (

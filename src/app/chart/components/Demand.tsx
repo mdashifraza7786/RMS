@@ -251,7 +251,7 @@ const Demand: React.FC = () => {
             };
         }
         return generateData(label);
-    }, [chartXY, colors, timeFrame, comparisonMode, generateData]);
+    }, [chartXY, comparisonMode, generateData]);
 
     const chartOptions: ChartOptions<'bar'> | ChartOptions<'line'> = useMemo(() => {
         const xAxisLabels: Record<ChartKey, string> = {

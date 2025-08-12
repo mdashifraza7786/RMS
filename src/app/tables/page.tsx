@@ -139,16 +139,16 @@ const TableManagement = () => {
             </div>
 
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                <div className="p-6 border-b border-gray-100 flex justify-between items-center">
+                <div className="p-6 border-b border-gray-100">
                     <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-6">
-                        <div className="relative">
+                        <div className="relative flex-1">
                             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                 <FaSearch className="text-gray-400" />
                             </div>
                             <input
                                 type="search"
                                 placeholder="Search by table number..."
-                                className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary w-full md:w-80"
+                                className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary w-full"
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                             />
@@ -162,14 +162,14 @@ const TableManagement = () => {
                         </button>
                     </div>
 
-                    <div className="flex flex-wrap gap-2 border-b border-gray-200">
+                    <div className="flex overflow-x-auto pb-1 gap-2">
                         {tabs.map((tab) => (
                             <button
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id)}
-                                className={`px-4 py-2 text-sm font-medium rounded-t-lg transition-all ${activeTab === tab.id
-                                    ? 'text-primary border-b-2 border-primary bg-primary/5'
-                                    : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                                className={`px-4 py-2 text-sm font-medium rounded-lg transition-all whitespace-nowrap ${activeTab === tab.id
+                                    ? 'text-white bg-primary'
+                                    : 'text-gray-500 bg-gray-100 hover:bg-gray-200'
                                     }`}
                             >
                                 {tab.label}
@@ -178,39 +178,76 @@ const TableManagement = () => {
                     </div>
                 </div>
 
-                <div className="overflow-x-auto">
-                    {loading ? (
-                        <div className="flex justify-center items-center py-12">
-                            <Bars height="50" width="50" color="primary" ariaLabel="bars-loading" />
-                        </div>
-                    ) : filteredTables && filteredTables.length > 0 ? (
-                        <table className="min-w-full divide-y divide-gray-200">
-                            <thead className="bg-gray-50">
-                                <tr>
-                                    {[
-                                        { id: "tableNumber", label: "Table Number" },
-                                        { id: "status", label: "Status" },
-                                        { id: "actions", label: "Actions" }
-                                    ].map((header) => (
-                                        <th
-                                            key={header.id}
-                                            className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                                        >
-                                            {header.label}
-                                        </th>
+                {loading ? (
+                    <div className="flex justify-center items-center py-12">
+                        <Bars height="50" width="50" color="primary" ariaLabel="bars-loading" />
+                    </div>
+                ) : filteredTables && filteredTables.length > 0 ? (
+                    <>
+                        {/* Desktop Table View */}
+                        <div className="hidden md:block overflow-x-auto">
+                            <table className="min-w-full divide-y divide-gray-200">
+                                <thead className="bg-gray-50">
+                                    <tr>
+                                        {[
+                                            { id: "tableNumber", label: "Table Number" },
+                                            { id: "status", label: "Status" },
+                                            { id: "actions", label: "Actions" }
+                                        ].map((header) => (
+                                            <th
+                                                key={header.id}
+                                                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                                            >
+                                                {header.label}
+                                            </th>
+                                        ))}
+                                    </tr>
+                                </thead>
+                                <tbody className="bg-white divide-y divide-gray-200">
+                                    {filteredTables.map((table) => (
+                                        <tr key={table.id} className="hover:bg-gray-50 transition duration-150">
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                                <div className="flex items-center">
+                                                    <BiTable className="mr-2 text-gray-400" />
+                                                    Table #{table.tablenumber}
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                {table.availability === 0 ? (
+                                                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                        AVAILABLE
+                                                    </span>
+                                                ) : (
+                                                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                                        OCCUPIED
+                                                    </span>
+                                                )}
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                <button
+                                                    className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-red-600 hover:bg-red-700 transition"
+                                                    onClick={() => openDeleteModal(table.id, table.tablenumber)}
+                                                >
+                                                    <FaTrash className="mr-1.5" />
+                                                    Delete
+                                                </button>
+                                            </td>
+                                        </tr>
                                     ))}
-                                </tr>
-                            </thead>
-                            <tbody className="bg-white divide-y divide-gray-200">
+                                </tbody>
+                            </table>
+                        </div>
+
+                        {/* Mobile Card View */}
+                        <div className="md:hidden px-4">
+                            <div className="space-y-4">
                                 {filteredTables.map((table) => (
-                                    <tr key={table.id} className="hover:bg-gray-50 transition duration-150">
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                            <div className="flex items-center">
-                                                <BiTable className="mr-2 text-gray-400" />
+                                    <div key={table.id} className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                                        <div className="bg-gray-50 p-3 flex justify-between items-center">
+                                            <div className="flex items-center font-medium text-gray-800">
+                                                <BiTable className="mr-2 text-gray-500" />
                                                 Table #{table.tablenumber}
                                             </div>
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap">
                                             {table.availability === 0 ? (
                                                 <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                                                     AVAILABLE
@@ -220,8 +257,8 @@ const TableManagement = () => {
                                                     OCCUPIED
                                                 </span>
                                             )}
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        </div>
+                                        <div className="border-t border-gray-100 p-3 bg-gray-50 flex justify-end">
                                             <button
                                                 className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-red-600 hover:bg-red-700 transition"
                                                 onClick={() => openDeleteModal(table.id, table.tablenumber)}
@@ -229,23 +266,23 @@ const TableManagement = () => {
                                                 <FaTrash className="mr-1.5" />
                                                 Delete
                                             </button>
-                                        </td>
-                                    </tr>
+                                        </div>
+                                    </div>
                                 ))}
-                            </tbody>
-                        </table>
-                    ) : (
-                        <div className="flex flex-col items-center justify-center py-12 text-gray-500">
-                            <MdTableBar className="w-16 h-16 mb-4 text-gray-300" />
-                            <p className="text-lg font-medium">No tables found</p>
-                            <p className="mt-1 text-sm">
-                                {searchTerm
-                                    ? "Try adjusting your search criteria."
-                                    : "Click the \"Add Table\" button to create your first table."}
-                            </p>
+                            </div>
                         </div>
-                    )}
-                </div>
+                    </>
+                ) : (
+                    <div className="flex flex-col items-center justify-center py-12 text-gray-500">
+                        <MdTableBar className="w-16 h-16 mb-4 text-gray-300" />
+                        <p className="text-lg font-medium">No tables found</p>
+                        <p className="mt-1 text-sm">
+                            {searchTerm
+                                ? "Try adjusting your search criteria."
+                                : "Click the \"Add Table\" button to create your first table."}
+                        </p>
+                    </div>
+                )}
             </div>
 
             {isModalOpen && (

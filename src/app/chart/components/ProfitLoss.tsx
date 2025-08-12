@@ -340,7 +340,7 @@ const ProfitLoss: React.FC = () => {
             return generateData('Current Period');
         }
         return generateData('Profit (₹)');
-    }, [chartXY, colors, timeFrame, comparisonMode, profitLossData]);
+    }, [chartXY, comparisonMode, profitLossData, generateData]);
 
     const chartOptions: ChartOptions<'bar'> | ChartOptions<'line'> = useMemo(() => {
         const xAxisLabels: Record<ChartKey, string> = {

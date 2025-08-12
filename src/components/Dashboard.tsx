@@ -318,9 +318,9 @@ const Dashboard: React.FC = () => {
         <div className="">
             <Title role={role} />
 
-            <div className="container mx-auto px-6 py-4">
+            <div className="container mx-auto px-4 sm:px-6 py-4">
                 {role === 'admin' && (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
                     <FinancialOverview
                         financialData={financialData}
                         isLoading={isFinancialLoading}
@@ -382,9 +382,13 @@ const Dashboard: React.FC = () => {
                   />
                 )}
                 {role === 'admin' && (
-                <div className="flex gap-6 w-full">
-                    <RecentTableOrders />
-                    <RecentPaymentCard />
+                <div className="flex flex-col lg:flex-row gap-4 sm:gap-6 w-full">
+                    <div className="w-full lg:w-1/2">
+                        <RecentTableOrders />
+                    </div>
+                    <div className="w-full lg:w-1/2">
+                        <RecentPaymentCard />
+                    </div>
                 </div>
                 )}
             </div>

@@ -152,18 +152,20 @@ const InventoryCard: React.FC = () => {
           <Bars height="50" width="50" color="#1e4569" ariaLabel="bars-loading" />
         </div>
       ) : (
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Item Name</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Current Stock</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Low Limit</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-              </tr>
-            </thead>
+        <>
+          {/* Desktop Table View */}
+          <div className="hidden md:block overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Item Name</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Current Stock</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Low Limit</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                </tr>
+              </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {filteredInventory.length > 0 ? (
                 filteredInventory.map((item) => (
@@ -237,7 +239,73 @@ const InventoryCard: React.FC = () => {
               )}
             </tbody>
           </table>
-        </div>
+          </div>
+
+          {/* Mobile Card View */}
+          <div className="md:hidden px-4">
+            {filteredInventory.length > 0 ? (
+              <div className="space-y-4">
+                {filteredInventory.map((item) => (
+                  <div key={item.item_id} className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                    <div className="bg-gray-50 p-3 flex justify-between items-center">
+                      <div className="font-medium text-gray-800">{item.item_name}</div>
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                        item.current_stock < item.low_limit
+                          ? 'bg-red-100 text-red-800'
+                          : item.current_stock < item.low_limit * 1.5
+                          ? 'bg-yellow-100 text-yellow-800'
+                          : 'bg-green-100 text-green-800'
+                      }`}>
+                        {item.current_stock < item.low_limit
+                          ? 'Low Stock'
+                          : item.current_stock < item.low_limit * 1.5
+                          ? 'Warning'
+                          : 'In Stock'}
+                      </span>
+                    </div>
+                    <div className="p-4 space-y-3">
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-gray-500">ID</span>
+                        <span className="text-sm font-medium">{item.item_id}</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-gray-500">Current Stock</span>
+                        <span className="text-sm">{item.current_stock} {item.unit}</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-gray-500">Low Limit</span>
+                        <span className="text-sm">{item.low_limit} {item.unit}</span>
+                      </div>
+                    </div>
+                    <div className="border-t border-gray-100 p-3 bg-gray-50 flex justify-end space-x-2">
+                      <button
+                        className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-[#1e4569] hover:bg-[#2c5983] transition"
+                        onClick={() => handleEditClick(item)}
+                      >
+                        <FaPenToSquare className="mr-1.5" />
+                        Edit
+                      </button>
+                      <button
+                        className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-red-600 hover:bg-red-700 transition"
+                        onClick={() => handleDeleteClick(item.item_id, item.item_name)}
+                      >
+                        <FaTrash className="mr-1.5" />
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="py-12 text-center">
+                <div className="flex flex-col items-center justify-center text-gray-500">
+                  <p className="text-lg font-medium">No inventory items found</p>
+                  <p className="mt-1 text-sm">Try adding new items or adjusting your search.</p>
+                </div>
+              </div>
+            )}
+          </div>
+        </>
       )}
 
       {/* Add Inventory Popup */}

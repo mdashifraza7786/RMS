@@ -22,14 +22,14 @@ const FinancialOverview: React.FC<FinancialOverviewProps> = ({
   onPeriodChange,
 }) => {
   return (
-    <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100 col-span-2">
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
+    <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6 border border-gray-100 col-span-2">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4 sm:mb-6">
+        <h2 className="text-base sm:text-lg font-semibold text-gray-800 flex items-center gap-2">
           <FaMoneyBillWave className="text-green-500" />
           Financial Overview
         </h2>
         <select
-          className="text-sm border rounded-lg px-3 py-1.5 text-gray-600 bg-gray-50"
+          className="text-sm border rounded-lg px-2 sm:px-3 py-1.5 text-gray-600 bg-gray-50 w-full sm:w-auto"
           onChange={onPeriodChange}
           value={financialData.period}
         >
@@ -48,95 +48,95 @@ const FinancialOverview: React.FC<FinancialOverviewProps> = ({
           </span>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="bg-gradient-to-br from-primary/10 to-primary/5 rounded-xl p-6 transition-all">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+          <div className="bg-gradient-to-br from-primary/10 to-primary/5 rounded-xl p-4 sm:p-6 transition-all">
             <div className="flex justify-between items-start">
               <div>
-                <h3 className="text-gray-600 text-sm font-medium mb-1">Total Revenue</h3>
-                <p className="text-3xl font-bold text-primary/90">₹{financialData.revenue.value.toLocaleString()}</p>
+                <h3 className="text-gray-600 text-xs sm:text-sm font-medium mb-1">Total Revenue</h3>
+                <p className="text-xl sm:text-3xl font-bold text-primary/90">₹{financialData.revenue.value.toLocaleString()}</p>
               </div>
-              <div className="p-3 bg-white rounded-full shadow-sm">
-                <FaMoneyBillWave className="text-primary text-xl" />
+              <div className="p-2 sm:p-3 bg-white rounded-full shadow-sm">
+                <FaMoneyBillWave className="text-primary text-lg sm:text-xl" />
               </div>
             </div>
-            <div className="mt-4 flex items-center">
+            <div className="mt-3 sm:mt-4 flex flex-wrap items-center">
               {financialData.revenue.change > 0 ? (
                 <MdTrendingUp className="text-green-500 mr-1" />
               ) : (
                 <MdTrendingDown className="text-red-500 mr-1" />
               )}
-              <span className={`text-sm font-medium ${financialData.revenue.change >= 0 ? "text-green-600" : "text-red-600"}`}>
+              <span className={`text-xs sm:text-sm font-medium ${financialData.revenue.change >= 0 ? "text-green-600" : "text-red-600"}`}>
                 {financialData.revenue.change > 0 ? "+" : ""}
                 {financialData.revenue.change}%
               </span>
-              <span className="text-gray-500 text-sm ml-1">vs previous period</span>
+              <span className="text-gray-500 text-xs sm:text-sm ml-1">vs previous period</span>
             </div>
           </div>
 
-          <div className="bg-gradient-to-br from-green-50 to-green-50/50 rounded-xl p-6 transition-all">
+          <div className="bg-gradient-to-br from-green-50 to-green-50/50 rounded-xl p-4 sm:p-6 transition-all">
             <div className="flex justify-between items-start">
               <div>
-                <h3 className="text-gray-600 text-sm font-medium mb-1">Completed Orders</h3>
-                <p className="text-3xl font-bold text-green-700">{financialData.orders.value}</p>
+                <h3 className="text-gray-600 text-xs sm:text-sm font-medium mb-1">Completed Orders</h3>
+                <p className="text-xl sm:text-3xl font-bold text-green-700">{financialData.orders.value}</p>
               </div>
-              <div className="p-3 bg-white rounded-full shadow-sm">
-                <FaReceipt className="text-green-600 text-xl" />
+              <div className="p-2 sm:p-3 bg-white rounded-full shadow-sm">
+                <FaReceipt className="text-green-600 text-lg sm:text-xl" />
               </div>
             </div>
-            <div className="mt-4 flex items-center">
+            <div className="mt-3 sm:mt-4 flex flex-wrap items-center">
               {financialData.orders.change > 0 ? (
                 <MdTrendingUp className="text-green-500 mr-1" />
               ) : (
                 <MdTrendingDown className="text-red-500 mr-1" />
               )}
-              <span className={`text-sm font-medium ${financialData.orders.change >= 0 ? "text-green-600" : "text-red-600"}`}>
+              <span className={`text-xs sm:text-sm font-medium ${financialData.orders.change >= 0 ? "text-green-600" : "text-red-600"}`}>
                 {financialData.orders.change > 0 ? "+" : ""}
                 {financialData.orders.change}%
               </span>
-              <span className="text-gray-500 text-sm ml-1">vs previous period</span>
+              <span className="text-gray-500 text-xs sm:text-sm ml-1">vs previous period</span>
             </div>
           </div>
 
-          <div className="bg-gradient-to-br from-amber-50 to-amber-50/50 rounded-xl p-6 transition-all">
+          <div className="bg-gradient-to-br from-amber-50 to-amber-50/50 rounded-xl p-4 sm:p-6 transition-all">
             <div className="flex justify-between items-start">
               <div>
-                <h3 className="text-gray-600 text-sm font-medium mb-1">Average Order Value</h3>
-                <p className="text-3xl font-bold text-amber-700">
+                <h3 className="text-gray-600 text-xs sm:text-sm font-medium mb-1">Average Order Value</h3>
+                <p className="text-xl sm:text-3xl font-bold text-amber-700">
                   ₹{financialData.averageOrderValue.value.toLocaleString(undefined, { maximumFractionDigits: 0 })}
                 </p>
               </div>
-              <div className="p-3 bg-white rounded-full shadow-sm">
-                <FaChartLine className="text-amber-600 text-xl" />
+              <div className="p-2 sm:p-3 bg-white rounded-full shadow-sm">
+                <FaChartLine className="text-amber-600 text-lg sm:text-xl" />
               </div>
             </div>
-            <div className="mt-4 flex items-center">
+            <div className="mt-3 sm:mt-4 flex flex-wrap items-center">
               {financialData.averageOrderValue.change > 0 ? (
                 <MdTrendingUp className="text-green-500 mr-1" />
               ) : (
                 <MdTrendingDown className="text-red-500 mr-1" />
               )}
-              <span className={`text-sm font-medium ${financialData.averageOrderValue.change >= 0 ? "text-green-600" : "text-red-600"}`}>
+              <span className={`text-xs sm:text-sm font-medium ${financialData.averageOrderValue.change >= 0 ? "text-green-600" : "text-red-600"}`}>
                 {financialData.averageOrderValue.change > 0 ? "+" : ""}
                 {financialData.averageOrderValue.change}%
               </span>
-              <span className="text-gray-500 text-sm ml-1">vs previous period</span>
+              <span className="text-gray-500 text-xs sm:text-sm ml-1">vs previous period</span>
             </div>
           </div>
 
-          <div className="bg-gradient-to-br from-blue-50 to-blue-50/50 rounded-xl p-6 transition-all">
+          <div className="bg-gradient-to-br from-blue-50 to-blue-50/50 rounded-xl p-4 sm:p-6 transition-all">
             <div className="flex justify-between items-start">
               <div>
-                <h3 className="text-gray-600 text-sm font-medium mb-1">Estimated Monthly Revenue</h3>
-                <p className="text-3xl font-bold text-blue-700">
+                <h3 className="text-gray-600 text-xs sm:text-sm font-medium mb-1">Estimated Monthly Revenue</h3>
+                <p className="text-xl sm:text-3xl font-bold text-blue-700">
                   ₹{(financialData.revenue.value * (30 / (financialData.period === "7days" ? 7 : 30))).toLocaleString(undefined, { maximumFractionDigits: 0 })}
                 </p>
               </div>
-              <div className="p-3 bg-white rounded-full shadow-sm">
-                <FaCashRegister className="text-blue-600 text-xl" />
+              <div className="p-2 sm:p-3 bg-white rounded-full shadow-sm">
+                <FaCashRegister className="text-blue-600 text-lg sm:text-xl" />
               </div>
             </div>
-            <div className="mt-4 flex items-center">
-              <span className="text-gray-500 text-sm">Projection based on current period</span>
+            <div className="mt-3 sm:mt-4 flex flex-wrap items-center">
+              <span className="text-gray-500 text-xs sm:text-sm">Projection based on current period</span>
             </div>
           </div>
         </div>

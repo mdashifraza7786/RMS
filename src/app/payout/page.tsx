@@ -306,105 +306,174 @@ const Page = () => {
                     </div>
                 </div>
 
-                <div className="overflow-x-auto">
-                    {loading ? (
-                        <div className="flex justify-center items-center py-12">
-                            <Bars height="50" width="50" color="primary" ariaLabel="bars-loading" />
-                        </div>
-                    ) : (
-                        <table className="min-w-full divide-y divide-gray-200">
-                            <thead className="bg-gray-50">
-                                <tr>
-                                    {[
-                                        { id: "userId", label: "User ID" },
-                                        { id: "name", label: "Name" },
-                                        { id: "role", label: "Role" },
-                                        { id: "amount", label: "Amount" },
-                                        { id: "accountNumber", label: "Account Number" },
-                                        { id: "status", label: "Status" },
-                                        { id: "action", label: "Action" }
-                                    ].map((header) => (
-                                        <th
-                                            key={header.id}
-                                            className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                                        >
-                                            {header.label}
-                                        </th>
-                                    ))}
-                                </tr>
-                            </thead>
-                            <tbody className="bg-white divide-y divide-gray-200">
-                                {currentItems.length > 0 ? (
-                                    currentItems.map((item) => (
-                                        <tr key={item.userid} className="hover:bg-gray-50 transition duration-150">
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                                #{item.userid}
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                <div className="flex items-center">
-                                                    <BsPerson className="mr-1 text-gray-400" />
-                                                    {item.name}
-                                                </div>
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                {item.role}
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                                {formatCurrency(item.amount)}
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                {item.account_number || "Not provided"}
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap">
-                                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(item.status)}`}>
-                                                    {item.status.toUpperCase()}
-                                                </span>
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                <div className="flex flex-wrap gap-2">
-                                                    <button
-                                                        className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-primary hover:bg-primary/80 transition"
-                                                        onClick={() => handleViewDetails(item)}
-                                                    >
-                                                        View Details
-                                                    </button>
-                                                    {item.status !== 'paid' && (
+                {loading ? (
+                    <div className="flex justify-center items-center py-12">
+                        <Bars height="50" width="50" color="primary" ariaLabel="bars-loading" />
+                    </div>
+                ) : (
+                    <>
+                        {/* Desktop Table View */}
+                        <div className="hidden md:block overflow-x-auto">
+                            <table className="min-w-full divide-y divide-gray-200">
+                                <thead className="bg-gray-50">
+                                    <tr>
+                                        {[
+                                            { id: "userId", label: "User ID" },
+                                            { id: "name", label: "Name" },
+                                            { id: "role", label: "Role" },
+                                            { id: "amount", label: "Amount" },
+                                            { id: "accountNumber", label: "Account Number" },
+                                            { id: "status", label: "Status" },
+                                            { id: "action", label: "Action" }
+                                        ].map((header) => (
+                                            <th
+                                                key={header.id}
+                                                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                                            >
+                                                {header.label}
+                                            </th>
+                                        ))}
+                                    </tr>
+                                </thead>
+                                <tbody className="bg-white divide-y divide-gray-200">
+                                    {currentItems.length > 0 ? (
+                                        currentItems.map((item) => (
+                                            <tr key={item.userid} className="hover:bg-gray-50 transition duration-150">
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                                    #{item.userid}
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                    <div className="flex items-center">
+                                                        <BsPerson className="mr-1 text-gray-400" />
+                                                        {item.name}
+                                                    </div>
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                    {item.role}
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                                    {formatCurrency(item.amount)}
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                    {item.account_number || "Not provided"}
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap">
+                                                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(item.status)}`}>
+                                                        {item.status.toUpperCase()}
+                                                    </span>
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                    <div className="flex flex-wrap gap-2">
                                                         <button
-                                                            className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-green-600 hover:bg-green-700 transition"
-                                                            onClick={() => handleMarkAsPaid(item.userid)}
-                                                            disabled={actionLoading}
+                                                            className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-primary hover:bg-primary/80 transition"
+                                                            onClick={() => handleViewDetails(item)}
                                                         >
-                                                            <FaCheck className="mr-1.5" /> Paid
+                                                            View Details
                                                         </button>
-                                                    )}
-                                                    {item.status !== 'unpaid' && (
-                                                        <button
-                                                            className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-red-600 hover:bg-red-700 transition"
-                                                            onClick={() => handleMarkAsUnpaid(item.userid)}
-                                                            disabled={actionLoading}
-                                                        >
-                                                            <RxCross2 className="mr-1.5" /> Unpaid
-                                                        </button>
-                                                    )}
+                                                        {item.status !== 'paid' && (
+                                                            <button
+                                                                className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-green-600 hover:bg-green-700 transition"
+                                                                onClick={() => handleMarkAsPaid(item.userid)}
+                                                                disabled={actionLoading}
+                                                            >
+                                                                <FaCheck className="mr-1.5" /> Paid
+                                                            </button>
+                                                        )}
+                                                        {item.status !== 'unpaid' && (
+                                                            <button
+                                                                className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-red-600 hover:bg-red-700 transition"
+                                                                onClick={() => handleMarkAsUnpaid(item.userid)}
+                                                                disabled={actionLoading}
+                                                            >
+                                                                <RxCross2 className="mr-1.5" /> Unpaid
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))
+                                    ) : (
+                                        <tr>
+                                            <td colSpan={7} className="py-12 text-center">
+                                                <div className="flex flex-col items-center justify-center text-gray-500">
+                                                    <FaUserSlash className="text-primary text-2xl mb-2" />
+                                                    <p className="text-lg font-medium">No payouts available</p>
+                                                    <p className="mt-1 text-sm">Try adjusting your search or selecting a different tab.</p>
                                                 </div>
                                             </td>
                                         </tr>
-                                    ))
-                                ) : (
-                                    <tr>
-                                        <td colSpan={7} className="py-12 text-center">
-                                            <div className="flex flex-col items-center justify-center text-gray-500">
-                                                <FaUserSlash className="text-primary text-2xl mb-2" />
-                                                <p className="text-lg font-medium">No payouts available</p>
-                                                <p className="mt-1 text-sm">Try adjusting your search or selecting a different tab.</p>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        {/* Mobile Card View */}
+                        <div className="md:hidden px-4">
+                            {currentItems.length > 0 ? (
+                                <div className="space-y-4">
+                                    {currentItems.map((item) => (
+                                        <div key={item.userid} className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                                            <div className="bg-gray-50 p-3 flex justify-between items-center">
+                                                <div className="font-medium text-gray-800">#{item.userid}</div>
+                                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(item.status)}`}>
+                                                    {item.status.toUpperCase()}
+                                                </span>
                                             </div>
-                                        </td>
-                                    </tr>
-                                )}
-                            </tbody>
-                        </table>
-                    )}
-                </div>
+                                            <div className="p-4 space-y-3">
+                                                <div className="flex justify-between items-center">
+                                                    <span className="text-sm text-gray-500">Name</span>
+                                                    <span className="text-sm font-medium">{item.name}</span>
+                                                </div>
+                                                <div className="flex justify-between items-center">
+                                                    <span className="text-sm text-gray-500">Role</span>
+                                                    <span className="text-sm">{item.role}</span>
+                                                </div>
+                                                <div className="flex justify-between items-center">
+                                                    <span className="text-sm text-gray-500">Amount</span>
+                                                    <span className="text-sm font-medium">{formatCurrency(item.amount)}</span>
+                                                </div>
+                                            </div>
+                                            <div className="border-t border-gray-100 p-3 bg-gray-50 flex flex-wrap gap-2 justify-end">
+                                                <button
+                                                    className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-primary hover:bg-primary/80 transition"
+                                                    onClick={() => handleViewDetails(item)}
+                                                >
+                                                    View Details
+                                                </button>
+                                                {item.status !== 'paid' && (
+                                                    <button
+                                                        className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-green-600 hover:bg-green-700 transition"
+                                                        onClick={() => handleMarkAsPaid(item.userid)}
+                                                        disabled={actionLoading}
+                                                    >
+                                                        <FaCheck className="mr-1.5" /> Paid
+                                                    </button>
+                                                )}
+                                                {item.status !== 'unpaid' && (
+                                                    <button
+                                                        className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-red-600 hover:bg-red-700 transition"
+                                                        onClick={() => handleMarkAsUnpaid(item.userid)}
+                                                        disabled={actionLoading}
+                                                    >
+                                                        <RxCross2 className="mr-1.5" /> Unpaid
+                                                    </button>
+                                                )}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="py-12 text-center">
+                                    <div className="flex flex-col items-center justify-center text-gray-500">
+                                        <FaUserSlash className="text-primary text-2xl mb-2" />
+                                        <p className="text-lg font-medium">No payouts available</p>
+                                        <p className="mt-1 text-sm">Try adjusting your search or selecting a different tab.</p>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </>
+                )}
 
                 {filteredData.length > 0 && (
                     <div className="px-6 py-4 flex items-center justify-between border-t border-gray-200">
@@ -512,72 +581,171 @@ const Page = () => {
                     <p className="text-xs text-gray-500">This table shows raw records from the payout table. Filters work when a date is available.</p>
                 </div>
 
-                <div className="overflow-x-auto">
-                    {loading ? (
-                        <div className="flex justify-center items-center py-12">
-                            <Bars height="50" width="50" color="primary" ariaLabel="bars-loading" />
-                        </div>
-                    ) : (
-                        <table className="min-w-full divide-y divide-gray-200">
-                            <thead className="bg-gray-50">
-                                <tr>
-                                    {[
-                                        { id: 'userid', label: 'User ID' },
-                                        { id: 'account', label: 'Account Number' },
-                                        { id: 'upi', label: 'UPI ID' },
-                                        { id: 'amount', label: 'Amount' },
-                                        { id: 'status', label: 'Status' },
-                                        { id: 'date', label: 'Date' },
-                                    ].map((h) => (
-                                        <th key={h.id} className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{h.label}</th>
-                                    ))}
-                                </tr>
-                            </thead>
-                            <tbody className="bg-white divide-y divide-gray-200">
-                                {(
-                                    (() => {
-                                        const list = payoutInfo || [];
-                                        const toParts = (d?: string) => {
-                                            if (!d) return { ym: '', y: '' };
-                                            const dt = new Date(d as any);
-                                            if (!isNaN(dt.getTime())) {
-                                                const y = dt.getFullYear();
-                                                const m = String(dt.getMonth() + 1).padStart(2, '0');
-                                                return { ym: `${y}-${m}` , y: String(y)};
-                                            }
-                                            // fallback if backend sends string not parsed by Date
-                                            const iso = (String(d).split('T')[0] || '').trim(); // YYYY-MM-DD
-                                            if (/^\d{4}-\d{2}/.test(iso)) {
-                                                const ym = iso.slice(0,7);
-                                                const y = iso.slice(0,4);
-                                                return { ym, y };
-                                            }
-                                            return { ym: '', y: '' };
-                                        };
-                                        return list.filter(p => {
-                                            if (!p.date || filterMode === 'all') return true;
-                                            const { ym, y } = toParts(p.date);
-                                            if (filterMode === 'month' && filterMonth) return ym === filterMonth;
-                                            if (filterMode === 'year' && filterYear) return y === filterYear;
-                                            return true;
-                                        });
-                                    })()
-                                ).map((p) => (
-                                    <tr key={`${p.userid}-${p.date ?? ''}`}>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#{p.userid}</td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{p.account_number || '—'}</td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{p.upi_id || '—'}</td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{formatCurrency(p.amount)}</td>
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(p.status)}`}>{(p.status || '').toUpperCase()}</span>
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{p.date ? (new Date(p.date).toISOString().split('T')[0]) : '—'}</td>
+                {loading ? (
+                    <div className="flex justify-center items-center py-12">
+                        <Bars height="50" width="50" color="primary" ariaLabel="bars-loading" />
+                    </div>
+                ) : (
+                    <>
+                        {/* Desktop Table View */}
+                        <div className="hidden md:block overflow-x-auto">
+                            <table className="min-w-full divide-y divide-gray-200">
+                                <thead className="bg-gray-50">
+                                    <tr>
+                                        {[
+                                            { id: 'userid', label: 'User ID' },
+                                            { id: 'account', label: 'Account Number' },
+                                            { id: 'upi', label: 'UPI ID' },
+                                            { id: 'amount', label: 'Amount' },
+                                            { id: 'status', label: 'Status' },
+                                            { id: 'date', label: 'Date' },
+                                        ].map((h) => (
+                                            <th key={h.id} className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{h.label}</th>
+                                        ))}
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    )}
-                </div>
+                                </thead>
+                                <tbody className="bg-white divide-y divide-gray-200">
+                                    {(
+                                        (() => {
+                                            const list = payoutInfo || [];
+                                            const toParts = (d?: string) => {
+                                                if (!d) return { ym: '', y: '' };
+                                                const dt = new Date(d as any);
+                                                if (!isNaN(dt.getTime())) {
+                                                    const y = dt.getFullYear();
+                                                    const m = String(dt.getMonth() + 1).padStart(2, '0');
+                                                    return { ym: `${y}-${m}` , y: String(y)};
+                                                }
+                                                // fallback if backend sends string not parsed by Date
+                                                const iso = (String(d).split('T')[0] || '').trim(); // YYYY-MM-DD
+                                                if (/^\d{4}-\d{2}/.test(iso)) {
+                                                    const ym = iso.slice(0,7);
+                                                    const y = iso.slice(0,4);
+                                                    return { ym, y };
+                                                }
+                                                return { ym: '', y: '' };
+                                            };
+                                            return list.filter(p => {
+                                                if (!p.date || filterMode === 'all') return true;
+                                                const { ym, y } = toParts(p.date);
+                                                if (filterMode === 'month' && filterMonth) return ym === filterMonth;
+                                                if (filterMode === 'year' && filterYear) return y === filterYear;
+                                                return true;
+                                            });
+                                        })()
+                                    ).map((p) => (
+                                        <tr key={`${p.userid}-${p.date ?? ''}`}>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#{p.userid}</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{p.account_number || '—'}</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{p.upi_id || '—'}</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{formatCurrency(p.amount)}</td>
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(p.status)}`}>{(p.status || '').toUpperCase()}</span>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{p.date ? (new Date(p.date).toISOString().split('T')[0]) : '—'}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        {/* Mobile Card View */}
+                        <div className="md:hidden px-4">
+                            {(
+                                (() => {
+                                    const list = payoutInfo || [];
+                                    const toParts = (d?: string) => {
+                                        if (!d) return { ym: '', y: '' };
+                                        const dt = new Date(d as any);
+                                        if (!isNaN(dt.getTime())) {
+                                            const y = dt.getFullYear();
+                                            const m = String(dt.getMonth() + 1).padStart(2, '0');
+                                            return { ym: `${y}-${m}` , y: String(y)};
+                                        }
+                                        // fallback if backend sends string not parsed by Date
+                                        const iso = (String(d).split('T')[0] || '').trim(); // YYYY-MM-DD
+                                        if (/^\d{4}-\d{2}/.test(iso)) {
+                                            const ym = iso.slice(0,7);
+                                            const y = iso.slice(0,4);
+                                            return { ym, y };
+                                        }
+                                        return { ym: '', y: '' };
+                                    };
+                                    return list.filter(p => {
+                                        if (!p.date || filterMode === 'all') return true;
+                                        const { ym, y } = toParts(p.date);
+                                        if (filterMode === 'month' && filterMonth) return ym === filterMonth;
+                                        if (filterMode === 'year' && filterYear) return y === filterYear;
+                                        return true;
+                                    });
+                                })()
+                            ).length > 0 ? (
+                                <div className="space-y-4">
+                                    {(
+                                        (() => {
+                                            const list = payoutInfo || [];
+                                            const toParts = (d?: string) => {
+                                                if (!d) return { ym: '', y: '' };
+                                                const dt = new Date(d as any);
+                                                if (!isNaN(dt.getTime())) {
+                                                    const y = dt.getFullYear();
+                                                    const m = String(dt.getMonth() + 1).padStart(2, '0');
+                                                    return { ym: `${y}-${m}` , y: String(y)};
+                                                }
+                                                // fallback if backend sends string not parsed by Date
+                                                const iso = (String(d).split('T')[0] || '').trim(); // YYYY-MM-DD
+                                                if (/^\d{4}-\d{2}/.test(iso)) {
+                                                    const ym = iso.slice(0,7);
+                                                    const y = iso.slice(0,4);
+                                                    return { ym, y };
+                                                }
+                                                return { ym: '', y: '' };
+                                            };
+                                            return list.filter(p => {
+                                                if (!p.date || filterMode === 'all') return true;
+                                                const { ym, y } = toParts(p.date);
+                                                if (filterMode === 'month' && filterMonth) return ym === filterMonth;
+                                                if (filterMode === 'year' && filterYear) return y === filterYear;
+                                                return true;
+                                            });
+                                        })()
+                                    ).map((p) => (
+                                        <div key={`${p.userid}-${p.date ?? ''}`} className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                                            <div className="bg-gray-50 p-3 flex justify-between items-center">
+                                                <div className="font-medium text-gray-800">#{p.userid}</div>
+                                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(p.status)}`}>{(p.status || '').toUpperCase()}</span>
+                                            </div>
+                                            <div className="p-4 space-y-3">
+                                                <div className="flex justify-between items-center">
+                                                    <span className="text-sm text-gray-500">Amount</span>
+                                                    <span className="text-sm font-medium">{formatCurrency(p.amount)}</span>
+                                                </div>
+                                                <div className="flex justify-between items-center">
+                                                    <span className="text-sm text-gray-500">Account</span>
+                                                    <span className="text-sm">{p.account_number || '—'}</span>
+                                                </div>
+                                                {p.date && (
+                                                    <div className="flex justify-between items-center">
+                                                        <span className="text-sm text-gray-500">Date</span>
+                                                        <span className="text-sm">{p.date ? (new Date(p.date).toISOString().split('T')[0]) : '—'}</span>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="py-12 text-center">
+                                    <div className="flex flex-col items-center justify-center text-gray-500">
+                                        <FaUserSlash className="text-primary text-2xl mb-2" />
+                                        <p className="text-lg font-medium">No payouts available</p>
+                                        <p className="mt-1 text-sm">Try adjusting your filters.</p>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </>
+                )}
             </div>
 
             {detailsPopupVisible && selectedItem && (

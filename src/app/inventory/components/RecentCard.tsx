@@ -112,80 +112,158 @@ const RecentCard: React.FC = () => {
                     <Bars height="50" width="50" color="#1e4569" ariaLabel="bars-loading" />
                 </div>
             ) : (
-                <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-gray-200">
-                        <thead className="bg-gray-50">
-                            <tr>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Item Name</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Amount</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody className="bg-white divide-y divide-gray-200">
-                            {inventory && inventory.length > 0 ? (
-                                inventory.map((item) => (
-                                    <tr key={item.order_id} className="hover:bg-gray-50 transition duration-150">
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{item.order_id}</td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{item.order_name}</td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{formatCurrency(item.price)}</td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{item.quantity} {item.unit}</td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{formatDate(item.date)}</td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{formatCurrency(item.total_amount)}</td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                            <div className="flex items-center space-x-2">
-                                                <button
-                                                    className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-[#1e4569] hover:bg-[#2c5983] transition"
-                                                    onClick={() => handleEditClick(item)}
+                <>
+                    {/* Desktop Table View */}
+                    <div className="hidden md:block overflow-x-auto">
+                        <table className="min-w-full divide-y divide-gray-200">
+                            <thead className="bg-gray-50">
+                                <tr>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Item Name</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Amount</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody className="bg-white divide-y divide-gray-200">
+                                {inventory && inventory.length > 0 ? (
+                                    inventory.map((item) => (
+                                        <tr key={item.order_id} className="hover:bg-gray-50 transition duration-150">
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{item.order_id}</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{item.order_name}</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{formatCurrency(item.price)}</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{item.quantity} {item.unit}</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{formatDate(item.date)}</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{formatCurrency(item.total_amount)}</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                <div className="flex items-center space-x-2">
+                                                    <button
+                                                        className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-[#1e4569] hover:bg-[#2c5983] transition"
+                                                        onClick={() => handleEditClick(item)}
+                                                    >
+                                                        <FaPenToSquare className="mr-1.5" size={12} />
+                                                        Edit
+                                                    </button>
+                                                    <button
+                                                        className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-red-600 hover:bg-red-700 transition"
+                                                        onClick={() => {
+                                                            setDeleteItemName(item.order_name);
+                                                            setDeleteItemId(item.order_id);
+                                                            setDeletePopupVisible(true);
+                                                        }}
+                                                    >
+                                                        <FaTrash className="mr-1.5" size={12} />
+                                                        Delete
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))
+                                ) : (
+                                    <tr>
+                                        <td colSpan={7} className="py-12 text-center">
+                                            <div className="flex flex-col items-center justify-center text-gray-500">
+                                                <svg 
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    fill="none" 
+                                                    viewBox="0 0 24 24" 
+                                                    stroke="currentColor" 
+                                                    className="w-16 h-16 mb-4 text-gray-300"
                                                 >
-                                                    <FaPenToSquare className="mr-1.5" size={12} />
-                                                    Edit
-                                                </button>
-                                                <button
-                                                    className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-red-600 hover:bg-red-700 transition"
-                                                    onClick={() => {
-                                                        setDeleteItemName(item.order_name);
-                                                        setDeleteItemId(item.order_id);
-                                                        setDeletePopupVisible(true);
-                                                    }}
-                                                >
-                                                    <FaTrash className="mr-1.5" size={12} />
-                                                    Delete
-                                                </button>
+                                                    <path 
+                                                        strokeLinecap="round" 
+                                                        strokeLinejoin="round" 
+                                                        strokeWidth="1" 
+                                                        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                                                    />
+                                                </svg>
+                                                <p className="text-lg font-medium">No recent orders found</p>
+                                                <p className="mt-1 text-sm">There are no recent inventory orders to display.</p>
                                             </div>
                                         </td>
                                     </tr>
-                                ))
-                            ) : (
-                                <tr>
-                                    <td colSpan={7} className="py-12 text-center">
-                                        <div className="flex flex-col items-center justify-center text-gray-500">
-                                            <svg 
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                fill="none" 
-                                                viewBox="0 0 24 24" 
-                                                stroke="currentColor" 
-                                                className="w-16 h-16 mb-4 text-gray-300"
-                                            >
-                                                <path 
-                                                    strokeLinecap="round" 
-                                                    strokeLinejoin="round" 
-                                                    strokeWidth="1" 
-                                                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
-                                                />
-                                            </svg>
-                                            <p className="text-lg font-medium">No recent orders found</p>
-                                            <p className="mt-1 text-sm">There are no recent inventory orders to display.</p>
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {/* Mobile Card View */}
+                    <div className="md:hidden px-4">
+                        {inventory && inventory.length > 0 ? (
+                            <div className="space-y-4">
+                                {inventory.map((item) => (
+                                    <div key={item.order_id} className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                                        <div className="bg-gray-50 p-3 flex justify-between items-center">
+                                            <div className="font-medium text-gray-800">{item.order_name}</div>
+                                            <div className="text-sm font-medium text-primary">₹{formatCurrency(item.total_amount)}</div>
                                         </div>
-                                    </td>
-                                </tr>
-                            )}
-                        </tbody>
-                    </table>
-                </div>
+                                        <div className="p-4 space-y-3">
+                                            <div className="flex justify-between items-center">
+                                                <span className="text-sm text-gray-500">Order ID</span>
+                                                <span className="text-sm font-medium">{item.order_id}</span>
+                                            </div>
+                                            <div className="flex justify-between items-center">
+                                                <span className="text-sm text-gray-500">Price</span>
+                                                <span className="text-sm">₹{formatCurrency(item.price)}</span>
+                                            </div>
+                                            <div className="flex justify-between items-center">
+                                                <span className="text-sm text-gray-500">Quantity</span>
+                                                <span className="text-sm">{item.quantity} {item.unit}</span>
+                                            </div>
+                                            <div className="flex justify-between items-center">
+                                                <span className="text-sm text-gray-500">Date</span>
+                                                <span className="text-sm">{formatDate(item.date)}</span>
+                                            </div>
+                                        </div>
+                                        <div className="border-t border-gray-100 p-3 bg-gray-50 flex justify-end space-x-2">
+                                            <button
+                                                className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-[#1e4569] hover:bg-[#2c5983] transition"
+                                                onClick={() => handleEditClick(item)}
+                                            >
+                                                <FaPenToSquare className="mr-1.5" size={12} />
+                                                Edit
+                                            </button>
+                                            <button
+                                                className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-red-600 hover:bg-red-700 transition"
+                                                onClick={() => {
+                                                    setDeleteItemName(item.order_name);
+                                                    setDeleteItemId(item.order_id);
+                                                    setDeletePopupVisible(true);
+                                                }}
+                                            >
+                                                <FaTrash className="mr-1.5" size={12} />
+                                                Delete
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="py-12 text-center">
+                                <div className="flex flex-col items-center justify-center text-gray-500">
+                                    <svg 
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        fill="none" 
+                                        viewBox="0 0 24 24" 
+                                        stroke="currentColor" 
+                                        className="w-16 h-16 mb-4 text-gray-300"
+                                    >
+                                        <path 
+                                            strokeLinecap="round" 
+                                            strokeLinejoin="round" 
+                                            strokeWidth="1" 
+                                            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                                        />
+                                    </svg>
+                                    <p className="text-lg font-medium">No recent orders found</p>
+                                    <p className="mt-1 text-sm">There are no recent inventory orders to display.</p>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </>
             )}
 
             {/* Edit Popup */}

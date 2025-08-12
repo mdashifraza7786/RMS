@@ -175,7 +175,7 @@ const ChefChart: React.FC = () => {
         // });
         
         return result;
-    }, [chartXY, timeFrame, data, chartType, generateData]);
+    }, [chartXY, generateData]);
 
     if (loading) {
         return (

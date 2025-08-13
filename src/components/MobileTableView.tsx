@@ -86,3 +86,4 @@ const MobileTableView: React.FC<MobileTableViewProps> = ({
 };
 
 export default MobileTableView;
+

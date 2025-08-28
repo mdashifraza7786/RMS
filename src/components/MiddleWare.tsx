@@ -13,21 +13,14 @@ const MiddleWare: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { data: session, status } = useSession();
   const [staffMode, setStaffMode] = useState<boolean | null>(null);
 
-  // Detect URL query param and persist staff mode flag
   useEffect(() => {
     if (typeof window === "undefined") return;
-    const url = new URL(window.location.href);
-    const me = url.searchParams.get("_me");
-    if (me === "staff") {
-      localStorage.setItem("appMode", "staff");
+    const path = window.location.pathname;
+    if (path.startsWith("/staff")) {
       setStaffMode(true);
-      // Optional: remove the query param from URL without reload
-      url.searchParams.delete("_me");
-      window.history.replaceState({}, "", url.toString());
-      return;
+    } else {
+      setStaffMode(false);
     }
-    const mode = localStorage.getItem("appMode");
-    setStaffMode(mode === "staff");
   }, []);
 
   const role = (session?.user as any)?.role as string | undefined;

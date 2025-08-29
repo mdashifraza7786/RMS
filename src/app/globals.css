@@ -3,17 +3,34 @@
 @tailwind utilities;
 
 :root {
+  --color-primary: #25476A;
+  --color-secondary: #03A9F4;
+  --color-accent: #1891C3;
+  --font-family: 'Inter, sans-serif';
+  
   --foreground-rgb: 0, 0, 0;
   --background-start-rgb: 214, 219, 220;
   --background-end-rgb: 255, 255, 255;
+  --bg-color: #E6E6E6;
+  --text-color: #333333;
+  --card-bg: #FFFFFF;
+  --border-color: #E2E8F0;
+  --input-bg: #F7FAFC;
+  --input-border: #CBD5E0;
+  --hover-bg: #F1F5F9;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --foreground-rgb: 255, 255, 255;
-    --background-start-rgb: 0, 0, 0;
-    --background-end-rgb: 0, 0, 0;
-  }
+.dark-mode {
+  --foreground-rgb: 255, 255, 255;
+  --background-start-rgb: 0, 0, 0;
+  --background-end-rgb: 0, 0, 0;
+  --bg-color: #1A202C;
+  --text-color: #F7FAFC;
+  --card-bg: #2D3748;
+  --border-color: #4A5568;
+  --input-bg: #2D3748;
+  --input-border: #4A5568;
+  --hover-bg: #4A5568;
 }
 /* Hide number input spinner arrows */
 input[type="number"]::-webkit-outer-spin-button,
@@ -27,7 +44,10 @@ input[type="number"] {
 }
 
 body {
-  background: #E6E6E6;
+  background: var(--bg-color);
+  color: var(--text-color);
+  font-family: var(--font-family);
+  transition: background-color 0.3s, color 0.3s;
 }
 
 @layer utilities {

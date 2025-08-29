@@ -1,5 +1,5 @@
 "use client"
-import React, { useState } from 'react';
+import React from 'react';
 import Link from 'next/link';
 import { BsPersonCircle } from 'react-icons/bs';
 import { Raleway } from 'next/font/google';
@@ -7,17 +7,16 @@ import { AiOutlineLogout } from "react-icons/ai";
 import { usePathname } from 'next/navigation';
 import { signOut } from 'next-auth/react';
 import { GrHomeRounded } from "react-icons/gr";
-import { 
-  FaDollarSign,
-  FaTableCells
+import {
+    FaDollarSign,
+    FaTableCells
 } from "react-icons/fa6";
 import { SlPeople } from "react-icons/sl";
 import { MdOutlineInventory, MdBorderColor } from "react-icons/md";
 import { PiChefHatThin } from "react-icons/pi";
 import { MdOutlineRestaurantMenu } from "react-icons/md";
 import { IoBarChartSharp } from "react-icons/io5";
-import { FaBox, FaMoneyBillWave } from "react-icons/fa";
-import { RiMenu3Line } from 'react-icons/ri';
+import { FaBox, FaMoneyBillWave, FaCog } from "react-icons/fa";
 
 const raleway = Raleway({
     weight: ['400', '500', '600'],
@@ -25,71 +24,71 @@ const raleway = Raleway({
 });
 
 const NAV_ITEMS = [
-    { 
-        href: "/", 
-        icon: <GrHomeRounded />, 
-        label: "Dashboard", 
-        roles: ["admin", "waiter", "chef"] 
+    {
+        href: "/",
+        icon: <GrHomeRounded />,
+        label: "Dashboard",
+        roles: ["admin", "waiter", "chef"]
     },
-    { 
-        href: "/orders", 
-        icon: <MdBorderColor />, 
-        label: "Orders", 
-        roles: ["admin", "waiter", "chef"] 
+    {
+        href: "/orders",
+        icon: <MdBorderColor />,
+        label: "Orders",
+        roles: ["admin", "waiter", "chef"]
     },
-    { 
-        href: "/payout", 
-        icon: <FaDollarSign />, 
-        label: "Payouts", 
-        roles: ["admin","waiter","chef"] 
+    {
+        href: "/payout",
+        icon: <FaDollarSign />,
+        label: "Payouts",
+        roles: ["admin", "waiter", "chef"]
     },
-    { 
-        href: "/attendance", 
-        icon: <SlPeople />, 
-        label: "Attendance", 
-        roles: ["admin","waiter","chef"] 
+    {
+        href: "/attendance",
+        icon: <SlPeople />,
+        label: "Attendance",
+        roles: ["admin", "waiter", "chef"]
     },
-    { 
-        href: "/inventory", 
-        icon: <MdOutlineInventory />, 
-        label: "Inventory", 
-        roles: ["admin", "chef"] 
+    {
+        href: "/inventory",
+        icon: <MdOutlineInventory />,
+        label: "Inventory",
+        roles: ["admin", "chef"]
     },
-    { 
-        href: "/members", 
-        icon: <PiChefHatThin />, 
-        label: "Members", 
-        roles: ["admin"] 
+    {
+        href: "/members",
+        icon: <PiChefHatThin />,
+        label: "Members",
+        roles: ["admin"]
     },
-    { 
-        href: "/menu", 
-        icon: <MdOutlineRestaurantMenu />, 
-        label: "Menu", 
-        roles: ["admin","waiter","chef"] 
+    {
+        href: "/menu",
+        icon: <MdOutlineRestaurantMenu />,
+        label: "Menu",
+        roles: ["admin", "waiter", "chef"]
     },
-    { 
-        href: "/chart", 
-        icon: <IoBarChartSharp />, 
-        label: "Charts", 
-        roles: ["admin"] 
+    {
+        href: "/chart",
+        icon: <IoBarChartSharp />,
+        label: "Charts",
+        roles: ["admin"]
     },
-    { 
-        href: "/expenses", 
-        icon: <FaMoneyBillWave />, 
-        label: "Expenses", 
-        roles: ["admin"] 
+    {
+        href: "/expenses",
+        icon: <FaMoneyBillWave />,
+        label: "Expenses",
+        roles: ["admin"]
     },
-    { 
-        href: "/tables", 
-        icon: <FaTableCells />, 
-        label: "Tables", 
-        roles: ["admin"] 
+    {
+        href: "/tables",
+        icon: <FaTableCells />,
+        label: "Tables",
+        roles: ["admin"]
     },
-    { 
-        href: "/inventory-forecast", 
-        icon: <FaBox />, 
-        label: "Forecast", 
-        roles: ["admin"] 
+    {
+        href: "/inventory-forecast",
+        icon: <FaBox />,
+        label: "Forecast",
+        roles: ["admin"]
     }
 ];
 
@@ -104,11 +103,11 @@ const isPathActive = (href: string, path: string | null) => {
 
 const Navbar: React.FC<{ role: string, userid: string }> = ({ role, userid }) => {
     const pathName = usePathname();
-    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
     async function handleLogout() {
         await signOut({ callbackUrl: '/' });
         localStorage.removeItem('user');
+        
     }
 
     const filteredNavItems = NAV_ITEMS.filter(item => item.roles.includes(role?.toLowerCase()));
@@ -128,6 +127,14 @@ const Navbar: React.FC<{ role: string, userid: string }> = ({ role, userid }) =>
                             <BsPersonCircle className="w-4 h-4" />
                             <span>{userid}</span>
                         </div>
+                        {role === 'admin' && (
+                            <div className="flex items-center space-x-2 bg-primaryhover hover:bg-opacity-90 transition-all duration-200 px-4 py-2 rounded-lg cursor-pointer">
+                            <FaCog className="w-4 h-4" />
+                            <Link href="/settings">
+                                <span>Settings</span>
+                            </Link>
+                        </div>
+                        )}
                         <button
                             onClick={handleLogout}
                             className="flex items-center space-x-2 bg-primaryhover hover:bg-opacity-90 transition-all duration-200 px-4 py-2 rounded-lg"

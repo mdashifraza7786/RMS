@@ -492,6 +492,95 @@ export async function updatePassword(data: any) {
     }
 }
 
+export async function getAllSettings() {
+    const connection = await dbConnect();
+    try {
+        const [rows] = await connection.query<RowDataPacket[]>(
+            'SELECT setting_key, setting_value, setting_type FROM settings'
+        );
+        
+        // Transform into a more usable format grouped by setting_type
+        const settings: { [key: string]: { [key: string]: string } } = {};
+        
+        rows.forEach((row: any) => {
+            if (!settings[row.setting_type]) {
+                settings[row.setting_type] = {};
+            }
+            settings[row.setting_type][row.setting_key] = row.setting_value;
+        });
+        
+        return settings;
+    } catch (error: any) {
+        console.error('Error fetching settings:', error);
+        throw error;
+    } finally {
+        await connection.end();
+    }
+}
+
+export async function getSettingsByType(settingType: string) {
+    const connection = await dbConnect();
+    try {
+        const [rows] = await connection.query<RowDataPacket[]>(
+            'SELECT setting_key, setting_value FROM settings WHERE setting_type = ?',
+            [settingType]
+        );
+        
+        // Transform into a key-value object
+        const settings: { [key: string]: string } = {};
+        rows.forEach((row: any) => {
+            settings[row.setting_key] = row.setting_value;
+        });
+        
+        return settings;
+    } catch (error: any) {
+        console.error(`Error fetching ${settingType} settings:`, error);
+        throw error;
+    } finally {
+        await connection.end();
+    }
+}
+
+export async function updateSetting(settingKey: string, settingValue: string) {
+    const connection = await dbConnect();
+    try {
+        await connection.query(
+            'UPDATE settings SET setting_value = ? WHERE setting_key = ?',
+            [settingValue, settingKey]
+        );
+        
+        return { success: true, message: 'Setting updated successfully' };
+    } catch (error: any) {
+        console.error('Error updating setting:', error);
+        throw error;
+    } finally {
+        await connection.end();
+    }
+}
+
+export async function updateSettingsBatch(settings: { key: string, value: string }[]) {
+    const connection = await dbConnect();
+    try {
+        await connection.beginTransaction();
+        
+        for (const setting of settings) {
+            await connection.query(
+                'UPDATE settings SET setting_value = ? WHERE setting_key = ?',
+                [setting.value, setting.key]
+            );
+        }
+        
+        await connection.commit();
+        return { success: true, message: 'Settings updated successfully' };
+    } catch (error: any) {
+        await connection.rollback();
+        console.error('Error updating settings batch:', error);
+        throw error;
+    } finally {
+        await connection.end();
+    }
+}
+
 export async function updateMenu(data: any) {
     const connection = await dbConnect();
     const { item_id, item_description, item_name, item_foodtype, item_price, item_thumbnail, item_type } = data;

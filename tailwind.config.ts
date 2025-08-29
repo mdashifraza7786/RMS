@@ -17,13 +17,26 @@ const config: Config = {
         'desktop1920': '1921px',
       },
       colors: {
-        primary: "#25476A",  //dark blue -- primary color
-        primaryhover:"#193756",
-        secondary: "#03A9F4",  //light blue
+        primary: "var(--color-primary)",
+        primaryhover: "color-mix(in srgb, var(--color-primary), black 20%)",
+        secondary: "var(--color-secondary)",
+        accent: "var(--color-accent)",
         supporting1: "#AB47BC",  //dark pink
         supporting2: "#9FCC2E", //green use (#0c9c18)
         supporting3: "#FA9F1B",  //golden yellow
         bgred: "#FF0000"       // red
+      },
+      backgroundColor: {
+        card: "var(--card-bg)",
+        input: "var(--input-bg)",
+        hover: "var(--hover-bg)",
+      },
+      borderColor: {
+        DEFAULT: "var(--border-color)",
+        input: "var(--input-border)",
+      },
+      textColor: {
+        DEFAULT: "var(--text-color)",
       }
     },
   },

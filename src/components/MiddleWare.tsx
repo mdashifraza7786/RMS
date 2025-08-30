@@ -18,6 +18,9 @@ const MiddleWare: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const path = window.location.pathname;
     if (path.startsWith("/staff")) {
       setStaffMode(true);
+      if(status == "authenticated"){
+        window.location.href = "/";
+      }
     } else {
       setStaffMode(false);
     }

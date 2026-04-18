@@ -84,7 +84,7 @@ const OrderedItems: React.FC<OrderedItemsProps> = ({
                                             ₹{(item.price * item.quantity).toFixed(2)}
                                         </span>
                                         <button
-                                            onClick={() => removeOrderedItems(item.item_id, tableNumber, order.orderid)}
+                                            onClick={() => removeOrderedItems((item as any).id, tableNumber, order.orderid)}
                                             className="text-gray-400 hover:text-red-500 p-1 rounded-full hover:bg-red-50 transition-all"
                                         >
                                             <IoClose size={18} />

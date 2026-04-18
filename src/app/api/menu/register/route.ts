@@ -1,4 +1,4 @@
-import { dbConnect, getMenuById } from '@/database/database';
+import { dbConnect } from '@/database';
 import { NextResponse } from 'next/server';
 
 export async function POST(request: Request) {
@@ -27,8 +27,8 @@ export async function POST(request: Request) {
 
         do {
             uniqueID = `${foodType}${generateFourDigitRandomNumber()}`;
-            const food = await getMenuById(uniqueID);
-            foodExists = !!food;
+            const [rows]: any = await connection.query('SELECT 1 FROM menu WHERE item_id = ? LIMIT 1', [uniqueID]);
+            foodExists = rows.length > 0;
         } while (foodExists);
 
         return uniqueID;
@@ -61,6 +61,6 @@ export async function POST(request: Request) {
         await connection.rollback();
         return NextResponse.json({ error: err.message });
     } finally {
-        connection.end();
+        connection.release();
     }
 }

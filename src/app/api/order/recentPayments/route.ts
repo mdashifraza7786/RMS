@@ -1,8 +1,18 @@
-import { getRecentPayments} from "@/database/database";
-import { NextResponse } from "next/server";
+import { getRecentPayments } from "@/database";
+import { NextRequest, NextResponse } from "next/server";
+import { withErrorHandling } from "@/lib/api-handler";
+import { successResponse, errorResponse } from "@/lib/api-response";
 
-export async function GET(){
-    const payments = await getRecentPayments();
+export const GET = withErrorHandling(async (request: NextRequest) => {
+    const { searchParams } = new URL(request.url);
+    const page = parseInt(searchParams.get("page") || "1");
+    const limit = parseInt(searchParams.get("limit") || "10");
 
-    return NextResponse.json(payments);
-}
+    const result = await getRecentPayments(page, limit);
+
+    if (!result.success) {
+        return NextResponse.json(errorResponse(result.message || "Failed to fetch recent payments"), { status: 500 });
+    }
+
+    return NextResponse.json(successResponse(result.data));
+});

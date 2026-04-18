@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { Bars } from "react-loader-spinner";
+import Skeleton from "@/components/Skeleton";
 import { FaSearch, FaFileInvoiceDollar, FaUserSlash } from "react-icons/fa";
 import { IoFastFoodOutline } from "react-icons/io5";
 import { BsClock, BsClockHistory } from "react-icons/bs";
@@ -56,6 +57,7 @@ const OrdersPage: React.FC = () => {
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [pageSize, setPageSize] = useState<number>(10);
+  const [totalOrders, setTotalOrders] = useState<number>(0);
 
   useEffect(() => {
     document.title = "Orders";
@@ -81,6 +83,10 @@ const OrdersPage: React.FC = () => {
       document.removeEventListener('visibilitychange', onVisibility);
     };
   }, []);
+
+  useEffect(() => {
+    fetchOrders();
+  }, [currentPage, pageSize, activeTab]);
   const { data: session } = useSession();
   const role = session?.user?.role;
   const userid = session?.user?.userid;
@@ -88,27 +94,32 @@ const OrdersPage: React.FC = () => {
     if (!silent && !everLoaded) setLoading(true);
     try {
       let response;
-      if(role === 'waiter' || role === 'chef'){
-      response = await axios.get(`/api/orders`, {
-        params: {
-          role: role,
-          userid: userid
-        }
-      });
-    }else{
-      response = await axios.get(`/api/orders`);
-    }
-      if (response.data?.orders) {
-        const formattedData: Order[] = response.data.orders.map((order: any) => ({
+      const params: any = { 
+        page: currentPage, 
+        limit: pageSize,
+        search: searchTerm 
+      };
+      if (activeTab !== 'all') {
+        params.status = activeTab;
+      }
+      if (role === 'waiter' || role === 'chef') {
+        params.role = role;
+        params.userid = userid;
+      }
+      
+      response = await axios.get(`/api/orders`, { params });
+      if (response.data?.success && response.data?.data?.orders) {
+        const formattedData: Order[] = response.data.data.orders.map((order: any) => ({
           ...order,
           order_items: typeof order.order_items === 'string' ?
             JSON.parse(order.order_items) : order.order_items,
         }));
 
         setOrders(formattedData);
+        setTotalOrders(response.data.data.total || 0);
         if (!everLoaded) setEverLoaded(true);
       } else {
-        console.error("Failed to fetch orders:", response.data);
+        console.error("Failed to fetch orders:", response.data?.error || "Unknown error");
         setOrders([]);
       }
     } catch (error) {
@@ -122,8 +133,8 @@ const OrdersPage: React.FC = () => {
     try {
       const response = await axios.get('/api/order/orderInvoice');
 
-      if (response.data?.invoice) {
-        setInvoices(response.data.invoice);
+      if (response.data?.success && response.data?.data?.invoices) {
+        setInvoices(response.data.data.invoices);
       } else {
         console.error("Failed to fetch invoices:", response.data);
         setInvoices([]);
@@ -258,27 +269,10 @@ const OrdersPage: React.FC = () => {
     printWindow.document.close();
   };
 
-  const statusFiltered = activeTab === 'all'
-    ? orders
-    : orders.filter((o) => o.status?.toLowerCase() === activeTab);
-
-  const filteredOrders = statusFiltered.filter((order) =>
-    order.id.toString().includes(searchTerm) ||
-    order.table_id.toString().includes(searchTerm) ||
-    order.waiter_name?.toString().toLowerCase().includes(searchTerm.toLowerCase()) ||
-    order.chef_name?.toString().toLowerCase().includes(searchTerm.toLowerCase()) ||
-    order.status.toString().toLowerCase().includes(searchTerm.toLowerCase()) ||
-    order.order_items.some((item) => item.item_name.toString().toLowerCase().includes(searchTerm.toLowerCase()))
-  );
-
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [searchTerm, activeTab, orders]);
-
-  const totalPages = Math.max(1, Math.ceil(filteredOrders.length / pageSize));
+  const paginatedOrders = orders;
+  const totalPages = Math.ceil(totalOrders / pageSize);
   const pageStart = (currentPage - 1) * pageSize;
-  const pageEnd = Math.min(pageStart + pageSize, filteredOrders.length);
-  const paginatedOrders = filteredOrders.slice(pageStart, pageEnd);
+  const pageEnd = Math.min(pageStart + pageSize, totalOrders);
 
   const formatCurrency = (amount: number | null | undefined) => {
     if (amount === null || amount === undefined) return '₹ 0.00';
@@ -364,8 +358,18 @@ const OrdersPage: React.FC = () => {
         </div>
 
         {loading ? (
-          <div className="flex justify-center items-center py-12">
-            <Bars height="50" width="50" color="primary" ariaLabel="bars-loading" />
+          <div className="px-6 py-4 space-y-4">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <div key={i} className="flex gap-4 items-center">
+                <Skeleton variant="rect" width="10%" height={40} />
+                <Skeleton variant="rect" width="15%" height={40} />
+                <Skeleton variant="rect" width="20%" height={40} />
+                <Skeleton variant="rect" width="15%" height={40} />
+                <Skeleton variant="rect" width="15%" height={40} />
+                <Skeleton variant="rect" width="15%" height={40} />
+                <Skeleton variant="rect" width="10%" height={40} />
+              </div>
+            ))}
           </div>
         ) : (
           <>
@@ -549,11 +553,11 @@ const OrdersPage: React.FC = () => {
 
         <div className="px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-gray-100">
           <div className="text-sm text-gray-600">
-            Showing <span className="font-medium text-gray-800">{filteredOrders.length === 0 ? 0 : pageStart + 1}</span>
+            Showing <span className="font-medium text-gray-800">{totalOrders === 0 ? 0 : pageStart + 1}</span>
             
             -<span className="font-medium text-gray-800">{pageEnd}</span> of
             
-            <span className="font-medium text-gray-800"> {filteredOrders.length}</span>
+            <span className="font-medium text-gray-800"> {totalOrders}</span>
           </div>
           <div className="flex items-center gap-3">
             <label className="text-sm text-gray-600">Rows per page</label>

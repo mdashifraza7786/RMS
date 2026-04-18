@@ -47,12 +47,12 @@ const KitchenOrdersCard: React.FC = () => {
         try {
             setLoading(true);
             const response = await fetch('/api/kitchenOrder');
-            const data = await response.json();
+            const resBody = await response.json();
 
-            if (data && Array.isArray(data.users)) {
-                setKitchenOrders(data.users);
+            if (resBody?.success && Array.isArray(resBody.data)) {
+                setKitchenOrders(resBody.data);
             } else {
-                console.error("Fetched data does not contain an array of users:", data);
+                console.error("Fetched data does not contain an array of orders:", resBody);
             }
         } catch (error) {
             console.error("Error fetching kitchen orders:", error);
@@ -222,7 +222,7 @@ const KitchenOrdersCard: React.FC = () => {
                             <tbody className="bg-white divide-y divide-gray-200">
                                 {kitchenOrders.length > 0 ? (
                                     kitchenOrders.map((item) => (
-                                        <tr key={item.order_id} className="hover:bg-gray-50 transition duration-150">
+                                        <tr key={`${item.order_id}-${item.unit}`} className="hover:bg-gray-50 transition duration-150">
                                             <td className="px-6 py-4 whitespace-nowrap">
                                                 <input
                                                     type="checkbox"
@@ -297,7 +297,7 @@ const KitchenOrdersCard: React.FC = () => {
                         {kitchenOrders.length > 0 ? (
                             <div className="space-y-4">
                                 {kitchenOrders.map((item) => (
-                                    <div key={item.order_id} className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                                    <div key={`${item.order_id}-${item.unit}`} className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
                                         <div className="bg-gray-50 p-3 flex justify-between items-center">
                                             <div className="flex items-center">
                                                 <input

@@ -9,6 +9,7 @@ const BillSummary: React.FC<BillSummaryProps> = ({
     handlePlaceOrder,
     handleCompleteOrder,
     tableNumber,
+    isSubmitting = false,
     items = []
 }) => {
     return (
@@ -51,19 +52,19 @@ const BillSummary: React.FC<BillSummaryProps> = ({
             <div className="mt-4 space-y-3">
                 <button
                     onClick={handleCompleteOrder}
-                    disabled={!booked}
-                    className={`w-full bg-gradient-to-r from-supporting2 to-[#8ebf11] text-white font-medium py-3 px-4 rounded-lg hover:shadow-md transition ${!booked ? 'opacity-60 cursor-not-allowed' : ''}`}
+                    disabled={!booked || isSubmitting}
+                    className={`w-full bg-gradient-to-r from-supporting2 to-[#8ebf11] text-white font-medium py-3 px-4 rounded-lg hover:shadow-md transition ${(!booked || isSubmitting) ? 'opacity-60 cursor-not-allowed' : ''}`}
                 >
-                    Complete Order
+                    {isSubmitting ? 'Processing...' : 'Complete Order'}
                 </button>
                 <button
                     onClick={handlePlaceOrder}
-                    disabled={subtotal === 0}
+                    disabled={subtotal === 0 || isSubmitting}
                     className={`w-full font-medium py-3 px-4 rounded-lg transition ${
-                        subtotal === 0 ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-primary text-white hover:shadow-md'
+                        (subtotal === 0 || isSubmitting) ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-primary text-white hover:shadow-md'
                     }`}
                 >
-                    {booked ? 'Update Order' : 'Place Order'}
+                    {isSubmitting ? 'Processing...' : (booked ? 'Update Order' : 'Place Order')}
                 </button>
             </div>
         </div>

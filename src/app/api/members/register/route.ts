@@ -1,97 +1,116 @@
-import { dbConnect, getUserByUserid } from '@/database/database';
+import { dbConnect } from '@/database';
 import { NextResponse } from 'next/server';
-import bcrypt from 'bcrypt'
+import bcrypt from 'bcryptjs';
+import { auth } from '@/auth';
+import { registerMemberSchema } from '@/lib/validation';
+import crypto from 'crypto';
+import { checkRateLimit } from '@/utils/rateLimit';
+import { withErrorHandling } from '@/lib/api-handler';
+import { successResponse } from '@/lib/api-response';
 
-export async function POST(request: Request) {
-    const data = await request.json();
-    const { basicInfoFields, addressFields, payoutFields } = data;
+export const POST = withErrorHandling(async (request: Request) => {
+    const ip = request.headers.get('x-forwarded-for') || 'anonymous';
+    if (!checkRateLimit(`reg_${ip}`, 10, 60000).success) { // 10 per min
+        return NextResponse.json({ success: false, message: "Too many requests" }, { status: 429 });
+    }
 
-    let userType: string;
+    const session = await auth();
+    
+    // RBAC: Only admin can register new members
+    if (!session || (session.user as any)?.role !== 'admin') {
+        return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 403 });
+    }
+
+    const body = await request.json();
+    
+    // Validation
+    const validation = registerMemberSchema.safeParse(body);
+    if (!validation.success) {
+        return NextResponse.json({ 
+            success: false, 
+            message: "Invalid input", 
+            errors: validation.error.issues.map(e => e.message) 
+        }, { status: 400 });
+    }
+
+    const { basicInfoFields, addressFields, payoutFields } = validation.data;
+
+    let userPrefix: string;
     switch (basicInfoFields.role) {
-        case "chef":
-            userType = "CH";
-            break;
-        case "waiter":
-            userType = "WA";
-            break;
-        case "washer":
-            userType = "WS";
-            break;
-        default:
-            return NextResponse.json({ message: "Contact Developer" });
+        case "chef": userPrefix = "CH"; break;
+        case "waiter": userPrefix = "WA"; break;
+        case "washer": userPrefix = "WS"; break;
+        case "admin": userPrefix = "AD"; break;
+        default: userPrefix = "ST";
     }
-
-    function generateFourDigitRandomNumber(): number {
-        return Math.floor(1000 + Math.random() * 9000);
-    }
-
-    async function generateUniqueUserId(): Promise<string> {
-        let uniqueID: string;
-        let userExists: boolean;
-
-        do {
-            uniqueID = `${userType}${generateFourDigitRandomNumber()}`;
-            const user = await getUserByUserid(uniqueID);
-            userExists = !!user;
-        } while (userExists);
-
-        return uniqueID;
-    }
-
-    const uniqueID = await generateUniqueUserId();
-
-    function generatePassword(length: number): string {
-        const upperCaseChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-        const lowerCaseChars = 'abcdefghijklmnopqrstuvwxyz';
-        const numbers = '0123456789';
-        const specialChars = '!@#$%^&*()_+[]{}|;:,.<>?';
-
-        const allChars = upperCaseChars + lowerCaseChars + numbers + specialChars;
-        let password = '';
-
-        for (let i = 0; i < length; i++) {
-            const randomIndex = Math.floor(Math.random() * allChars.length);
-            password += allChars[randomIndex];
-        }
-
-        return password;
-    }
-
-    const password = generatePassword(6);
-
-    // Hash the password
-    const saltRounds = 10;
-    const hashedPassword = await bcrypt.hash(password, saltRounds);
 
     const connection = await dbConnect();
+
     try {
         await connection.beginTransaction();
 
-        // Insert into users table
-        const [userResult] = await connection.query(`
-            INSERT INTO user (userid, name, role,photo, mobile, email, password, aadhaar, pancard) 
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?,?)
-        `, [uniqueID, basicInfoFields.name, basicInfoFields.role, basicInfoFields.photo, basicInfoFields.phone_number, basicInfoFields.email, hashedPassword, basicInfoFields.aadhar_no, basicInfoFields.pan_no]);
+    // Secure ID Generation
+    const uniqueID = `${userPrefix}-${crypto.randomUUID().slice(0, 8).toUpperCase()}`;
 
-        // Insert into user_address table
+        // Secure Password Generation
+        const password = crypto.randomBytes(8).toString('base64').slice(0, 12);
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        // Insert into users table
+        await connection.query(`
+            INSERT INTO user (userid, name, role, photo, mobile, email, password, aadhaar, pancard) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `, [
+            uniqueID, 
+            basicInfoFields.name, 
+            basicInfoFields.role, 
+            basicInfoFields.photo, 
+            basicInfoFields.phone_number, 
+            basicInfoFields.email, 
+            hashedPassword, 
+            basicInfoFields.aadhar_no, 
+            basicInfoFields.pan_no
+        ]);
+
+        // Insert into user_address
         await connection.query(`
             INSERT INTO user_address (userid, street_or_house_no, landmark, address_one, address_two, city, state, pin, country) 
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-        `, [uniqueID, addressFields.street_or_house_no, addressFields.landmark, addressFields.address_one, addressFields.address_two, addressFields.city, addressFields.state, addressFields.pin_code, addressFields.country]);
+        `, [
+            uniqueID, 
+            addressFields.street_or_house_no, 
+            addressFields.landmark, 
+            addressFields.address_one, 
+            addressFields.address_two, 
+            addressFields.city, 
+            addressFields.state, 
+            addressFields.pin_code, 
+            addressFields.country || 'India'
+        ]);
 
-        // insert into payout_details table
+        // Insert into payout_details
         await connection.query(`
             INSERT INTO payout_details (userid, account_name, account_number, ifsc_code, branch_name, upiid) 
             VALUES (?, ?, ?, ?, ?, ?)
-        `, [uniqueID, payoutFields.account_name, payoutFields.account_number, payoutFields.ifsc_code, payoutFields.branch_name, payoutFields.upiid]);
+        `, [
+            uniqueID, 
+            payoutFields.account_name, 
+            payoutFields.account_number, 
+            payoutFields.ifsc_code, 
+            payoutFields.branch_name, 
+            payoutFields.upiid
+        ]);
 
         await connection.commit();
 
-        return NextResponse.json({ message: "Data inserted successfully", cred: { uniqueID, password } });
-    } catch (err: any) {
+        return NextResponse.json(successResponse({ 
+            userid: uniqueID, password 
+        }, "Member registered successfully"));
+
+    } catch (dbErr) {
         await connection.rollback();
-        return NextResponse.json({ error: err.message });
+        throw dbErr;
     } finally {
-        connection.end();
+        connection.release();
     }
-}
+});

@@ -23,6 +23,8 @@ const InventoryCard: React.FC = () => {
   });
   const [inventory, setInventory] = useState<InventoryItem[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [page, setPage] = useState(1);
+  const [limit] = useState(10);
   const [editData, setEditData] = useState<InventoryItem | null>(null);
   const [editPopupVisible, setEditPopupVisible] = useState(false);
   const [addInventoryPopupVisible, setAddInventoryPopupVisible] = useState(false);
@@ -37,7 +39,7 @@ const InventoryCard: React.FC = () => {
 
   useEffect(() => {
     fetchInventory();
-  }, []);
+  }, [page]);
 
   const filteredInventory = inventory.filter(
     (item) =>
@@ -48,12 +50,12 @@ const InventoryCard: React.FC = () => {
   const fetchInventory = async () => {
     try {
       setLoading(true);
-      const response = await axios.get("/api/inventory");
-      const data = response.data;
-      if (data && Array.isArray(data.users)) {
-        setInventory(data.users);
+      const response = await axios.get(`/api/inventory?page=${page}&limit=${limit}`);
+      const resBody = response.data;
+      if (resBody?.success && resBody.data?.inventory) {
+        setInventory(resBody.data.inventory);
       } else {
-        console.error("Fetched data does not contain an array of users:", data);
+        console.error("Fetched data does not contain inventory:", resBody);
       }
     } catch (error) {
       console.error("Error fetching inventory data:", error);
@@ -169,7 +171,7 @@ const InventoryCard: React.FC = () => {
             <tbody className="bg-white divide-y divide-gray-200">
               {filteredInventory.length > 0 ? (
                 filteredInventory.map((item) => (
-                  <tr key={item.item_id} className="hover:bg-gray-50 transition duration-150">
+                  <tr key={`${item.item_id}-${item.unit}`} className="hover:bg-gray-50 transition duration-150">
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{item.item_id}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{item.item_name}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
@@ -241,12 +243,31 @@ const InventoryCard: React.FC = () => {
           </table>
           </div>
 
+          {/* Pagination Controls */}
+          <div className="mt-4 flex justify-between items-center bg-gray-50 p-4 rounded-lg">
+            <button
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={page === 1}
+              className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Previous
+            </button>
+            <span className="text-sm text-gray-700">Page <span className="font-bold">{page}</span></span>
+            <button
+              onClick={() => setPage((p) => p + 1)}
+              disabled={inventory.length < limit}
+              className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Next
+            </button>
+          </div>
+
           {/* Mobile Card View */}
           <div className="md:hidden px-4">
             {filteredInventory.length > 0 ? (
               <div className="space-y-4">
                 {filteredInventory.map((item) => (
-                  <div key={item.item_id} className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                  <div key={`${item.item_id}-${item.unit}`} className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
                     <div className="bg-gray-50 p-3 flex justify-between items-center">
                       <div className="font-medium text-gray-800">{item.item_name}</div>
                       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${

@@ -19,6 +19,8 @@ interface InventoryOrderItem {
 const RecentCard: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [inventory, setInventory] = useState<InventoryOrderItem[]>([]);
+    const [page, setPage] = useState(1);
+    const [limit] = useState(10);
     const [editPopupVisible, setEditPopupVisible] = useState(false);
     const [deleteLoading, setDeleteLoading] = useState(false);
     const [deletePopupVisible, setDeletePopupVisible] = useState(false);
@@ -59,12 +61,12 @@ const RecentCard: React.FC = () => {
     const fetchRecentOrders = async () => {
         try {
             setLoading(true);
-            const response = await axios.get('/api/recentOrder');
-            const data = response.data;
-            if (data && Array.isArray(data.users)) {
-                setInventory(data.users);
+            const response = await axios.get(`/api/recentOrder?page=${page}&limit=${limit}`);
+            const resBody = response.data;
+            if (resBody?.success && Array.isArray(resBody.data)) {
+                setInventory(resBody.data);
             } else {
-                console.error("Fetched data does not contain an array of users:", data);
+                console.error("Fetched data does not contain an array of orders:", resBody);
             }
         } catch (error) {
             console.error("Error fetching inventory data:", error);
@@ -89,7 +91,7 @@ const RecentCard: React.FC = () => {
 
     useEffect(() => {
         fetchRecentOrders();
-    }, []);
+    }, [page]);
 
     // Format currency
     const formatCurrency = (amount: number) => {
@@ -130,7 +132,7 @@ const RecentCard: React.FC = () => {
                             <tbody className="bg-white divide-y divide-gray-200">
                                 {inventory && inventory.length > 0 ? (
                                     inventory.map((item) => (
-                                        <tr key={item.order_id} className="hover:bg-gray-50 transition duration-150">
+                                        <tr key={`${item.order_id}-${item.unit}`} className="hover:bg-gray-50 transition duration-150">
                                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{item.order_id}</td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{item.order_name}</td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{formatCurrency(item.price)}</td>
@@ -189,12 +191,31 @@ const RecentCard: React.FC = () => {
                         </table>
                     </div>
 
+                    {/* Pagination Controls */}
+                    <div className="mt-4 flex justify-between items-center bg-gray-50 p-4 rounded-lg">
+                        <button
+                            onClick={() => setPage((p) => Math.max(1, p - 1))}
+                            disabled={page === 1}
+                            className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            Previous
+                        </button>
+                        <span className="text-sm text-gray-700">Page <span className="font-bold">{page}</span></span>
+                        <button
+                            onClick={() => setPage((p) => p + 1)}
+                            disabled={inventory.length < limit}
+                            className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            Next
+                        </button>
+                    </div>
+
                     {/* Mobile Card View */}
                     <div className="md:hidden px-4">
                         {inventory && inventory.length > 0 ? (
                             <div className="space-y-4">
                                 {inventory.map((item) => (
-                                    <div key={item.order_id} className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                                    <div key={`${item.order_id}-${item.unit}`} className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
                                         <div className="bg-gray-50 p-3 flex justify-between items-center">
                                             <div className="font-medium text-gray-800">{item.order_name}</div>
                                             <div className="text-sm font-medium text-primary">₹{formatCurrency(item.total_amount)}</div>

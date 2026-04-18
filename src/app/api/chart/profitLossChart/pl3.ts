@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { dbConnect } from "@/database/database";
+import { dbConnect } from "@/database";
 import mysql, { RowDataPacket } from "mysql2/promise";
 
 const TIME_SLOTS = {
@@ -55,6 +55,6 @@ export async function GET() {
         console.error("Error fetching profit/loss data:", error);
         return NextResponse.json({ success: false, message: "Internal Server Error" }, { status: 500 });
     } finally {
-        await connection.end();
+        await connection.release();
     }
 }

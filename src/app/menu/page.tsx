@@ -8,6 +8,8 @@ import { MdOutlineRestaurantMenu } from "react-icons/md";
 import AddMenu from './popup';
 import { Bars } from 'react-loader-spinner';
 import Image from 'next/image';
+import IngredientModal from './IngredientModal';
+import { FaListUl } from 'react-icons/fa';
 
 interface EditData {
     item_id: string;
@@ -48,19 +50,29 @@ const Page: React.FC = () => {
     const [editLoading, setEditLoading] = useState<boolean>(false);
     const [newThumbnail, setNewThumbnail] = useState<string | null>(null);
     const [activeCategory, setActiveCategory] = useState<string>("all");
+    const [currentPage, setCurrentPage] = useState<number>(1);
+    const [totalPages, setTotalPages] = useState<number>(1);
+    const [totalItems, setTotalItems] = useState<number>(0);
+    const [limit] = useState<number>(12);
+    const [recipeMenuItem, setRecipeMenuItem] = useState<EditData | null>(null);
 
     useEffect(() => {
-        document.title = "Menu";
-        fetchMenuData();
-    }, []);
+        const delayDebounceFn = setTimeout(() => {
+            fetchMenuData(currentPage, searchTerm, activeCategory);
+        }, 300);
 
-    const fetchMenuData = async () => {
+        return () => clearTimeout(delayDebounceFn);
+    }, [currentPage, activeCategory, searchTerm]);
+
+    const fetchMenuData = async (page: number = 1, search: string = '', category: string = 'all') => {
         try {
             setLoading(true);
-            const response = await axios.get('/api/menu');
+            const response = await axios.get(`/api/menu?page=${page}&limit=${limit}&search=${search}&category=${category}`);
             const data = response.data;
             if (data && Array.isArray(data.menu)) {
                 setMenuData(data.menu);
+                setTotalItems(data.total);
+                setTotalPages(Math.ceil(data.total / limit));
             } else {
                 console.error("Fetched data does not contain an array of menu:", data);
             }
@@ -78,6 +90,7 @@ const Page: React.FC = () => {
 
     const handleSearchChange = (event: ChangeEvent<HTMLInputElement>) => {
         setSearchTerm(event.target.value);
+        setCurrentPage(1);
     };
 
     const handleEditClick = (data: EditData) => {
@@ -91,18 +104,6 @@ const Page: React.FC = () => {
         setDeleteMenuId(item_id);
         setDeleteMenuName(item_name);
     };
-
-    const filteredData = menuData.filter(item => {
-        const matchesSearch =
-            item.item_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            item.item_id.toLowerCase().includes(searchTerm.toLowerCase());
-
-        const matchesCategory =
-            activeCategory === "all" ||
-            item.item_type === activeCategory;
-
-        return matchesSearch && matchesCategory;
-    });
 
     const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -131,7 +132,7 @@ const Page: React.FC = () => {
                 },
                 body: JSON.stringify(updatedData),
             });
-            fetchMenuData();
+            fetchMenuData(currentPage, searchTerm, activeCategory);
         } catch (error) {
             console.error("Error updating menu item:", error);
         } finally {
@@ -151,12 +152,11 @@ const Page: React.FC = () => {
         } finally {
             setDeleteLoading(false);
             setDeleteMenuBoxValue("");
-            fetchMenuData();
+            fetchMenuData(currentPage, searchTerm, activeCategory);
         }
     };
 
-    const uniqueCategories = Array.from(new Set(menuData.map(item => item.item_type)));
-    const categories = ["all", ...uniqueCategories];
+    const categories = ["all", ...categoriesData];
 
     const formatCurrency = (amount: number) => {
         return new Intl.NumberFormat('en-IN', {
@@ -208,7 +208,10 @@ const Page: React.FC = () => {
                         {categories.map((category) => (
                             <button
                                 key={category}
-                                onClick={() => setActiveCategory(category)}
+                                onClick={() => {
+                                    setActiveCategory(category);
+                                    setCurrentPage(1);
+                                }}
                                 className={`px-4 py-2 text-sm font-medium rounded-t-lg transition-all ${activeCategory === category
                                     ? 'text-primary border-b-2 border-primary bg-primary/5'
                                     : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
@@ -241,8 +244,8 @@ const Page: React.FC = () => {
                                     </tr>
                                 </thead>
                                 <tbody className="bg-white divide-y divide-gray-200">
-                                    {filteredData.length > 0 ? (
-                                        filteredData.map((item) => (
+                                    {menuData.length > 0 ? (
+                                        menuData.map((item) => (
                                             <tr key={item.item_id} className="hover:bg-gray-50 transition duration-150">
                                                 <td className="px-6 py-4 whitespace-nowrap">
                                                     <div className="w-16 h-16 rounded-md overflow-hidden bg-gray-100 border border-gray-200">
@@ -253,6 +256,7 @@ const Page: React.FC = () => {
                                                                 width={64}
                                                                 height={64}
                                                                 className="w-full h-full object-cover"
+                                                                unoptimized
                                                             />
                                                         ) : (
                                                             <div className="w-full h-full flex items-center justify-center text-gray-400">
@@ -283,6 +287,13 @@ const Page: React.FC = () => {
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                                     <div className="flex items-center space-x-2">
+                                                        <button
+                                                            className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 transition"
+                                                            onClick={() => setRecipeMenuItem(item)}
+                                                        >
+                                                            <FaListUl className="mr-1.5" size={12} />
+                                                            Recipe
+                                                        </button>
                                                         <button
                                                             className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-primary hover:bg-primary/90 transition"
                                                             onClick={() => handleEditClick(item)}
@@ -318,9 +329,9 @@ const Page: React.FC = () => {
 
                         {/* Mobile Card View */}
                         <div className="md:hidden px-4">
-                            {filteredData.length > 0 ? (
+                            {menuData.length > 0 ? (
                                 <div className="space-y-4">
-                                    {filteredData.map((item) => (
+                                    {menuData.map((item) => (
                                         <div key={item.item_id} className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
                                             <div className="flex p-4 items-center">
                                                 <div className="w-16 h-16 rounded-md overflow-hidden bg-gray-100 border border-gray-200 mr-4 flex-shrink-0">
@@ -331,6 +342,7 @@ const Page: React.FC = () => {
                                                             width={64}
                                                             height={64}
                                                             className="w-full h-full object-cover"
+                                                            unoptimized
                                                         />
                                                     ) : (
                                                         <div className="w-full h-full flex items-center justify-center text-gray-400">
@@ -352,6 +364,13 @@ const Page: React.FC = () => {
                                             <div className="border-t border-gray-100 p-3 bg-gray-50 flex justify-between items-center">
                                                 <div className="text-xs text-gray-500">{item.item_type}</div>
                                                 <div className="flex space-x-2">
+                                                    <button
+                                                        className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 transition"
+                                                        onClick={() => setRecipeMenuItem(item)}
+                                                    >
+                                                        <FaListUl className="mr-1.5" size={12} />
+                                                        Recipe
+                                                    </button>
                                                     <button
                                                         className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-primary hover:bg-primary/90 transition"
                                                         onClick={() => handleEditClick(item)}
@@ -384,6 +403,46 @@ const Page: React.FC = () => {
                     </>
                 )
                 }
+                
+                {/* Pagination Controls */}
+                {!loading && totalPages > 1 && (
+                    <div className="px-6 py-4 border-t border-gray-100 flex flex-col sm:flex-row justify-between items-center gap-4">
+                        <div className="text-sm text-gray-500">
+                            Showing <span className="font-medium">{((currentPage - 1) * limit) + 1}</span> to <span className="font-medium">{Math.min(currentPage * limit, totalItems)}</span> of <span className="font-medium">{totalItems}</span> results
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <button
+                                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                                disabled={currentPage === 1}
+                                className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                            >
+                                Previous
+                            </button>
+                            <div className="flex items-center gap-1">
+                                {[...Array(totalPages)].map((_, i) => (
+                                    <button
+                                        key={i + 1}
+                                        onClick={() => setCurrentPage(i + 1)}
+                                        className={`w-10 h-10 flex items-center justify-center rounded-md text-sm font-medium transition-colors ${
+                                            currentPage === i + 1
+                                                ? 'bg-primary text-white shadow-sm'
+                                                : 'text-gray-700 hover:bg-gray-100'
+                                        }`}
+                                    >
+                                        {i + 1}
+                                    </button>
+                                ))}
+                            </div>
+                            <button
+                                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                                disabled={currentPage === totalPages}
+                                className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                            >
+                                Next
+                            </button>
+                        </div>
+                    </div>
+                )}
             </div>
 
             {popupOpened && (
@@ -629,6 +688,12 @@ const Page: React.FC = () => {
                     animation: scaleIn 0.3s ease-out;
                 }
             `}</style>
+            {recipeMenuItem && (
+                <IngredientModal 
+                    menuItem={recipeMenuItem} 
+                    onClose={() => setRecipeMenuItem(null)} 
+                />
+            )}
         </div>
     );
 };

@@ -6,34 +6,32 @@ A comprehensive web-based solution for restaurant operations management, built w
 
 The Restaurant Management System (RMS) is a full-stack application designed to streamline restaurant operations across multiple roles. This solution provides specialized interfaces for administrators, waiters, chefs, and customers, enabling efficient order management, inventory tracking, and financial reporting.
 
-With real-time updates, the system ensures seamless coordination between the dining area and kitchen. The platform incorporates advanced features like ML-based inventory forecasting, attendance tracking, and detailed financial analytics to optimize restaurant operations and enhance decision-making.
+With real-time updates, the system ensures seamless coordination between the dining area and kitchen. The platform incorporates features like attendance tracking and detailed financial analytics to optimize restaurant operations.
 
 ## Features
 
 ### Role-Based Access
 
 - **Admin Dashboard**: Financial overview, staff management, inventory tracking, and business analytics
-- **Waiter Interface**: Order management, table assignments, and bill generation
+- **Waiter Interface**: Order management and bill generation
 - **Chef Portal**: Kitchen queue monitoring and order status updates
-- **Customer Experience**: Menu browsing, order placement, and status tracking
+- **Customer Experience**: Menu browsing and order placement
 
 ### Key Capabilities
 
 - **Real-time Updates**: Instant communication and synchronization between staff
 - **Financial Management**: Track revenue, expenses, and generate reports
-- **Inventory Control**: Stock monitoring with low-stock alerts and ML-based forecasting
+- **Inventory Control**: Stock monitoring with low-stock alerts
 - **Staff Management**: Attendance tracking and payroll processing
 - **Theme Customization**: Configurable UI themes to match your restaurant's branding
 
 ## Tech Stack
 
-- **Frontend**: Next.js, React, TypeScript, TailwindCSS
-- **Backend**: Next.js API routes, Node.js
+- **Frontend**: Next.js (App Router), React, TypeScript
+- **Backend**: Next.js API routes (Edge-ready)
 - **Database**: MySQL
 - **Authentication**: NextAuth.js
-- **State Management**: React Context API
-- **ML/Analytics**: Python with Prophet for forecasting
-- **Styling**: TailwindCSS, CSS Modules
+- **Styling**: Vanilla CSS, TailwindCSS
 
 ## Demo Credentials
 
@@ -65,20 +63,18 @@ With real-time updates, the system ensures seamless coordination between the din
 ### Inventory Management
 1. System monitors stock levels
 2. Low-stock alerts trigger reorder notifications
-3. ML forecasting predicts future inventory needs
-4. Purchase orders are generated and tracked
+3. Purchase orders are tracked
 
 ### Financial Reporting
 1. System tracks all sales and expenses
 2. Daily, weekly, and monthly reports are generated
 3. Profit and loss statements are calculated automatically
-4. Tax calculations are handled based on configured rates
+4. Tax calculations are handled based on configurable rates
 
 ### Staff Management
 1. Employee attendance is tracked with check-in/out
-2. Payroll is calculated based on hours worked
-3. Performance metrics are generated for staff evaluation
-4. Shift scheduling and management
+2. Payroll is calculated based on configurations
+3. Shift management basics
 
 ## System Architecture
 
@@ -95,22 +91,15 @@ The RMS follows a modern architecture pattern with several key components:
 - **Business Logic**: Core application logic for order processing, inventory management, etc.
 
 ### Data Layer
-- **Database**: MySQL for persistent storage with optimized queries
-- **Data Synchronization**: Efficient polling and state management for updates
-- **Caching**: In-memory caching for frequently accessed data
-
-### Analytics Layer
-- **ML Service**: Python-based forecasting service with Prophet
-- **Data Processing**: ETL processes for transforming raw data
-- **Reporting Engine**: Dynamic report generation for business insights
+- **Database**: MySQL for persistent storage
+- **Caching**: Server-side in-memory caching for dashboard data
 
 ## Security Features
 
-- **Authentication**: Secure login system with role-based access control
-- **Data Protection**: Encrypted sensitive information and secure API endpoints
-- **Input Validation**: Comprehensive validation to prevent injection attacks
-- **Session Management**: Secure session handling with automatic timeouts
-- **API Security**: Protected API routes with proper authorization checks
+- **Authentication**: Secure login with role-based access control (RBAC)
+- **Data Protection**: Standardized API error handling (no info leaks)
+- **Input Validation**: Zod-based validation on both frontend and backend
+- **Session Management**: Secure JWT-based sessions
 
 ## Future Roadmap
 

@@ -1,35 +1,39 @@
-import { dbConnect, getInventoryById } from '@/database/database';
+import { dbConnect } from '@/database';
 import { NextResponse } from 'next/server';
+import { auth } from '@/auth';
+import { registerExpenseSchema } from '@/lib/validation';
+import crypto from 'crypto';
+import { withErrorHandling } from '@/lib/api-handler';
+import { successResponse } from '@/lib/api-response';
 
-export async function POST(request: Request) {
-    const data = await request.json();
-    const { expenses_for, frequency, cost } = data;
-
-    function generateFiveDigitRandomNumber(): number {
-        return Math.floor(10000 + Math.random() * 90000); 
+export const POST = withErrorHandling(async (request: Request) => {
+    const session = await auth();
+    const userRole = (session?.user as any)?.role;
+    
+    if (!session || !['admin', 'manager'].includes(userRole)) {
+        return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 403 });
     }
 
-    async function generateUniqueItemId(): Promise<string> {
-        let uniqueID: string;
-        let userExists: boolean;
-
-        do {
-            uniqueID = `EXP${generateFiveDigitRandomNumber()}`;
-            const user = await getInventoryById(uniqueID);
-            userExists = !!user;
-        } while (userExists);
-
-        return uniqueID;
+    const body = await request.json();
+    const validation = registerExpenseSchema.safeParse(body);
+    
+    if (!validation.success) {
+        return NextResponse.json({ 
+            success: false, 
+            message: "Invalid input", 
+            errors: validation.error.issues.map(e => e.message) 
+        }, { status: 400 });
     }
 
-    const uniqueID = await generateUniqueItemId(); 
-    const currentDate = new Date().toISOString().slice(0, 19).replace('T', ' ');
-
+    const { expenses_for, frequency, cost } = validation.data;
     const connection = await dbConnect();
+
     try {
         await connection.beginTransaction();
 
-        // Insert into expenses table
+        const uniqueID = `EXP-${crypto.randomUUID().slice(0, 8).toUpperCase()}`;
+        const currentDate = new Date().toISOString().slice(0, 19).replace('T', ' ');
+
         await connection.query(`
             INSERT INTO expenses (id, expenses_for, frequency, cost, date) 
             VALUES (?, ?, ?, ?, ?)`, 
@@ -38,15 +42,13 @@ export async function POST(request: Request) {
 
         await connection.commit();
 
-        return NextResponse.json({ 
-            message: "Data inserted successfully", 
-            cred: { uniqueID, expenses_for, frequency, cost, date: currentDate } 
-        });
-    } catch (err: any) {
+        return NextResponse.json(successResponse({ 
+            id: uniqueID, expenses_for, cost, date: currentDate 
+        }, "Expense registered successfully"));
+    } catch (dbErr) {
         await connection.rollback();
-        console.error("Error inserting expense:", err.message);
-        return NextResponse.json({ error: err.message });
+        throw dbErr;
     } finally {
-        await connection.end();
+        await connection.release();
     }
-}
+});

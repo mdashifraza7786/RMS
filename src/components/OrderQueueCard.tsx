@@ -27,6 +27,7 @@ const OrderQueueCard: React.FC<OrderQueueCardProps> = ({ table, waiter, amount, 
     const statusChip = (status?: string) => {
         const s = (status || 'pending').toLowerCase();
         const map: Record<string, { bg: string; text: string; label: string }> = {
+            ordered: { bg: 'bg-gray-100', text: 'text-gray-700', label: 'Pending' },
             pending: { bg: 'bg-gray-100', text: 'text-gray-700', label: 'Pending' },
             preparing: { bg: 'bg-amber-100', text: 'text-amber-800', label: 'Preparing' },
             ready: { bg: 'bg-green-100', text: 'text-green-800', label: 'Ready' },

@@ -19,7 +19,7 @@ export interface OrderScreenProps {
         orderid: number; 
         billing: billingAmount; 
         tablenumber: number; 
-        itemsordered: OrderedItems[] 
+        itemsordered: (OrderedItems & { id: number })[] 
     }[];
     setorderitemsfun: (bookedItems: { 
         orderid: number; 
@@ -27,18 +27,16 @@ export interface OrderScreenProps {
         tablenumber: number; 
         itemsordered: OrderedItems[]; 
     }) => void;
-    removeOrderedItems: (itemId: string, tableNumber: number, orderID: number) => void;
+    removeOrderedItems: (voidItemId: number, tableNumber: number, orderID: number) => void;
     resettable: (tablenumber: any) => void;
     closeOrderScreen: () => void;
     updateItemStatus?: (orderId: number, itemId: string, status: string) => void;
+    updateTableAvailability?: (tableNum: number, availability: number) => void;
 }
 
 export interface MenuSearchProps {
     searchTerm: string;
     setSearchTerm: (value: string) => void;
-    isDropdownVisible: boolean;
-    filteredData: MenuData[];
-    handleItemSelect: (selectedItem: MenuData) => void;
 }
 
 export interface SelectedItemsProps {
@@ -51,7 +49,7 @@ export interface SelectedItemsProps {
 export interface OrderedItemsProps {
     tableNumber: number;
     orderedItem: OrderScreenProps['orderedItem'];
-    removeOrderedItems: (itemId: string, tableNumber: number, orderID: number) => void;
+    removeOrderedItems: (voidItemId: number, tableNumber: number, orderID: number) => void;
     onUpdateItemStatus?: (orderId: number, itemId: string, status: string) => void;
 }
 
@@ -60,17 +58,19 @@ export interface BillSummaryProps {
     gst: number;
     totalAmount: number;
     booked: boolean;
+    isSubmitting?: boolean;
     handlePlaceOrder: () => void;
     handleCompleteOrder: () => void;
     tableNumber: number;
     items?: { item_id?: string; item_name: string; quantity: number; price: number }[];
+    selectedItemsRaw?: { item: MenuData; quantity: number }[];
+    handleQuantityChange?: (itemId: string, newQuantity: string) => void;
 }
-
-export interface CompleteOrderModalProps {
     isVisible: boolean;
     tableNumber: number;
     orderId: number;
     totalAmount: number;
+    isSubmitting?: boolean;
     closeModal: () => void;
     completeOrder: (
         tablenumber: number, 

@@ -41,7 +41,7 @@ const AddExpense: React.FC<AddExpenseProps> = ({ popupHandle, onExpenseAdded }) 
                 cost: Number(formValues.cost),
             });
             
-            if (response.data) {
+            if (response.data?.success) {
                 onExpenseAdded();
                 popupHandle();
             }

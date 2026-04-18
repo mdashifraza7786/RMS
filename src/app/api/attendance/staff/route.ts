@@ -1,4 +1,4 @@
-import { dbConnect } from "@/database/database";
+import { dbConnect } from "@/database";
 import { NextResponse } from "next/server";
 import { RowDataPacket } from "mysql2";
 
@@ -21,6 +21,6 @@ export async function GET(request: Request) {
   } catch (e) {
     return NextResponse.json({ message: "Failed to fetch attendance" }, { status: 500 });
   } finally {
-    await connection.end();
+    await connection.release();
   }
 }

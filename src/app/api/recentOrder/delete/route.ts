@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import {dbConnect} from "@/database/database";
+import {dbConnect} from "@/database";
 
 export async function DELETE(request: NextRequest) {
         const connection = await dbConnect();
@@ -26,7 +26,7 @@ export async function DELETE(request: NextRequest) {
             console.error('Error deleting recent order:', error.message);
             return NextResponse.json({ success: false, message: 'Error deleting recent order' });
         } finally {
-            await connection.end();
+            await connection.release();
         }
     }
     

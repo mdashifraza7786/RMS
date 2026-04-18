@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { updateRecentOrders } from "@/database/database";
+import { updateRecentInventoryOrder } from "@/database";
 
 export async function PUT(request: NextRequest) {
     try {
         const data = await request.json();
-        const result = await updateRecentOrders(data);
+        const result = await updateRecentInventoryOrder(data);
 
         if (result) {
             return NextResponse.json({ message: 'Recent order updated successfully' }, { status: 200 });

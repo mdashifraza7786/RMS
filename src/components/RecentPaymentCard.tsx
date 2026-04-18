@@ -31,7 +31,7 @@ export default function PaymentsComponent() {
         try {
             const response = await fetch("/api/order/recentPayments");
             const data = await response.json();
-            setInvoice(data.payments);
+            setInvoice(data.data?.payments || []);
         } catch (error) {
             console.error("Error fetching orders:", error);
         } finally {
@@ -83,7 +83,7 @@ export default function PaymentsComponent() {
                         <Bars height="40" width="40" color="currentColor" ariaLabel="bars-loading" visible={true} />
                     </span>
                 </div>
-            ) : invoice.length === 0 ? (
+            ) : (invoice?.length === 0 || !invoice) ? (
                 <div className="flex-grow flex items-center justify-center bg-gray-50 rounded-lg border border-dashed border-gray-200">
                     <p className="text-gray-500 text-sm">No recent payments found</p>
                 </div>
@@ -147,7 +147,7 @@ export default function PaymentsComponent() {
                     ))}
                 </div>
             )}
-            {invoice.length > 0 && (
+            {invoice?.length > 0 && (
                 <div className="flex justify-center items-center mt-4 pt-3 border-t border-gray-100">
                     <button
                         onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
@@ -157,12 +157,12 @@ export default function PaymentsComponent() {
                         <MdKeyboardArrowLeft size={20} />
                     </button>
                     <span className="text-sm text-gray-600">
-                        Page {currentPage} of {Math.ceil(invoice.length / itemsPerPage)}
+                        Page {currentPage} of {Math.ceil((invoice?.length || 0) / itemsPerPage)}
                     </span>
                     <button
-                        onClick={() => setCurrentPage(prev => Math.min(prev + 1, Math.ceil(invoice.length / itemsPerPage)))}
-                        disabled={currentPage >= Math.ceil(invoice.length / itemsPerPage)}
-                        className={`w-8 h-8 rounded-full flex items-center justify-center ml-2 ${currentPage >= Math.ceil(invoice.length / itemsPerPage) ? 'text-gray-300 cursor-not-allowed' : 'text-gray-600 hover:bg-gray-100'}`}
+                        onClick={() => setCurrentPage(prev => Math.min(prev + 1, Math.ceil((invoice?.length || 0) / itemsPerPage)))}
+                        disabled={currentPage >= Math.ceil((invoice?.length || 0) / itemsPerPage)}
+                        className={`w-8 h-8 rounded-full flex items-center justify-center ml-2 ${currentPage >= Math.ceil((invoice?.length || 0) / itemsPerPage) ? 'text-gray-300 cursor-not-allowed' : 'text-gray-600 hover:bg-gray-100'}`}
                     >
                         <MdKeyboardArrowRight size={20} />
                     </button>

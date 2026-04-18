@@ -38,6 +38,7 @@ const FinancialOverview: React.FC<FinancialOverviewProps> = ({
           <option value="7days">Last 7 days</option>
           <option value="30days">Last 30 days</option>
           <option value="month">This month</option>
+          <option value="all">All Time</option>
         </select>
       </div>
 
@@ -126,9 +127,17 @@ const FinancialOverview: React.FC<FinancialOverviewProps> = ({
           <div className="bg-gradient-to-br from-blue-50 to-blue-50/50 rounded-xl p-4 sm:p-6 transition-all">
             <div className="flex justify-between items-start">
               <div>
-                <h3 className="text-gray-600 text-xs sm:text-sm font-medium mb-1">Estimated Monthly Revenue</h3>
+                <h3 className="text-gray-600 text-xs sm:text-sm font-medium mb-1">
+                  {financialData.period === 'all' ? 'Average Monthly Revenue' : 'Estimated Monthly Revenue'}
+                </h3>
                 <p className="text-xl sm:text-3xl font-bold text-blue-700">
-                  ₹{(financialData.revenue.value * (30 / (financialData.period === "7days" ? 7 : 30))).toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                  ₹{(financialData.revenue.value * (30 / (
+                    financialData.period === "7days" ? 7 :
+                    financialData.period === "today" ? 1 :
+                    financialData.period === "yesterday" ? 1 :
+                    financialData.period === "all" ? 365 : 
+                    30
+                  ))).toLocaleString(undefined, { maximumFractionDigits: 0 })}
                 </p>
               </div>
               <div className="p-2 sm:p-3 bg-white rounded-full shadow-sm">
@@ -136,7 +145,9 @@ const FinancialOverview: React.FC<FinancialOverviewProps> = ({
               </div>
             </div>
             <div className="mt-3 sm:mt-4 flex flex-wrap items-center">
-              <span className="text-gray-500 text-xs sm:text-sm">Projection based on current period</span>
+              <span className="text-gray-500 text-xs sm:text-sm">
+                {financialData.period === 'all' ? 'Historical average' : 'Projection based on current period'}
+              </span>
             </div>
           </div>
         </div>

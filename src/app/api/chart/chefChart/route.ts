@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { dbConnect } from '@/database/database';
+import { dbConnect } from '@/database';
 import { RowDataPacket } from 'mysql2';
 
 export async function GET() {
@@ -22,11 +22,9 @@ export async function GET() {
         `);
 
         if (rows.length === 0) {
-            // Return mock data if no chefs are found
-            return NextResponse.json(generateMockData());
+            return NextResponse.json(getEmptyData());
         }
 
-        // Transform the data to match the expected structure
         const chefs = rows.map((row: any) => row.name);
         
         const formattedData = {
@@ -42,42 +40,26 @@ export async function GET() {
                 yearly: rows.map((row: any) => Number(row.total_orders_year) || 0)
             },
             speed: {
-                // Mock data for preparation speed (in minutes)
-                weekly: rows.map(() => Math.floor(Math.random() * 15) + 5),
-                monthly: rows.map(() => Math.floor(Math.random() * 15) + 5),
-                yearly: rows.map(() => Math.floor(Math.random() * 15) + 5)
+                weekly: rows.map(() => 0),
+                monthly: rows.map(() => 0),
+                yearly: rows.map(() => 0)
             }
         };
 
         return NextResponse.json(formattedData);
     } catch (error) {
         console.error("Error in Chef Chart API:", error);
-        return NextResponse.json(generateMockData());
+        return NextResponse.json(getEmptyData());
     } finally {
-        await connection.end();
+        await connection.release();
     }
 }
 
-// Generate mock data if database query fails
-function generateMockData() {
-    const mockChefs = ['Chef John', 'Chef Maria', 'Chef Alex', 'Chef David'];
-    
+function getEmptyData() {
     return {
-        chefs: mockChefs,
-        ratings: {
-            weekly: mockChefs.map(() => Number((Math.random() * 5).toFixed(1))),
-            monthly: mockChefs.map(() => Number((Math.random() * 5).toFixed(1))),
-            yearly: mockChefs.map(() => Number((Math.random() * 5).toFixed(1)))
-        },
-        orders: {
-            weekly: mockChefs.map(() => Math.floor(Math.random() * 50) + 10),
-            monthly: mockChefs.map(() => Math.floor(Math.random() * 200) + 50),
-            yearly: mockChefs.map(() => Math.floor(Math.random() * 1000) + 200)
-        },
-        speed: {
-            weekly: mockChefs.map(() => Math.floor(Math.random() * 15) + 5),
-            monthly: mockChefs.map(() => Math.floor(Math.random() * 15) + 5),
-            yearly: mockChefs.map(() => Math.floor(Math.random() * 15) + 5)
-        }
+        chefs: [],
+        ratings: { weekly: [], monthly: [], yearly: [] },
+        orders: { weekly: [], monthly: [], yearly: [] },
+        speed: { weekly: [], monthly: [], yearly: [] }
     };
 }

@@ -43,11 +43,11 @@ const Page: React.FC = () => {
         try {
             setLoading(true);
             const response = await axios.get('/api/inventory');
-            const data = response.data;
-            if (data && Array.isArray(data.users)) {
-                setInventory(data.users);
+            const resBody = response.data;
+            if (resBody?.success && resBody.data?.inventory) {
+                setInventory(resBody.data.inventory);
             } else {
-                console.error("Fetched data does not contain an array of users:", data);
+                console.error("Fetched data does not contain inventory:", resBody);
             }
         } catch (error) {
             console.error("Error fetching inventory data:", error);
@@ -83,7 +83,7 @@ const Page: React.FC = () => {
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                         {lowStock.map(item => (
                             <LowStock
-                                key={item.item_id}
+                                key={`${item.item_id}-${item.unit}`}
                                 item_id={item.item_id}
                                 item_name={item.item_name}
                                 current_stock={item.current_stock}

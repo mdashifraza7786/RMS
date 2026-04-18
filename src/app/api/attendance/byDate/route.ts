@@ -1,4 +1,4 @@
-import { dbConnect } from "@/database/database";
+import { dbConnect } from "@/database";
 import { NextResponse } from "next/server";
 import { RowDataPacket } from "mysql2";  
 
@@ -34,6 +34,6 @@ export async function POST(request:Request) {
         console.error('Error inserting attendance records:', error);
         return NextResponse.json({ message: 'Failed to insert attendance records'}, { status: 500 });
     } finally {
-        connection.end();
+        connection.release();
     }
 }

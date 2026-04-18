@@ -53,12 +53,13 @@ const OrderCard: React.FC = () => {
         setInventoryOrder(inventoryOrder.filter((_, i) => i !== index));
     };
 
-    const handleItemChange = (index: number, itemName: string) => {
-        const selectedItem = inventory.find((item) => item.item_name === itemName);
+    const handleItemChange = (index: number, compositeValue: string) => {
+        const [itemID, unit] = compositeValue.split('-');
+        const selectedItem = inventory.find((item) => item.item_id === itemID && item.unit === unit);
         if (selectedItem) {
             setInventoryOrder((prev) =>
                 prev.map((order, i) =>
-                    i === index ? { ...order, item_id: selectedItem.item_id, item_name: itemName, unit: selectedItem.unit } : order
+                    i === index ? { ...order, item_id: selectedItem.item_id, item_name: selectedItem.item_name, unit: selectedItem.unit } : order
                 )
             );
         }
@@ -74,15 +75,7 @@ const OrderCard: React.FC = () => {
         setLoading(true);
         try {
             if (inventoryOrder.length > 0) {
-                for (const order of inventoryOrder) {
-                    const orderData = {
-                        ...order,
-                        date: new Date().toISOString().split('T')[0], // Converts to YYYY-MM-DD
-                        time: new Date().toLocaleTimeString(),
-                    };
-    
-                    await axios.post("/api/inventory/InventoryOrder", orderData);
-                }
+                await axios.post("/api/inventory/bulkOrder", { orders: inventoryOrder });
                 setIsPopupOpen(true);
             }
         } catch (e) {
@@ -134,12 +127,12 @@ const OrderCard: React.FC = () => {
                                         <div>
                                             <label className="block text-sm font-medium text-gray-700 mb-1">Item Name</label>
                                             <select
-                                                value={order.item_name}
+                                                value={`${order.item_id}-${order.unit}`}
                                                 onChange={(e) => handleItemChange(index, e.target.value)}
                                                 className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-[#1e4569] focus:border-[#1e4569] outline-none transition-all bg-white"
                                             >
                                                 {inventory.map((item) => (
-                                                    <option key={item.item_id} value={item.item_name}>{item.item_name}</option>
+                                                    <option key={`${item.item_id}-${item.unit}`} value={`${item.item_id}-${item.unit}`}>{item.item_name} ({item.unit})</option>
                                                 ))}
                                             </select>
                                         </div>

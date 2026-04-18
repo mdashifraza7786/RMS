@@ -1,38 +1,38 @@
-import { dbConnect } from "@/database/database";
+import { dbConnect } from "@/database";
 import { NextResponse } from "next/server";
 import { RowDataPacket } from "mysql2";  
+import { withErrorHandling } from "@/lib/api-handler";
+import { successResponse } from "@/lib/api-response";
 
-export async function GET(request: Request) {
+export const GET = withErrorHandling(async (request: Request) => {
     const { searchParams } = new URL(request.url);
     const userid = searchParams.get('userid') || undefined;
     const role = searchParams.get('role') || undefined;
     const connection = await dbConnect();
 
     try {
-        const currentDate = new Date();
-        const date = currentDate.toISOString().split('T')[0]; 
+        const urlDate = searchParams.get('date');
+        const fetchDate = urlDate || new Date().toISOString().split('T')[0]; 
+
+        const [[{ minDate, maxDate }]] = await connection.query<RowDataPacket[]>(
+            `SELECT MIN(date) as minDate, MAX(date) as maxDate FROM attendance`
+        );
 
         let records: any;
         if(role === 'waiter' || role === 'chef'){
             const [rows] = await connection.query<RowDataPacket[]>(
-                `SELECT 
-                    userid, name, role, status, date, time,
-                (SELECT MIN(date) FROM attendance) AS minDate,
-                (SELECT MAX(date) FROM attendance) AS maxDate
-            FROM attendance
-                WHERE date = ? AND userid = ?`,
-                [date, userid]
+                `SELECT userid, name, role, status, date, time
+                 FROM attendance
+                 WHERE date = ? AND userid = ?`,
+                [fetchDate, userid]
             );
             records = rows;
         }else{
             const [rows] = await connection.query<RowDataPacket[]>(
-                `SELECT 
-                    userid, name, role, status, date, time,
-                    (SELECT MIN(date) FROM attendance) AS minDate,
-                    (SELECT MAX(date) FROM attendance) AS maxDate
-                FROM attendance
-                WHERE date = ?`,
-                [date]
+                `SELECT userid, name, role, status, date, time
+                 FROM attendance
+                 WHERE date = ?`,
+                [fetchDate]
             );
             records = rows;
         }
@@ -42,23 +42,19 @@ export async function GET(request: Request) {
         );
         
         const availableDates = dateRecords.map((record: any) => {
-            return new Date(record.date).toISOString().split('T')[0];
-        });
+            return record.date ? new Date(record.date).toISOString().split('T')[0] : null;
+        }).filter(Boolean);
 
-        const minDate = Array.isArray(records) && records.length > 0 ? (records[0] as any).minDate : null;
-        const maxDate = date;
+        const responseMaxDate = maxDate ? new Date(maxDate).toISOString().split('T')[0] : fetchDate;
+        const responseMinDate = minDate ? new Date(minDate).toISOString().split('T')[0] : null;
 
-        return NextResponse.json({
-            message: 'Attendance Fetched Successfully',
-            data: records,
-            minDate,
-            maxDate,
+        return NextResponse.json(successResponse({
+            records,
+            minDate: responseMinDate,
+            maxDate: responseMaxDate,
             availableDates
-        });
-    } catch (error) {
-        console.error('Error fetching attendance records:', error);
-        return NextResponse.json({ message: 'Failed to fetch attendance records' }, { status: 500 });
+        }, 'Attendance Fetched Successfully'));
     } finally {
-        connection.end();
+        connection.release();
     }
-}
+});

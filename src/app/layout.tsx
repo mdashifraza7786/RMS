@@ -2,6 +2,8 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import LoginManager from "@/components/MiddleWare";
 import { ThemeProvider } from "@/contexts/ThemeContext";
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 export const metadata: Metadata = {
   title: "Dashboard",
@@ -23,7 +25,20 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <ThemeProvider>
-          <LoginManager>{children}</LoginManager>
+          <LoginManager>
+            {children}
+            <ToastContainer 
+              position="top-right"
+              autoClose={4000}
+              hideProgressBar={false}
+              newestOnTop
+              closeOnClick
+              pauseOnFocusLoss
+              draggable
+              pauseOnHover
+              theme="light"
+            />
+          </LoginManager>
         </ThemeProvider>
       </body>
     </html>

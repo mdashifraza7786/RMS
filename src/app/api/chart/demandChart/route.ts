@@ -1,112 +1,16 @@
 import { NextResponse } from "next/server";
-import { dbConnect } from "@/database/database";
-import mysql, { RowDataPacket } from "mysql2/promise";
+import { dbConnect } from "@/database";
+import { getCache, setCache } from "@/lib/cache";
+import { RowDataPacket } from "mysql2/promise";
 
 export async function GET() {
+    const cacheKey = 'demand_chart_data';
+    const cachedData = getCache(cacheKey);
+    if (cachedData) return NextResponse.json(cachedData);
+
     const connection = await dbConnect();
 
     try {
-        // First Query: Orders by Menu Items
-        // const [row1] = await connection.execute<RowDataPacket[]>(`
-        //     SELECT 
-        //         -- Weekly orders (Last 7 Days, grouped by Weekday)
-        //         SUM(CASE WHEN generated_at >= DATE_SUB(CURDATE(), INTERVAL 7 DAY) AND DAYOFWEEK(generated_at) = 1 THEN total_amount ELSE 0 END) AS sunday_orders,
-        //         SUM(CASE WHEN generated_at >= DATE_SUB(CURDATE(), INTERVAL 7 DAY) AND DAYOFWEEK(generated_at) = 2 THEN total_amount ELSE 0 END) AS monday_orders,
-        //         SUM(CASE WHEN generated_at >= DATE_SUB(CURDATE(), INTERVAL 7 DAY) AND DAYOFWEEK(generated_at) = 3 THEN total_amount ELSE 0 END) AS tuesday_orders,
-        //         SUM(CASE WHEN generated_at >= DATE_SUB(CURDATE(), INTERVAL 7 DAY) AND DAYOFWEEK(generated_at) = 4 THEN total_amount ELSE 0 END) AS wednesday_orders,
-        //         SUM(CASE WHEN generated_at >= DATE_SUB(CURDATE(), INTERVAL 7 DAY) AND DAYOFWEEK(generated_at) = 5 THEN total_amount ELSE 0 END) AS thursday_orders,
-        //         SUM(CASE WHEN generated_at >= DATE_SUB(CURDATE(), INTERVAL 7 DAY) AND DAYOFWEEK(generated_at) = 6 THEN total_amount ELSE 0 END) AS friday_orders,
-        //         SUM(CASE WHEN generated_at >= DATE_SUB(CURDATE(), INTERVAL 7 DAY) AND DAYOFWEEK(generated_at) = 7 THEN total_amount ELSE 0 END) AS saturday_orders,
-        
-        //         -- Monthly orders (Last 30 Days, grouped by Week Number)
-        //         SUM(CASE WHEN generated_at >= DATE_SUB(CURDATE(), INTERVAL 1 MONTH) AND WEEK(generated_at, 1) = WEEK(CURDATE(), 1) - 3 THEN total_amount ELSE 0 END) AS week1_orders,
-        //         SUM(CASE WHEN generated_at >= DATE_SUB(CURDATE(), INTERVAL 1 MONTH) AND WEEK(generated_at, 1) = WEEK(CURDATE(), 1) - 2 THEN total_amount ELSE 0 END) AS week2_orders,
-        //         SUM(CASE WHEN generated_at >= DATE_SUB(CURDATE(), INTERVAL 1 MONTH) AND WEEK(generated_at, 1) = WEEK(CURDATE(), 1) - 1 THEN total_amount ELSE 0 END) AS week3_orders,
-        //         SUM(CASE WHEN generated_at >= DATE_SUB(CURDATE(), INTERVAL 1 MONTH) AND WEEK(generated_at, 1) = WEEK(CURDATE(), 1) THEN total_amount ELSE 0 END) AS week4_orders,
-        
-        //         -- Yearly orders (Last 12 Months, grouped by Month)
-        //         SUM(CASE WHEN generated_at >= DATE_SUB(CURDATE(), INTERVAL 1 YEAR) AND MONTH(generated_at) = 1 THEN total_amount ELSE 0 END) AS jan_orders,
-        //         SUM(CASE WHEN generated_at >= DATE_SUB(CURDATE(), INTERVAL 1 YEAR) AND MONTH(generated_at) = 2 THEN total_amount ELSE 0 END) AS feb_orders,
-        //         SUM(CASE WHEN generated_at >= DATE_SUB(CURDATE(), INTERVAL 1 YEAR) AND MONTH(generated_at) = 3 THEN total_amount ELSE 0 END) AS march_orders,
-        //         SUM(CASE WHEN generated_at >= DATE_SUB(CURDATE(), INTERVAL 1 YEAR) AND MONTH(generated_at) = 4 THEN total_amount ELSE 0 END) AS april_orders,
-        //         SUM(CASE WHEN generated_at >= DATE_SUB(CURDATE(), INTERVAL 1 YEAR) AND MONTH(generated_at) = 5 THEN total_amount ELSE 0 END) AS may_orders,
-        //         SUM(CASE WHEN generated_at >= DATE_SUB(CURDATE(), INTERVAL 1 YEAR) AND MONTH(generated_at) = 6 THEN total_amount ELSE 0 END) AS june_orders,
-        //         SUM(CASE WHEN generated_at >= DATE_SUB(CURDATE(), INTERVAL 1 YEAR) AND MONTH(generated_at) = 7 THEN total_amount ELSE 0 END) AS july_orders,
-        //         SUM(CASE WHEN generated_at >= DATE_SUB(CURDATE(), INTERVAL 1 YEAR) AND MONTH(generated_at) = 8 THEN total_amount ELSE 0 END) AS aug_orders,
-        //         SUM(CASE WHEN generated_at >= DATE_SUB(CURDATE(), INTERVAL 1 YEAR) AND MONTH(generated_at) = 9 THEN total_amount ELSE 0 END) AS sept_orders,
-        //         SUM(CASE WHEN generated_at >= DATE_SUB(CURDATE(), INTERVAL 1 YEAR) AND MONTH(generated_at) = 10 THEN total_amount ELSE 0 END) AS oct_orders,
-        //         SUM(CASE WHEN generated_at >= DATE_SUB(CURDATE(), INTERVAL 1 YEAR) AND MONTH(generated_at) = 11 THEN total_amount ELSE 0 END) AS nov_orders,
-        //         SUM(CASE WHEN generated_at >= DATE_SUB(CURDATE(), INTERVAL 1 YEAR) AND MONTH(generated_at) = 12 THEN total_amount ELSE 0 END) AS dec_orders
-        
-        //     FROM invoices;
-        // `);        
-        
-        // // Second Query: Orders by Dish Category
-        // const [row2] = await connection.execute<RowDataPacket[]>(`
-        //     SELECT 
-        //         -- Weekly orders by category (last 7 days)
-        //         COUNT(CASE 
-        //             WHEN o.start_time >= DATE_SUB(CURDATE(), INTERVAL 7 DAY) 
-        //             AND m.item_type = 'Main Course' 
-        //             THEN 1 END) AS orders_week_maincourse,
-        //         COUNT(CASE 
-        //             WHEN o.start_time >= DATE_SUB(CURDATE(), INTERVAL 7 DAY) 
-        //             AND m.item_type = 'Beverages' 
-        //             THEN 1 END) AS orders_week_beverages,
-        //         COUNT(CASE 
-        //             WHEN o.start_time >= DATE_SUB(CURDATE(), INTERVAL 7 DAY) 
-        //             AND m.item_type = 'Starter' 
-        //             THEN 1 END) AS orders_week_starter,
-        //         COUNT(CASE 
-        //             WHEN o.start_time >= DATE_SUB(CURDATE(), INTERVAL 7 DAY) 
-        //             AND m.item_type = 'Dessert' 
-        //             THEN 1 END) AS orders_week_dessert,
-
-        //         -- Monthly orders by category (last 30 days)
-        //         COUNT(CASE 
-        //             WHEN o.start_time >= DATE_SUB(CURDATE(), INTERVAL 1 MONTH) 
-        //             AND m.item_type = 'Main Course' 
-        //             THEN 1 END) AS orders_month_maincourse,
-        //         COUNT(CASE 
-        //             WHEN o.start_time >= DATE_SUB(CURDATE(), INTERVAL 1 MONTH) 
-        //             AND m.item_type = 'Beverages' 
-        //             THEN 1 END) AS orders_month_beverages,
-        //         COUNT(CASE 
-        //             WHEN o.start_time >= DATE_SUB(CURDATE(), INTERVAL 1 MONTH) 
-        //             AND m.item_type = 'Starter' 
-        //             THEN 1 END) AS orders_month_starter,
-        //         COUNT(CASE 
-        //             WHEN o.start_time >= DATE_SUB(CURDATE(), INTERVAL 1 MONTH) 
-        //             AND m.item_type = 'Dessert' 
-        //             THEN 1 END) AS orders_month_dessert,
-
-        //         -- Yearly orders by category (last 12 months)
-        //         COUNT(CASE 
-        //             WHEN o.start_time >= DATE_SUB(CURDATE(), INTERVAL 1 YEAR) 
-        //             AND m.item_type = 'Main Course' 
-        //             THEN 1 END) AS orders_year_maincourse,
-        //         COUNT(CASE 
-        //             WHEN o.start_time >= DATE_SUB(CURDATE(), INTERVAL 1 YEAR) 
-        //             AND m.item_type = 'Beverages' 
-        //             THEN 1 END) AS orders_year_beverages,
-        //         COUNT(CASE 
-        //             WHEN o.start_time >= DATE_SUB(CURDATE(), INTERVAL 1 YEAR) 
-        //             AND m.item_type = 'Starter' 
-        //             THEN 1 END) AS orders_year_starter,
-        //         COUNT(CASE 
-        //             WHEN o.start_time >= DATE_SUB(CURDATE(), INTERVAL 1 YEAR) 
-        //             AND m.item_type = 'Dessert' 
-        //             THEN 1 END) AS orders_year_dessert
-        //     FROM orders o
-        //     CROSS JOIN JSON_TABLE(
-        //         o.order_items,
-        //         '$[*]' COLUMNS (
-        //             item_id INT PATH '$.item_id'
-        //         )
-        //     ) AS jt
-        //     JOIN menu m ON jt.item_id = m.id
-        // `);
-
         // Third Query: Orders by Period of day
         const [row3] = await connection.execute<RowDataPacket[]>(`
             SELECT 
@@ -191,17 +95,18 @@ export async function GET() {
         `);
 
 
-        return NextResponse.json({
-            // ...row1[0], 
-            // ...row2[0],
+        const data = {
             ...row3[0],
             ...row4[0],
             ...row5[0],
-        });
+        };
+
+        setCache(cacheKey, data, 600000); // 10 minutes
+        return NextResponse.json(data);
 
     } catch (error) {
         return NextResponse.json({ error: "Failed to fetch demand data", details: (error as Error).message }, { status: 500 });
     } finally {
-        await connection.end();
+        await connection.release();
     }
 }

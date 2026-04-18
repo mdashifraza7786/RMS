@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { updateKitchenOrders } from "@/database/database";
+import { updateKitchenOrders } from "@/database";
 
 export async function PUT(request: NextRequest) {
     try {

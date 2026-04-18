@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { dbConnect } from "@/database/database";
+import { dbConnect } from "@/database";
 import mysql, { RowDataPacket } from "mysql2/promise";
 
 export async function GET() {
@@ -25,6 +25,6 @@ export async function GET() {
     } catch (error) {
         return NextResponse.json({ error: "Failed to fetch waiter data", details: (error as Error).message }, { status: 500 });
     } finally {
-        await connection.end();
+        await connection.release();
     }
 }

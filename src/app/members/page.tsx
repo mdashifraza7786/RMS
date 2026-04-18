@@ -38,22 +38,16 @@ const Page: React.FC = () => {
             const response = await axios.get(`/api/members`, {
                 params: { page, search: searchQuery }
             });
-            const { users, payouts, addresses } = response.data;
+            const members = response.data?.success ? response.data.data : [];
 
-            if (users.length < 10) {
+            if (members.length < 10) {
                 setHasMore(false);
             }
 
-            if (users.length > 0) {
-                const combinedData = users.map((user: any, index: number) => ({
-                    ...user,
-                    ...payouts[index],
-                    ...addresses[index]
-                }));
-
+            if (members.length > 0) {
                 setMemberData(prevData => {
                     const existingIds = new Set(prevData.map(item => item.userid));
-                    const newItems = combinedData.filter((item: any) => !existingIds.has(item.userid));
+                    const newItems = members.filter((item: any) => !existingIds.has(item.userid));
                     return [...prevData, ...newItems];
                 });
             }

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { dbConnect } from "@/database/database";
+import { dbConnect } from "@/database";
 
 export async function PUT(request: NextRequest) {
     const connection = await dbConnect();
@@ -25,8 +25,8 @@ export async function PUT(request: NextRequest) {
         // Rollback transaction in case of error
         await connection.rollback();
         console.error("Error updating expense:", error.message);
-        return NextResponse.json({ success: false, message: "Error updating expense", details: error.message });
+        return NextResponse.json({ success: false, message: "Error updating expense" });
     } finally {
-        await connection.end();
+        await connection.release();
     }
 }

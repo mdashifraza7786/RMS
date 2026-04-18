@@ -46,7 +46,7 @@ const EditExpense: React.FC<EditExpenseProps> = ({ popupHandle, onExpenseUpdated
         try {
             const response = await axios.put("/api/expenses/update", formValues);
             
-            if (response.data) {
+            if (response.data?.success) {
                 onExpenseUpdated();
                 popupHandle();
             }

@@ -1,79 +1,70 @@
-import { dbConnect } from "@/database/database";
+import { dbConnect } from "@/database";
 import { NextResponse } from "next/server";
+import { withErrorHandling } from "@/lib/api-handler";
+import { successResponse, errorResponse } from "@/lib/api-response";
 
-export async function POST(request: Request, { params }: { params: { orderID: string } }) {
+export const POST = withErrorHandling(async (request: Request, { params }: { params: Promise<{ orderID: string }> }) => {
   const { tablenumber, paymentmethod, discount } = await request.json();
-  const orderID = Number(params.orderID);
+  const { orderID: orderIDParam } = await params;
+  const orderID = Number(orderIDParam);
   const connection = await dbConnect();
 
   try {
     await connection.beginTransaction();
     
     const [existingOrder]: any = await connection.query(
-      "SELECT payment_status FROM invoices WHERE orderid = ? LIMIT 1",
+      `SELECT i.payment_status, o.table_id 
+       FROM invoices i 
+       JOIN orders o ON i.orderid = o.id 
+       WHERE i.orderid = ? LIMIT 1 FOR UPDATE`,
       [orderID]
     );
     
-    if (existingOrder.length > 0 && existingOrder[0].payment_status === "paid") {
-      return NextResponse.json({ success: false, message: "The invoice has already been paid." });
+    if (existingOrder.length === 0) {
+      return NextResponse.json(errorResponse("Invoice not found"), { status: 404 });
+    }
+
+    const orderData = existingOrder[0];
+    const tableIdFromDb = orderData.table_id;
+    
+    if (orderData.payment_status === "paid") {
+      return NextResponse.json(errorResponse("The invoice has already been paid."));
     }
     
-    // Calculate discount amount if provided
     let discountAmount = 0;
-    let discountTypeValue = null;
+    let discountTypeValue = 'none';
     
     if (discount && discount.value > 0) {
       discountAmount = discount.value;
-      discountTypeValue = discount.type;
+      discountTypeValue = discount.type || 'direct';
     }
     
-    // Update invoice with ONLY the columns shown in the image
+    // Update invoice (Finalize Payment)
     const updateInvoiceQuery = `
       UPDATE invoices 
-      SET payment_status = ?, 
+      SET payment_status = 'paid', 
           payment_method = ?, 
           discount = ?, 
-          discount_type = ?
+          discount_type = ?,
+          total_amount = subtotal + gst - ?
       WHERE orderid = ?
     `;
     
-    const invoiceValues = [
-      "paid", 
-      paymentmethod, 
-      discountAmount,
-      discountTypeValue,
-      orderID
-    ];
-    
-    await connection.query(updateInvoiceQuery, invoiceValues);
+    await connection.query(updateInvoiceQuery, [paymentmethod, discountAmount, discountTypeValue, discountAmount, orderID]);
     
     // Update order status
-    const updateOrderQuery = "UPDATE orders SET status = ?, end_time = NOW() WHERE id = ?";
-    const orderValues = ["completed", orderID];
-    await connection.query(updateOrderQuery, orderValues);
+    await connection.query("UPDATE orders SET status = 'completed', end_time = NOW() WHERE id = ?", [orderID]);
 
-    // Update table availability
-    const tableUpdate = "UPDATE tables SET availability = ? WHERE tablenumber = ?";
-    const tableUpdateValues = [0, tablenumber];
-    await connection.query(tableUpdate, tableUpdateValues);
+    // Release table (Source of Truth verified)
+    await connection.query("UPDATE tables SET availability = 0 WHERE tablenumber = ?", [tableIdFromDb]);
     
     await connection.commit();
-    return NextResponse.json({
-      success: true,
-      message: "Order Completed",
-      discount: discount ? {
-        amount: discountAmount,
-        type: discountTypeValue
-      } : null
-    });
-  } catch (error) {
+    return NextResponse.json(successResponse(null, "Payment Processed. Order Completed."));
+    
+  } catch (error: any) {
     await connection.rollback();
-    console.error("Error completing order:", error);
-    return NextResponse.json(
-      { success: false, message: "Order Completion failed" },
-      { status: 500 }
-    );
+    return NextResponse.json(errorResponse(error.message || "Completion failed"), { status: 500 });
   } finally {
-    await connection.end();
+    await connection.release();
   }
-}
+});

@@ -1,15 +1,15 @@
 import { NextResponse } from "next/server";
-import { dbConnect } from "@/database/database";
+import { dbConnect } from "@/database";
 
 export async function DELETE(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const connection = await dbConnect();
 
   try {
     await connection.beginTransaction();
-    const { id } = params;
+    const { id } = await params;
 
     if (!id) {
       return NextResponse.json(
@@ -30,6 +30,6 @@ export async function DELETE(
     return NextResponse.json({ message: "Internal Server Error" },{ status: 500 });
   } finally {
     // Ensure the connection is closed
-    await connection.end();
+    await connection.release();
   }
 }

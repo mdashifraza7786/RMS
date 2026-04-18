@@ -92,8 +92,9 @@ const Page = () => {
         setLoading(true);
         try {
             const payoutResponse = await axios.get('/api/payout');
-            if (payoutResponse.data?.payout) {
-                setPayoutInfo(payoutResponse.data.payout);
+            // The API returns successResponse({ payouts, total })
+            if (payoutResponse.data?.success && payoutResponse.data?.data?.payouts) {
+                setPayoutInfo(payoutResponse.data.data.payouts);
                 setDebugInfo(null);
             } else {
                 console.error("Failed to fetch payout data:", payoutResponse.data);
@@ -101,13 +102,8 @@ const Page = () => {
             }
 
             const userResponse = await axios.get('/api/members');
-            if (userResponse.data?.users) {
-                const { users, payouts, addresses } = userResponse.data;
-                const combinedData = users.map((user: RowDataPacket, index: number) => ({
-                    ...user,
-                    ...payouts[index],
-                    ...addresses[index]
-                }));
+            if (userResponse.data?.success && userResponse.data?.data) {
+                const combinedData = userResponse.data.data;
 
                 setUserInfo(prevData => {
                     const existingIds = new Set(prevData.map(item => item.userid));

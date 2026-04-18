@@ -1,4 +1,4 @@
-import { dbConnect } from "@/database/database";
+import { dbConnect } from "@/database";
 import { NextResponse } from "next/server";
 import { RowDataPacket } from "mysql2";
  
@@ -91,10 +91,10 @@ export async function GET() {
         try { await connection.rollback(); } catch {}
         console.error("Error generating payout records:", error);
         return NextResponse.json(
-            { message: "Failed to generate payout records", data: error },
+            { message: "Failed to generate payout records" },
             { status: 500 }
         );
     } finally {
-        connection.end();
+        connection.release();
     }
 }

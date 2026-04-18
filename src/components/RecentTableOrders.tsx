@@ -37,13 +37,13 @@ export default function OrdersComponent() {
     async function getRecentOrders() {
         setLoading(true);
         try {
-            const response = await fetch("/api/order");
+            const response = await fetch("/api/order?status=completed&limit=10");
             const data = await response.json();
 
-            if (data?.tableOrders) {
-                const formattedData: Order[] = data.tableOrders.map((order: any) => ({
+            if (data?.success && data?.data?.orders) {
+                const formattedData: Order[] = data.data.orders.map((order: any) => ({
                     ...order,
-                    order_items: safeParse(order.order_items),
+                    order_items: order.order_items || [],
                 }));
 
                 setOrders(formattedData);
@@ -56,14 +56,6 @@ export default function OrdersComponent() {
         }
     }
 
-    function safeParse(jsonString: string) {
-        try {
-            return JSON.parse(jsonString);
-        } catch (error) {
-            console.error("Failed to parse order_items:", jsonString, error);
-            return [];
-        }
-    }
 
     useEffect(() => {
         getRecentOrders();

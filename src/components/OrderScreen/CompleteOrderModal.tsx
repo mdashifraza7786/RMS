@@ -9,6 +9,7 @@ const CompleteOrderModal: React.FC<CompleteOrderModalProps> = ({
     tableNumber,
     orderId,
     totalAmount,
+    isSubmitting = false,
     closeModal,
     completeOrder
 }) => {
@@ -38,6 +39,8 @@ const CompleteOrderModal: React.FC<CompleteOrderModalProps> = ({
     const discountAmount = totalAmount - finalAmount;
     
     const handleCompletePayment = () => {
+        if (isSubmitting) return;
+
         const discountValueNum = parseFloat(discountValue);
         if (discountValueNum > 0) {
             completeOrder(
@@ -63,7 +66,8 @@ const CompleteOrderModal: React.FC<CompleteOrderModalProps> = ({
                     </h2>
                     <button
                         onClick={closeModal}
-                        className="text-gray-400 hover:text-red-500 hover:bg-red-50 p-2 rounded-full transition-all"
+                        disabled={isSubmitting}
+                        className={`text-gray-400 hover:text-red-500 hover:bg-red-50 p-2 rounded-full transition-all ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
                     >
                         <IoClose size={24} />
                     </button>
@@ -91,6 +95,7 @@ const CompleteOrderModal: React.FC<CompleteOrderModalProps> = ({
                                 placeholder={discountType === "flat" ? "Enter amount" : "Enter percentage"}
                                 className="w-full py-3 pl-9 pr-4 rounded-lg border outline-none border-gray-200 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                                 value={discountValue}
+                                disabled={isSubmitting}
                                 onChange={(e) => setDiscountValue(e.target.value)}
                             />
                         </div>
@@ -98,6 +103,7 @@ const CompleteOrderModal: React.FC<CompleteOrderModalProps> = ({
                             className="py-3 px-4 border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none bg-white"
                             onChange={(e) => setDiscountType(e.target.value)}
                             value={discountType}
+                            disabled={isSubmitting}
                         >
                             <option value="flat">Flat ₹</option>
                             <option value="percent">Percent %</option>
@@ -115,14 +121,15 @@ const CompleteOrderModal: React.FC<CompleteOrderModalProps> = ({
                             paymentMethod === "cash" 
                                 ? "border-primary bg-primary/5 text-primary" 
                                 : "hover:bg-gray-50 text-gray-700"
-                        }`}>
+                        } ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}>
                             <input
                                 type="radio"
                                 name="paymentMethod"
                                 value="cash"
-                                onChange={() => { setShowQR(false); setPaymentMethod("cash") }}
+                                onChange={() => { if (!isSubmitting) { setShowQR(false); setPaymentMethod("cash") } }}
                                 checked={paymentMethod === "cash"}
                                 className="hidden"
+                                disabled={isSubmitting}
                             />
                             <FaMoneyBillWave size={18} />
                             Cash Payment
@@ -131,14 +138,15 @@ const CompleteOrderModal: React.FC<CompleteOrderModalProps> = ({
                             paymentMethod === "upi" 
                                 ? "border-primary bg-primary/5 text-primary" 
                                 : "hover:bg-gray-50 text-gray-700"
-                        }`}>
+                        } ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}>
                             <input
                                 type="radio"
                                 name="paymentMethod"
                                 value="upi"
-                                onChange={() => { setShowQR(true); setPaymentMethod("upi") }}
+                                onChange={() => { if (!isSubmitting) { setShowQR(true); setPaymentMethod("upi") } }}
                                 checked={paymentMethod === "upi"}
                                 className="hidden"
+                                disabled={isSubmitting}
                             />
                             <FaCashRegister size={18} />
                             UPI Payment
@@ -181,9 +189,10 @@ const CompleteOrderModal: React.FC<CompleteOrderModalProps> = ({
 
                 <button
                     onClick={handleCompletePayment}
-                    className="mt-6 w-full bg-gradient-to-r from-primary to-primaryhover text-white py-3 px-4 rounded-lg hover:shadow-lg transition-all font-medium"
+                    disabled={isSubmitting}
+                    className={`mt-6 w-full bg-gradient-to-r from-primary to-primaryhover text-white py-3 px-4 rounded-lg hover:shadow-lg transition-all font-medium ${(isSubmitting) ? 'opacity-60 cursor-not-allowed' : ''}`}
                 >
-                    Complete Payment
+                    {isSubmitting ? 'Processing...' : 'Complete Payment'}
                 </button>
             </div>
         </div>

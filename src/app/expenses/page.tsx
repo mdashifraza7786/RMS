@@ -18,6 +18,8 @@ interface Expense {
 
 const ExpensePage: React.FC = () => {
     const [expenses, setExpenses] = useState<Expense[]>([]);
+    const [page, setPage] = useState(1);
+    const [limit] = useState(10);
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [deletePopupVisible, setDeletePopupVisible] = useState<boolean>(false);
     const [deleteExpenseId, setDeleteExpenseId] = useState<string>("");
@@ -32,16 +34,17 @@ const ExpensePage: React.FC = () => {
     useEffect(() => {
         document.title = "Expenses";
         fetchExpenses();
-    }, []);
+    }, [page]);
 
     const fetchExpenses = async () => {
         try {
             setIsLoading(true);
-            const response = await axios.get("/api/expenses");
-            if (response.data && response.data.expenses && Array.isArray(response.data.expenses)) {
-                setExpenses(response.data.expenses);
+            const response = await axios.get(`/api/expenses?page=${page}&limit=${limit}`);
+            // The API returns successResponse({ expenses, total })
+            if (response.data?.success && response.data?.data && Array.isArray(response.data.data.expenses)) {
+                setExpenses(response.data.data.expenses);
             } else {
-                console.error("Invalid response format:", response.data);
+                console.error("Invalid response format:", response.data?.error || "Unknown error");
                 setExpenses([]);
             }
         } catch (error) {
@@ -276,6 +279,25 @@ const ExpensePage: React.FC = () => {
                                     )}
                                 </tbody>
                             </table>
+                        </div>
+
+                        {/* Pagination Controls */}
+                        <div className="mt-4 flex justify-between items-center bg-gray-50 p-4 rounded-lg">
+                            <button
+                                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                                disabled={page === 1}
+                                className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                Previous
+                            </button>
+                            <span className="text-sm text-gray-700">Page <span className="font-bold">{page}</span></span>
+                            <button
+                                onClick={() => setPage((p) => p + 1)}
+                                disabled={expenses.length < limit}
+                                className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                Next
+                            </button>
                         </div>
 
                         {/* Mobile Card View */}

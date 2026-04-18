@@ -1,4 +1,4 @@
-import { dbConnect } from "@/database/database";
+import { dbConnect } from "@/database";
 import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
@@ -15,7 +15,7 @@ export async function POST(request: Request) {
     await connection.beginTransaction();
     await connection.query("UPDATE orders SET chef_id = ? WHERE id = ?", [chefid, orderid]);
     await connection.commit();
-    return NextResponse.json({ success: true });
+    return NextResponse.json(successResponse(null));
   } catch (e) {
     await connection.rollback();
     return NextResponse.json(
@@ -23,7 +23,7 @@ export async function POST(request: Request) {
       { status: 500 }
     );
   } finally {
-    await connection.end();
+    await connection.release();
   }
 }
 

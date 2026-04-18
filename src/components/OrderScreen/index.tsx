@@ -9,7 +9,9 @@ import OrderedItems from "./OrderedItems";
 import BillSummary from "./BillSummary";
 import CompleteOrderModal from "./CompleteOrderModal";
 import ConfirmationModal from "./ConfirmationModal";
+import MenuDisplay from "./MenuDisplay";
 import { OrderedItems as OrderedItemType } from "../Dashboard";
+import { toast } from "react-toastify";
 
 const OrderScreen: React.FC<OrderScreenProps> = ({
     role,
@@ -21,14 +23,15 @@ const OrderScreen: React.FC<OrderScreenProps> = ({
     removeOrderedItems,
     resettable,
     closeOrderScreen,
-    updateItemStatus
+    updateItemStatus,
+    updateTableAvailability
 }) => {
     // State variables
     const [menuData, setMenuData] = useState<MenuData[]>([]);
     const [searchTerm, setSearchTerm] = useState<string>('');
-    const [isDropdownVisible, setIsDropdownVisible] = useState<boolean>(false);
     const [selectedItems, setSelectedItems] = useState<{ item: MenuData; quantity: number }[]>([]);
     const [modal, setModal] = useState<{ visible: boolean; message: string; success: boolean }>({ visible: false, message: "", success: false });
+    const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
     const [booked, setBooked] = useState<boolean>(false);
     const [completeOrderPopup, setCompleteOrderPopup] = useState<boolean>(false);
     const [currentCompleteOrder, setCurrentCompleteOrder] = useState<{ tablenumber: number, orderid: number }>({} as { tablenumber: number, orderid: number });
@@ -53,14 +56,6 @@ const OrderScreen: React.FC<OrderScreenProps> = ({
         }
     }, [tabledata, tableNumber]);
 
-    useEffect(() => {
-        if (searchTerm.length > 0) {
-            setIsDropdownVisible(true);
-        } else {
-            setIsDropdownVisible(false);
-        }
-    }, [searchTerm]);
-
     // API handlers
     const fetchMenuData = async () => {
         try {
@@ -78,10 +73,12 @@ const OrderScreen: React.FC<OrderScreenProps> = ({
 
     const placeOrder = async () => {
         if (selectedItems.length === 0) {
-            setModal({ visible: true, message: "Please add items to place an order!", success: false });
+            toast.warning("Please add items to place an order!");
             return;
         }
-            const orderData = {
+        
+        setIsSubmitting(true);
+        const orderData = {
             ...(role === 'waiter' && userid ? { role, userid } : {}),
             tableNumber,
             items: selectedItems.map(({ item, quantity }) => ({
@@ -101,6 +98,7 @@ const OrderScreen: React.FC<OrderScreenProps> = ({
                 : await axios.post('/api/order/placeOrder', orderData);
                 
             if (response.data.success) {
+                const responseData = response.data.data;
                 const bookedItems = selectedItems.map(({ item, quantity }) => ({
                     item_id: item.item_id,
                     item_name: item.item_name,
@@ -109,35 +107,36 @@ const OrderScreen: React.FC<OrderScreenProps> = ({
                 }));
 
                 setorderitemsfun({ 
-                    orderid: response.data.orderId, 
+                    orderid: responseData.orderId, 
                     billing: { subtotal: subtotal }, 
                     tablenumber: tableNumber, 
                     itemsordered: bookedItems 
                 });
 
                 if (booked) {
-                    setModal({ visible: true, message: `Order Updated Successfully!`, success: true });
+                    toast.success("Order Updated Successfully!");
                 } else {
-                    setModal({ visible: true, message: `Order Placed Successfully! Order ID: ${response.data.orderId}`, success: true });
-                    tabledata.map((table) => {
-                        if (table.tablenumber === tableNumber) {
-                            table.availability = 1;
-                        }
-                    });
+                    toast.success(`Order Placed Successfully! (ID: ${response.data.orderId})`);
+                    if (updateTableAvailability) {
+                        updateTableAvailability(tableNumber, 1);
+                    }
                     setBooked(true);
                 }
                 setSelectedItems([]);
             } else {
-                setModal({ visible: true, message: response.data.error || "Order Failed", success: false });
+                toast.error(response.data.error || response.data.message || "Order Failed");
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error("Error placing order:", error);
-            setModal({ visible: true, message: "Failed to place order, please try again!", success: false });
+            const errMsg = error.response?.data?.error || error.response?.data?.message || "Failed to place order. Please try again.";
+            toast.error(errMsg);
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
     const completeOrder = async (tablenumber: number, orderid: number, method: string, discount?: { value: number, type: string }) => {
-        setCompleteOrderPopup(false);
+        setIsSubmitting(true);
         try {
             const response = await axios.post(`/api/order/completeOrder/${orderid}`, { 
                 tablenumber: tablenumber, 
@@ -146,31 +145,25 @@ const OrderScreen: React.FC<OrderScreenProps> = ({
             });
             
             if (response.data.success) {
-                setModal({ visible: true, message: `Order Completed!`, success: true });
+                setCompleteOrderPopup(false);
+                toast.success("Order Completed Successfully!");
                 printBill(tablenumber, orderid, method, discount);
-                tabledata.map((table) => {
-                    if (table.tablenumber === tableNumber) {
-                        table.availability = 0;
-                    }
-                });
+                if (updateTableAvailability) {
+                    updateTableAvailability(tableNumber, 0);
+                }
                 setBooked(false);
                 setSelectedItems([]);
                 setorderitemsfun({ orderid: 0, billing: { subtotal: 0 }, tablenumber: 0, itemsordered: [] });
                 resettable(tablenumber);
             } else {
-                setModal({ 
-                    visible: true, 
-                    message: response.data.message || "Order Completion failed", 
-                    success: false 
-                });
+                toast.error(response.data.error || response.data.message || "Order Completion failed");
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error("Error completing order:", error);
-            setModal({ 
-                visible: true, 
-                message: "Error completing order. Please try again.", 
-                success: false 
-            });
+            const errMsg = error.response?.data?.error || error.response?.data?.message || "Error completing order. Check stock availability.";
+            toast.error(errMsg);
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -184,8 +177,7 @@ const OrderScreen: React.FC<OrderScreenProps> = ({
         } else {
             setSelectedItems([...selectedItems, { item: selectedItem, quantity: 1 }]);
         }
-        setSearchTerm('');
-        setIsDropdownVisible(false);
+        // Do not clear search term so user can continue picking from filtered list
     };
 
     const handleQuantityChange = (itemId: string, newQuantity: string) => {
@@ -326,8 +318,14 @@ const OrderScreen: React.FC<OrderScreenProps> = ({
         `;
 
         const printWindow = window.open("", "", "width=400,height=600");
-        printWindow!.document.write(billContent);
-        printWindow!.document.close();
+        if (printWindow) {
+            printWindow.document.write(billContent);
+            printWindow.document.close();
+            // Optional: printWindow.print();
+        } else {
+            console.error("Popup blocked");
+            setModal({ visible: true, message: "Please allow pop-ups to print bills.", success: false });
+        }
     };
 
     return (
@@ -395,22 +393,19 @@ const OrderScreen: React.FC<OrderScreenProps> = ({
                                   }
                               />
                             ) : activeTab === 'menu' ? (
-                              <div className="flex flex-col gap-4 h-full">
+                              <div className="flex flex-col gap-3 h-full overflow-hidden">
                                   <div className="flex-shrink-0">
                                       <MenuSearch 
                                           searchTerm={searchTerm}
                                           setSearchTerm={setSearchTerm}
-                                          isDropdownVisible={isDropdownVisible}
-                                          filteredData={filteredData}
-                                          handleItemSelect={handleItemSelect}
                                       />
                                   </div>
-                                  <div className="flex-grow overflow-hidden">
-                                      <SelectedItems 
+                                  <div className="flex-grow flex flex-col overflow-hidden">
+                                      <MenuDisplay 
+                                          filteredData={filteredData}
                                           selectedItems={selectedItems}
+                                          handleItemSelect={handleItemSelect}
                                           handleQuantityChange={handleQuantityChange}
-                                          handleBlur={handleBlur}
-                                          removeSelectedItem={removeSelectedItem}
                                       />
                                   </div>
                               </div>
@@ -440,13 +435,24 @@ const OrderScreen: React.FC<OrderScreenProps> = ({
                                   gst={gst}
                                   totalAmount={totalAmount}
                                   booked={booked}
+                                  isSubmitting={isSubmitting}
                                   handlePlaceOrder={placeOrder}
                                   handleCompleteOrder={handleCompleteOrder}
                                   tableNumber={tableNumber}
-                                  items={[
-                                    ...(orderedItem.find(t => t.tablenumber === tableNumber)?.itemsordered || []),
-                                    ...selectedItems.map(({ item, quantity }) => ({ item_id: item.item_id, item_name: item.item_name, quantity, price: item.item_price }))
-                                  ]}
+                                  items={(() => {
+                                      const existing = orderedItem.find(t => t.tablenumber === tableNumber)?.itemsordered || [];
+                                      const combined = [...existing];
+                                      selectedItems.forEach(({ item, quantity }) => {
+                                          const idx = combined.findIndex(it => it.item_id === item.item_id);
+                                          if (idx > -1) {
+                                              combined[idx] = { ...combined[idx], quantity: combined[idx].quantity + quantity };
+                                          } else {
+                                              combined.push({ item_id: item.item_id, item_name: item.item_name, quantity, price: item.item_price });
+                                          }
+                                      });
+                                      return combined;
+                                  })()}
+                                  handleQuantityChange={handleQuantityChange}
                               />
                           </div>
                       </div>
@@ -459,6 +465,7 @@ const OrderScreen: React.FC<OrderScreenProps> = ({
                     tableNumber={currentCompleteOrder.tablenumber}
                     orderId={currentCompleteOrder.orderid}
                     totalAmount={totalAmount}
+                    isSubmitting={isSubmitting}
                     closeModal={() => setCompleteOrderPopup(false)}
                     completeOrder={completeOrder}
                 />

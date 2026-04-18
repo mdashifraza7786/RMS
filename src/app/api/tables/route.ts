@@ -1,10 +1,9 @@
-import { dbConnect, getMenu, getTables } from "@/database/database";
+import { dbConnect, getMenu, getTables } from "@/database";
 import { NextResponse } from "next/server";
 
 export async function GET() {
-  const tables = await getTables();
-
-  return NextResponse.json(tables);
+  const result = await getTables();
+  return NextResponse.json({ tables: result.data });
 }
 
 export async function POST(request: Request) {
@@ -31,7 +30,7 @@ export async function POST(request: Request) {
     await connection.rollback();
     return NextResponse.json({ message: "Failed to add table" });
   } finally {
-    connection.end();
+    connection.release();
   }
 
 }

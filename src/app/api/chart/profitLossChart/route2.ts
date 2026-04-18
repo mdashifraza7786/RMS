@@ -1,5 +1,5 @@
 // import { NextResponse } from "next/server";
-// import { dbConnect } from "@/database/database";
+// import { dbConnect } from "@/database";
 // import mysql, { RowDataPacket } from "mysql2/promise";
 
 // export async function GET() {
@@ -101,6 +101,6 @@
 //                      { status: 500 }
 //               );
 //        } finally {
-//               await connection.end();
+//               await connection.release();
 //        }
 // }

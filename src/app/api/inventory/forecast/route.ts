@@ -1,4 +1,4 @@
-import { dbConnect } from "@/database/database";
+import { dbConnect } from "@/database";
 import { NextResponse } from "next/server";
 
 export async function GET() {
@@ -31,11 +31,11 @@ export async function GET() {
       { 
         success: false, 
         message: "Failed to fetch inventory order history",
-        error: error.message 
+        error: "Internal Server Error" 
       },
       { status: 500 }
     );
   } finally {
-    await connection.end();
+    await connection.release();
   }
 }

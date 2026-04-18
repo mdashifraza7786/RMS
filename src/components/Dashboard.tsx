@@ -20,6 +20,7 @@ export interface Table {
     availability: number;
 }
 export interface OrderedItems {
+    id: number;
     item_id: string;
     item_name: string;
     quantity: number;
@@ -56,20 +57,18 @@ const Dashboard: React.FC = () => {
     const role = session?.user?.role as string;
 
     const fetchActiveOrders = async () => {
+        if (!role || !session?.user?.userid) return;
         try {
-            let response;
-            if(role === 'admin'){   
-                response = await axios.get("/api/order/activeOrders");
-            }else{
-                response = await axios.get("/api/order/activeOrders?role="+role+"&userid="+session?.user?.userid);
-            }
-            const activeOrders = response.data.map((order: any) => ({
+            const response = await axios.get(`/api/order/activeOrders?role=${role}&userid=${session.user.userid}`);
+            const ordersArray = response.data.data || [];
+            const activeOrders = ordersArray.map((order: any) => ({
                 orderid: order.orderId,
                 billing: {
                     subtotal: order.billing.subtotal
                 },
                 tablenumber: Number(order.tableNumber),
-                itemsordered: order.orderItems.map((item: any) => ({
+                itemsordered: order.itemsordered.map((item: any) => ({
+                    id: item.id,
                     item_id: item.item_id,
                     item_name: item.item_name,
                     quantity: item.quantity,
@@ -116,7 +115,7 @@ const Dashboard: React.FC = () => {
             clearInterval(financialInterval);
             document.removeEventListener('visibilitychange', onVisibility);
         };
-    }, []);
+    }, [role, session]);
     
     const fetchTables = async (silent: boolean = false) => {
         try {
@@ -167,6 +166,10 @@ const Dashboard: React.FC = () => {
 
     function resetTable(tablenumber: any) {
         setOrderedItems((prevItems) => prevItems.filter(order => order.tablenumber !== tablenumber));
+    }
+
+    function updateTableAvailability(tableNum: number, availability: number) {
+        setTableData(prev => prev.map(t => t.tablenumber === tableNum ? { ...t, availability } : t));
     }
 
     function updateOrderedItems(bookedItems: any) {
@@ -227,13 +230,16 @@ const Dashboard: React.FC = () => {
     }, [role, tableData, orderedItems]);
 
 
-    const removeOrderedItem = async (itemId: string, tableNumber: number, orderID: number) => {
+    const removeOrderedItem = (voidItemId: number, tableNumber: number, orderID: number) => {
+        // Confirmation before removal
+        if (!window.confirm("Are you sure you want to void this item? Stock will be restored.")) return;
+
+        // UI Optimistic Update
         setOrderedItems((prevItems) => {
             return prevItems
                 .map(order => {
                     if (order.tablenumber === tableNumber) {
-                        const filteredItems = order.itemsordered.filter(item => item.item_id !== itemId);
-
+                        const filteredItems = order.itemsordered.filter(item => item.id !== voidItemId);
                         return filteredItems.length > 0
                             ? { ...order, itemsordered: filteredItems }
                             : null;
@@ -243,24 +249,19 @@ const Dashboard: React.FC = () => {
                 .filter(Boolean) as typeof prevItems;
         });
 
-        try {
-            const requestBody = {
-                orderid: orderID,
-                itemid: itemId,
-                tablenumber: tableNumber
-            };
-
-            const response = await axios.post("/api/order/modifyOrder", requestBody);
-            if (response.data.deleted) {
-                tableData.map((table) => {
-                    if (table.tablenumber === tableNumber) {
-                        table.availability = 0;
-                    }
-                });
+        // Async logic wrapped in non-async function for TS compatibility
+        (async () => {
+            try {
+                const response = await axios.post("/api/order/voidItem", { order_item_id: voidItemId });
+                if (response.data.success) {
+                    fetchActiveOrders();
+                }
+            } catch (error: any) {
+                console.error("Error voiding item:", error.response?.data || error.message);
+                alert("Failed to void item. Please check permissions.");
+                fetchActiveOrders(); // Rollback UI state
             }
-        } catch (error: any) {
-            console.error("Error posting to tables:", error.response?.data || error.message);
-        }
+        })();
     };
 
     useEffect(() => {
@@ -335,6 +336,7 @@ const Dashboard: React.FC = () => {
                             financialData.period === '7days' ? 'Last 7 days' :
                             financialData.period === '30days' ? 'Last 30 days' :
                             financialData.period === 'month' ? 'This month' :
+                            financialData.period === 'all' ? 'All Time' :
                             financialData.period === 'today' ? 'Today' :
                             financialData.period === 'yesterday' ? 'Yesterday' : 'N/A'
                         }
@@ -344,10 +346,14 @@ const Dashboard: React.FC = () => {
                                 : '0'
                         }
                         dailyAverage={
-                            (financialData.revenue.value / (financialData.period === '7days' ? 7 :
+                            (financialData.revenue.value / (
+                                financialData.period === '7days' ? 7 :
                                 financialData.period === '30days' ? 30 :
-                                new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate()))
-                                .toLocaleString(undefined, { maximumFractionDigits: 0 })
+                                financialData.period === 'today' ? 1 :
+                                financialData.period === 'yesterday' ? 1 :
+                                financialData.period === 'all' ? 365 : /* Fallback to 1 year for rough average if "all" */
+                                new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate()
+                            )).toLocaleString(undefined, { maximumFractionDigits: 0 })
                         }
                     />
                 </div>
@@ -405,6 +411,7 @@ const Dashboard: React.FC = () => {
                     tabledata={tableData} 
                     closeOrderScreen={closeOrderScreen} 
                     updateItemStatus={updateOrderItemStatus}
+                    updateTableAvailability={updateTableAvailability}
                 />
             )}
         </div>

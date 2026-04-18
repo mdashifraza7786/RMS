@@ -1,11 +1,22 @@
 import { NextResponse } from "next/server";
-import { dbConnect } from "@/database/database";
-import mysql, { RowDataPacket } from "mysql2/promise";
+import { dbConnect } from "@/database";
+import { getCache, setCache } from "@/lib/cache";
+import { RowDataPacket } from "mysql2/promise";
 
 export async function GET() {
+    const cacheKey = 'sales_chart_data';
+    const cachedData = getCache(cacheKey);
+    if (cachedData) return NextResponse.json(cachedData);
+
     const connection = await dbConnect();
 
     try {
+        const now = new Date();
+        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
+        const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1).toISOString().split('T')[0];
+        const startOfYear = new Date(now.getFullYear(), 0, 1).toISOString().split('T')[0];
+        const nextYear = new Date(now.getFullYear() + 1, 0, 1).toISOString().split('T')[0];
+
         // First Query: Total Sales
         const [row1] = await connection.execute<RowDataPacket[]>(`
             SELECT 
@@ -190,54 +201,20 @@ export async function GET() {
         `);
         
         const [dailyRevenue] = await connection.execute<RowDataPacket[]>(`
-            SELECT 
-                DAY(generated_at) AS day,
-                SUM(total_amount) AS revenue
+            SELECT DAY(generated_at) AS day, SUM(total_amount) AS revenue
             FROM invoices
-            WHERE 
-                MONTH(generated_at) = MONTH(CURRENT_DATE()) AND 
-                YEAR(generated_at) = YEAR(CURRENT_DATE())
+            WHERE generated_at >= ? AND generated_at < ?
             GROUP BY DAY(generated_at)
-            ORDER BY DAY(generated_at)
-        `);
+        `, [startOfMonth, nextMonth]);
         
         const [monthlyRevenue] = await connection.execute<RowDataPacket[]>(`
-            SELECT 
-                MONTH(generated_at) AS month,
-                SUM(total_amount) AS revenue
+            SELECT MONTH(generated_at) AS month, SUM(total_amount) AS revenue
             FROM invoices
-            WHERE YEAR(generated_at) = YEAR(CURRENT_DATE())
+            WHERE generated_at >= ? AND generated_at < ?
             GROUP BY MONTH(generated_at)
-            ORDER BY MONTH(generated_at)
-        `);
-        
-        const [yearlyRevenue] = await connection.execute<RowDataPacket[]>(`
-            SELECT 
-                YEAR(generated_at) AS year,
-                SUM(total_amount) AS revenue
-            FROM invoices
-            GROUP BY YEAR(generated_at)
-            ORDER BY YEAR(generated_at)
-        `);
+        `, [startOfYear, nextYear]);
 
-
-        const date_revenues = dailyRevenue.map((row: RowDataPacket) => ({
-            date: row.day.toString(),
-            revenue: Number(row.revenue)
-        }));
-        
-        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-        const month_revenues = monthlyRevenue.map((row: RowDataPacket) => ({
-            month: months[row.month - 1],
-            revenue: Number(row.revenue)
-        }));
-        
-        const year_revenues = yearlyRevenue.map((row: RowDataPacket) => ({
-            year: row.year.toString(),
-            revenue: Number(row.revenue)
-        }));
-        
-        return NextResponse.json({
+        const data = {
             ...row1[0], 
             ...row2[0],
             ...row3[0],
@@ -245,14 +222,19 @@ export async function GET() {
             ...row5[0],
             ...row6[0],
             ...row7[0],
-            date_revenues,
-            month_revenues,
-            year_revenues
-        });
+            date_revenues: dailyRevenue.map(r => ({ date: r.day.toString(), revenue: Number(r.revenue) })),
+            month_revenues: monthlyRevenue.map(r => {
+                const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                return { month: months[r.month - 1], revenue: Number(r.revenue) };
+            })
+        };
+
+        setCache(cacheKey, data, 600); // 10 minutes
+        return NextResponse.json(data);
 
     } catch (error) {
         return NextResponse.json({ error: "Failed to fetch sales data", details: (error as Error).message }, { status: 500 });
     } finally {
-        await connection.end();
+        await connection.release();
     }
 }

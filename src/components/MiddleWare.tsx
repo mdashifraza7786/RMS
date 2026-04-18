@@ -7,36 +7,18 @@ import { useSession, SessionProvider } from "next-auth/react";
 import Loading from "@/app/loading";
 import Navbar from "@/components/Navbar";
 import MobileNav from "@/components/MobileNav";
-import CustomerLogin from "@/components/CustomerLogin";
 
 const MiddleWare: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { data: session, status } = useSession();
-  const [staffMode, setStaffMode] = useState<boolean | null>(null);
 
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const path = window.location.pathname;
-    if (path.startsWith("/staff")) {
-      setStaffMode(true);
-      if(status == "authenticated"){
-        window.location.href = "/";
-      }
-    } else {
-      setStaffMode(false);
-    }
-  }, []);
-
-  const role = (session?.user as any)?.role as string | undefined;
-  const isCustomer = role === "customer";
-
-  if (status === "loading" || staffMode === null) {
+  if (status === "loading") {
     return <Loading />;
   }
 
   if (status !== "authenticated") {
     return (
       <div>
-        {staffMode ? <Login /> : <CustomerLogin />}
+        <Login />
       </div>
     );
   }
@@ -44,18 +26,14 @@ const MiddleWare: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return (
     <div>
       <NextTopLoader color="white" />
-      {!isCustomer && (
-        <>
-          <Navbar
-            role={(session?.user as { role: string })?.role}
-            userid={(session?.user as { userid: string })?.userid}
-          />
-          <MobileNav
-            role={(session?.user as { role: string })?.role}
-          />
-        </>
-      )}
-      <div className={isCustomer ? "min-h-screen" : "min-h-screen px-2 sm:px-4 md:px-[8vw] pt-16 lg:pt-0"}>
+      <Navbar
+        role={(session?.user as { role: string })?.role}
+        userid={(session?.user as { userid: string })?.userid}
+      />
+      <MobileNav
+        role={(session?.user as { role: string })?.role}
+      />
+      <div className="min-h-screen px-2 sm:px-4 md:px-[8vw] pt-16 lg:pt-0">
         {children}
       </div>
     </div>

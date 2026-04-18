@@ -1,8 +1,14 @@
-import { dbConnect } from "@/database/database";
+import { dbConnect } from "@/database";
 import { NextResponse } from "next/server";
-import { ResultSetHeader } from "mysql2";  
+import { ResultSetHeader } from "mysql2";
+import { auth } from "@/auth";
 
 export async function POST(request: Request) {
+    const session = await auth();
+    if (session?.user?.role !== 'admin') {
+        return NextResponse.json({ message: 'Unauthorized' }, { status: 403 });
+    }
+
     const { userid, status, date } = await request.json();
     const connection = await dbConnect();
     
@@ -23,7 +29,7 @@ export async function POST(request: Request) {
         console.error('Error updating attendance record:', error);
         return NextResponse.json({ message: 'Failed to update attendance record' }, { status: 500 });
     } finally {
-        connection.end();
+        connection.release();
     }
 }
 

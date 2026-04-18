@@ -163,8 +163,8 @@ const Page: React.FC = () => {
                 if (response.status === 500 || response.status === 209) {
                     toast.error(response.data.message);
                 } else {
-                    const data = response.data.data || [];
-                    setAttendanceData(data);
+                    const data = response.data.data || { records: [] };
+                    setAttendanceData(data.records || []);
         
                     const formatDate = (date: string | null | undefined) => 
                         date ? new Date(date).toISOString().split('T')[0] : formattedDate;

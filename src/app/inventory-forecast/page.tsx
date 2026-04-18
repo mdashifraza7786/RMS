@@ -37,8 +37,9 @@ const InventoryForecastPage: React.FC = () => {
     setError(null);
     setForecast([]);
     try {
+      const API_BASE = process.env.NEXT_PUBLIC_FORECAST_API_URL || 'https://rms-forecast-api.example.com';
       const res = await axios.get(
-        `https://rms-16w6.onrender.com/forecast?item=${encodeURIComponent(selectedItem)}&days=${days}`
+        `${API_BASE}/forecast?item=${encodeURIComponent(selectedItem)}&days=${days}`
       );
       setForecast(res.data);
     } catch (err: any) {
@@ -63,7 +64,8 @@ const InventoryForecastPage: React.FC = () => {
     setRevError(null);
     setRevForecast([]);
     try {
-      const res = await axios.get(`https://rms-16w6.onrender.com/revenue-forecast?days=${revDays}`);
+      const API_BASE = process.env.NEXT_PUBLIC_FORECAST_API_URL || 'https://rms-forecast-api.example.com';
+      const res = await axios.get(`${API_BASE}/revenue-forecast?days=${revDays}`);
       const data = res.data;
       const list = Array.isArray(data) ? data : Array.isArray(data?.forecast) ? data.forecast : [];
       setRevForecast(list);

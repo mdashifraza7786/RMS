@@ -1,9 +1,13 @@
-import { dbConnect, getInventoryById } from '@/database/database';
+import { dbConnect } from '@/database';
 import { NextResponse } from 'next/server';
+import { withErrorHandling } from '@/lib/api-handler';
+import { successResponse } from '@/lib/api-response';
 
-export async function POST(request: Request) {
+export const POST = withErrorHandling(async (request: Request) => {
     const data = await request.json();
     const { item_name, current_stock, low_limit, unit } = data;
+
+    const connection = await dbConnect();
 
     function generateFiveDigitRandomNumber(): number {
         return Math.floor(10000 + Math.random() * 90000); 
@@ -11,24 +15,21 @@ export async function POST(request: Request) {
 
     async function generateUniqueItemId(): Promise<string> {
         let uniqueID: string;
-        let userExists: boolean;
+        let itemExists: boolean;
 
         do {
             uniqueID = `ITEM${generateFiveDigitRandomNumber()}`;
-            const user = await getInventoryById(uniqueID);
-            userExists = !!user;
-        } while (userExists);
+            const [rows]: any = await connection.query('SELECT 1 FROM inventory WHERE item_id = ? LIMIT 1', [uniqueID]);
+            itemExists = rows.length > 0;
+        } while (itemExists);
 
         return uniqueID;
     }
 
-    const uniqueID = await generateUniqueItemId(); 
-
-    const connection = await dbConnect();
+    const uniqueID = await generateUniqueItemId();
     try {
         await connection.beginTransaction();
 
-        // Insert into inventory table
         await connection.query(`
             INSERT INTO inventory (item_id, item_name, current_stock, low_limit, unit) 
             VALUES (?, ?, ?, ?, ?)`, 
@@ -37,14 +38,13 @@ export async function POST(request: Request) {
 
         await connection.commit();
 
-        return NextResponse.json({ 
-            message: "Data inserted successfully", 
-            cred: { uniqueID, item_name, current_stock, low_limit, unit } 
-        });
+        return NextResponse.json(successResponse({ 
+            uniqueID, item_name, current_stock, low_limit, unit 
+        }, "Item registered successfully"));
     } catch (err: any) {
         await connection.rollback();
-        return NextResponse.json({ error: err.message });
+        throw err;
     } finally {
-        await connection.end();
+        await connection.release();
     }
-}
+});

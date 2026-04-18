@@ -53,8 +53,8 @@ const Page: React.FC = () => {
         try {
             const response = await axios.get('/api/order');
             
-            if (response.data?.tableOrders) {
-                const formattedData: Order[] = response.data.tableOrders.map((order: any) => ({
+            if (response.data?.success && response.data?.data?.orders) {
+                const formattedData: Order[] = response.data.data.orders.map((order: any) => ({
                     ...order,
                     order_items: typeof order.order_items === 'string' ? 
                         JSON.parse(order.order_items) : order.order_items,
@@ -76,13 +76,11 @@ const Page: React.FC = () => {
         try {
             const response = await axios.get('/api/order/orderInvoice');
             
-            if (response.data?.invoice) {
-                setInvoices(response.data.invoice);
+            if (response.data?.success && response.data?.data?.invoices) {
+                setInvoices(response.data.data.invoices);
             } else {
                 console.error("Failed to fetch invoices:", response.data);
                 setInvoices([]);
-                if (!allOrders.length) {
-                }
             }
         } catch (error) {
             console.error("Error fetching invoices:", error);

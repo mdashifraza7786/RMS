@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { dbConnect } from "@/database/database";
+import { dbConnect } from "@/database";
 
 export async function DELETE(request: NextRequest) {
     const connection = await dbConnect();
@@ -24,8 +24,8 @@ export async function DELETE(request: NextRequest) {
         // Rollback transaction in case of error
         await connection.rollback();
         console.error("Error deleting expense:", error.message);
-        return NextResponse.json({ success: false, message: "Error deleting expense", details: error.message });
+        return NextResponse.json({ success: false, message: "Error deleting expense" });
     } finally {
-        await connection.end();
+        await connection.release();
     }
 }

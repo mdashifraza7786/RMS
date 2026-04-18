@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import {dbConnect, updateMenu} from "@/database/database";
+import {dbConnect, updateMenu} from "@/database";
 
 export async function PUT(request: NextRequest) {
         const connection = await dbConnect();
@@ -27,7 +27,7 @@ export async function PUT(request: NextRequest) {
             return NextResponse.json({ success: false, message: 'Error updating menu' });
     
         } finally {
-            await connection.end();
+            await connection.release();
         }
     }
     

@@ -56,15 +56,17 @@ const TableManagement: React.FC<TableManagementProps> = ({
               </span>
             </div>
           ) : tableData && tableData.length > 0 ? (
-            tableData.map((item, index) => (
-              <TableStatusCard
-                key={index}
-                tablestatus={item.availability === 0 ? "available" : "notavailable"}
-                tableno={Number(item.tablenumber)}
-                doOrder={handleOrder}
-                isClickable={clickableTables.includes(Number(item.tablenumber))}
-              />
-            ))
+            [...tableData]
+              .sort((a, b) => Number(a.tablenumber) - Number(b.tablenumber))
+              .map((item, index) => (
+                <TableStatusCard
+                  key={index}
+                  tablestatus={item.availability === 0 ? "available" : "notavailable"}
+                  tableno={Number(item.tablenumber)}
+                  doOrder={handleOrder}
+                  isClickable={clickableTables.includes(Number(item.tablenumber))}
+                />
+              ))
           ) : (
             <div className="col-span-full flex justify-center items-center h-32 sm:h-40 bg-gray-50 rounded-lg border border-dashed border-gray-200">
               <p className="text-gray-500 text-xs sm:text-sm">No tables available. Please add a table.</p>

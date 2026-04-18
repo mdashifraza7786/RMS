@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import {dbConnect} from "@/database/database";
+import {dbConnect} from "@/database";
 
 export async function DELETE(request: NextRequest) {
         const connection = await dbConnect();
@@ -27,7 +27,7 @@ export async function DELETE(request: NextRequest) {
             return NextResponse.json({ success: false, message: 'Error deleting inventory item' });
     
         } finally {
-            await connection.end();
+            await connection.release();
         }
     }
     

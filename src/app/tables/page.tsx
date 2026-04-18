@@ -113,16 +113,18 @@ const TableManagement = () => {
         }
     };
 
-    const filteredTables = tables.filter(table => {
-        const tableNumberStr = String(table.tablenumber);
-        const matchesSearch = tableNumberStr.toLowerCase().includes(searchTerm.toLowerCase());
+    const filteredTables = tables
+        .filter(table => {
+            const tableNumberStr = String(table.tablenumber);
+            const matchesSearch = tableNumberStr.toLowerCase().includes(searchTerm.toLowerCase());
 
-        if (activeTab === "all") return matchesSearch;
-        if (activeTab === "available") return matchesSearch && table.availability === 0;
-        if (activeTab === "occupied") return matchesSearch && table.availability === 1;
+            if (activeTab === "all") return matchesSearch;
+            if (activeTab === "available") return matchesSearch && table.availability === 0;
+            if (activeTab === "occupied") return matchesSearch && table.availability === 1;
 
-        return matchesSearch;
-    });
+            return matchesSearch;
+        })
+        .sort((a, b) => Number(a.tablenumber) - Number(b.tablenumber));
 
     const tabs = [
         { id: 'all', label: 'All Tables' },
@@ -180,98 +182,52 @@ const TableManagement = () => {
 
                 {loading ? (
                     <div className="flex justify-center items-center py-12">
-                        <Bars height="50" width="50" color="primary" ariaLabel="bars-loading" />
+                        <Bars height="50" width="50" color="#1e4569" ariaLabel="bars-loading" />
                     </div>
                 ) : filteredTables && filteredTables.length > 0 ? (
-                    <>
-                        {/* Desktop Table View */}
-                        <div className="hidden md:block overflow-x-auto">
-                            <table className="min-w-full divide-y divide-gray-200">
-                                <thead className="bg-gray-50">
-                                    <tr>
-                                        {[
-                                            { id: "tableNumber", label: "Table Number" },
-                                            { id: "status", label: "Status" },
-                                            { id: "actions", label: "Actions" }
-                                        ].map((header) => (
-                                            <th
-                                                key={header.id}
-                                                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                                            >
-                                                {header.label}
-                                            </th>
-                                        ))}
-                                    </tr>
-                                </thead>
-                                <tbody className="bg-white divide-y divide-gray-200">
-                                    {filteredTables.map((table) => (
-                                        <tr key={table.id} className="hover:bg-gray-50 transition duration-150">
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                                <div className="flex items-center">
-                                                    <BiTable className="mr-2 text-gray-400" />
-                                                    Table #{table.tablenumber}
-                                                </div>
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap">
-                                                {table.availability === 0 ? (
-                                                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                                        AVAILABLE
-                                                    </span>
-                                                ) : (
-                                                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                                                        OCCUPIED
-                                                    </span>
-                                                )}
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                <button
-                                                    className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-red-600 hover:bg-red-700 transition"
-                                                    onClick={() => openDeleteModal(table.id, table.tablenumber)}
-                                                >
-                                                    <FaTrash className="mr-1.5" />
-                                                    Delete
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
+                    <div className="p-6">
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+                            {filteredTables.map((table) => (
+                                <div
+                                    key={table.id}
+                                    className={`relative flex flex-col items-center justify-center p-5 rounded-2xl shadow-sm border transition-all duration-200 group ${table.availability === 0
+                                            ? 'bg-white border-green-100 hover:border-green-300 hover:shadow-md'
+                                            : 'bg-white border-red-100 hover:border-red-300 hover:shadow-md'
+                                        }`}
+                                >
+                                    {/* Delete Button - Appears on hover */}
+                                    <button
+                                        onClick={() => openDeleteModal(table.id, table.tablenumber)}
+                                        className="absolute top-2 right-2 p-2 rounded-full bg-red-50 text-red-500 opacity-0 group-hover:opacity-100 hover:bg-red-500 hover:text-white transition-all duration-200 z-10"
+                                        title="Delete Table"
+                                    >
+                                        <FaTrash size={12} />
+                                    </button>
 
-                        {/* Mobile Card View */}
-                        <div className="md:hidden px-4">
-                            <div className="space-y-4">
-                                {filteredTables.map((table) => (
-                                    <div key={table.id} className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-                                        <div className="bg-gray-50 p-3 flex justify-between items-center">
-                                            <div className="flex items-center font-medium text-gray-800">
-                                                <BiTable className="mr-2 text-gray-500" />
-                                                Table #{table.tablenumber}
-                                            </div>
-                                            {table.availability === 0 ? (
-                                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                                    AVAILABLE
-                                                </span>
-                                            ) : (
-                                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                                                    OCCUPIED
-                                                </span>
-                                            )}
-                                        </div>
-                                        <div className="border-t border-gray-100 p-3 bg-gray-50 flex justify-end">
-                                            <button
-                                                className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-red-600 hover:bg-red-700 transition"
-                                                onClick={() => openDeleteModal(table.id, table.tablenumber)}
-                                            >
-                                                <FaTrash className="mr-1.5" />
-                                                Delete
-                                            </button>
+                                    <div className={`w-14 h-14 rounded-full flex items-center justify-center mb-3 ${table.availability === 0
+                                            ? 'bg-green-50 text-green-600'
+                                            : 'bg-red-50 text-red-600'
+                                        }`}>
+                                        <MdTableRestaurant size={28} />
+                                    </div>
+
+                                    <div className="text-center">
+                                        <p className={`font-bold text-lg ${table.availability === 0 ? 'text-green-700' : 'text-red-700'
+                                            }`}>
+                                            Table #{table.tablenumber}
+                                        </p>
+                                        <div className="flex items-center justify-center gap-1.5 mt-1">
+                                            <div className={`w-2 h-2 rounded-full ${table.availability === 0 ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.4)]' : 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.4)]'
+                                                }`}></div>
+                                            <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                {table.availability === 0 ? 'Available' : 'Occupied'}
+                                            </p>
                                         </div>
                                     </div>
-                                ))}
-                            </div>
+                                </div>
+                            ))}
                         </div>
-                    </>
+                    </div>
                 ) : (
                     <div className="flex flex-col items-center justify-center py-12 text-gray-500">
                         <MdTableBar className="w-16 h-16 mb-4 text-gray-300" />

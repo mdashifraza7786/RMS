@@ -10,7 +10,9 @@ const BillSummary: React.FC<BillSummaryProps> = ({
     handleCompleteOrder,
     tableNumber,
     isSubmitting = false,
-    items = []
+    items = [],
+    selectedItemsRaw = [],
+    handleQuantityChange
 }) => {
     return (
         <div className="border border-gray-100 p-6 rounded-lg shadow-sm bg-white flex flex-col h-full">
@@ -36,12 +38,34 @@ const BillSummary: React.FC<BillSummaryProps> = ({
                             <li className="py-6 text-center text-gray-400 text-sm">No items selected</li>
                         ) : (
                             items.map((it, idx) => (
-                                <li key={(it.item_id || idx.toString()) + '-bill'} className="py-2 flex justify-between items-center">
-                                    <div className="text-sm text-gray-800">
+                                <li key={(it.item_id || idx.toString()) + '-bill'} className="py-2 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1 border-b border-gray-100 last:border-0">
+                                    <div className="text-sm text-gray-800 font-medium">
                                         {it.item_name}
-                                        <span className="text-gray-500 text-xs ml-2">× {it.quantity}</span>
                                     </div>
-                                    <div className="text-sm font-medium text-gray-900">₹{(it.price * it.quantity).toFixed(2)}</div>
+                                    <div className="flex justify-between items-center w-full sm:w-auto gap-4">
+                                        <div className="flex items-center text-xs">
+                                            {handleQuantityChange && it.item_id ? (
+                                                <div className="flex items-center bg-white border border-gray-200 rounded text-gray-600 shadow-sm">
+                                                    <button 
+                                                        className="px-1.5 py-0.5 hover:bg-gray-100 disabled:opacity-30"
+                                                        onClick={() => handleQuantityChange(it.item_id!, (it.quantity - 1).toString())}
+                                                    >
+                                                        -
+                                                    </button>
+                                                    <span className="px-2 font-medium">{it.quantity}</span>
+                                                    <button 
+                                                        className="px-1.5 py-0.5 hover:bg-gray-100"
+                                                        onClick={() => handleQuantityChange(it.item_id!, (it.quantity + 1).toString())}
+                                                    >
+                                                        +
+                                                    </button>
+                                                </div>
+                                            ) : (
+                                                <span className="text-gray-500 font-medium bg-gray-100 px-2 py-0.5 rounded">Qty: {it.quantity}</span>
+                                            )}
+                                        </div>
+                                        <div className="text-sm font-semibold text-gray-900">₹{(it.price * it.quantity).toFixed(2)}</div>
+                                    </div>
                                 </li>
                             ))
                         )}

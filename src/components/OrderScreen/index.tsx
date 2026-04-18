@@ -116,7 +116,7 @@ const OrderScreen: React.FC<OrderScreenProps> = ({
                 if (booked) {
                     toast.success("Order Updated Successfully!");
                 } else {
-                    toast.success(`Order Placed Successfully! (ID: ${response.data.orderId})`);
+                    toast.success(`Order Placed Successfully! (ID: ${responseData.orderId})`);
                     if (updateTableAvailability) {
                         updateTableAvailability(tableNumber, 1);
                     }

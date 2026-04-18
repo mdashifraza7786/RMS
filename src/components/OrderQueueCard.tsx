@@ -91,10 +91,13 @@ const OrderQueueCard: React.FC<OrderQueueCardProps> = ({ table, waiter, amount, 
                                 setAssignOpen(true);
                                 try {
                                   const res = await fetch('/api/members');
-                                  const data = await res.json();
-                                  const onlyChefs = (data?.users || data?.users || data?.users)?.filter?.((u: any) => (u.role || '').toLowerCase() === 'chef') || [];
+                                  const responseData = await res.json();
+                                  const membersList = responseData?.data || responseData?.users || [];
+                                  const onlyChefs = membersList.filter((u: any) => (u.role || '').toLowerCase() === 'chef');
                                   setChefs(onlyChefs.map((c: any) => ({ userid: c.userid, name: c.name })));
-                                } catch {}
+                                } catch (error) {
+                                  console.error("Failed to load chefs:", error);
+                                }
                               }}
                             >Assign Chef</button>
                           )}

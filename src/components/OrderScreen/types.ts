@@ -66,6 +66,7 @@ export interface BillSummaryProps {
     selectedItemsRaw?: { item: MenuData; quantity: number }[];
     handleQuantityChange?: (itemId: string, newQuantity: string) => void;
 }
+export interface CompleteOrderModalProps {
     isVisible: boolean;
     tableNumber: number;
     orderId: number;

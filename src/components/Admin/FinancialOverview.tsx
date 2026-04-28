@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Bars } from "react-loader-spinner";
+import Skeleton from "../ui/Skeleton";
 import { FaMoneyBillWave, FaChartLine, FaCashRegister, FaReceipt } from "react-icons/fa";
 import { MdTrendingDown, MdTrendingUp } from "react-icons/md";
 
@@ -43,10 +43,22 @@ const FinancialOverview: React.FC<FinancialOverviewProps> = ({
       </div>
 
       {isLoading ? (
-        <div className="flex justify-center items-center h-64">
-          <span className="text-primary">
-            <Bars height="40" width="40" color="currentColor" ariaLabel="bars-loading" visible={true} />
-          </span>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="bg-gray-50 rounded-xl p-4 sm:p-6 border border-gray-100">
+              <div className="flex justify-between items-start mb-4">
+                <div className="space-y-2 flex-1">
+                  <Skeleton variant="text" width="40%" height="16px" />
+                  <Skeleton variant="text" width="70%" height="32px" />
+                </div>
+                <Skeleton variant="rect" width="48px" height="48px" className="rounded-full" />
+              </div>
+              <div className="flex items-center gap-2">
+                <Skeleton variant="circle" width="20px" height="20px" />
+                <Skeleton variant="text" width="50%" height="14px" />
+              </div>
+            </div>
+          ))}
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">

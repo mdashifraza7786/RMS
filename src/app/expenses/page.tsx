@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { FaPenToSquare, FaTrash } from "react-icons/fa6";
 import { FaSearch } from "react-icons/fa";
-import { Bars } from "react-loader-spinner";
+import Skeleton from "@/components/ui/Skeleton";
 import { RiBillLine } from "react-icons/ri";
 import AddExpense from './popup';
 import EditExpense from './editPopup';
@@ -191,8 +191,23 @@ const ExpensePage: React.FC = () => {
                 </div>
 
                 {isLoading ? (
-                    <div className="flex justify-center items-center py-12">
-                        <Bars height="50" width="50" color="primary" ariaLabel="bars-loading" />
+                    <div className="p-6 space-y-4">
+                        {[...Array(limit)].map((_, i) => (
+                            <div key={i} className="flex items-center gap-4 py-4 border-b border-gray-50 last:border-0">
+                                <div className="flex-grow space-y-2">
+                                    <Skeleton variant="text" width="200px" height="16px" />
+                                    <Skeleton variant="text" width="120px" height="12px" />
+                                </div>
+                                <div className="hidden md:flex gap-12">
+                                    <Skeleton variant="text" width="100px" height="16px" />
+                                    <Skeleton variant="text" width="80px" height="16px" />
+                                </div>
+                                <div className="flex gap-2">
+                                    <Skeleton variant="rect" width="80px" height="32px" className="rounded-md" />
+                                    <Skeleton variant="rect" width="80px" height="32px" className="rounded-md" />
+                                </div>
+                            </div>
+                        ))}
                     </div>
                 ) : (
                     <>

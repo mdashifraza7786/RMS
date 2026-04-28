@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { Bars } from 'react-loader-spinner';
+import React, { useState, useEffect } from "react";
+import Skeleton from "./ui/Skeleton";
 import Link from 'next/link';
 import { MdHistory, MdTableBar, MdPerson, MdOutlineRestaurantMenu, MdAccessTime, MdOutlineInfo, MdKeyboardArrowLeft, MdKeyboardArrowRight } from 'react-icons/md';
 
@@ -97,10 +97,22 @@ export default function OrdersComponent() {
             </div>
 
             {loading ? (
-                <div className='flex-grow flex justify-center items-center'>
-                    <span className="text-primary">
-                        <Bars height="40" width="40" color="currentColor" ariaLabel="bars-loading" visible={true} />
-                    </span>
+                <div className="space-y-4">
+                    {[...Array(5)].map((_, i) => (
+                        <div key={i} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                            <div className="flex items-center gap-3">
+                                <Skeleton variant="circle" width="40px" height="40px" />
+                                <div className="space-y-1">
+                                    <Skeleton variant="text" width="80px" height="14px" />
+                                    <Skeleton variant="text" width="60px" height="12px" />
+                                </div>
+                            </div>
+                            <div className="flex flex-col items-end gap-1">
+                                <Skeleton variant="text" width="50px" height="14px" />
+                                <Skeleton variant="text" width="40px" height="12px" />
+                            </div>
+                        </div>
+                    ))}
                 </div>
             ) : completedOrders.length === 0 ? (
                 <div className="flex-grow flex items-center justify-center bg-gray-50 rounded-lg border border-dashed border-gray-200">

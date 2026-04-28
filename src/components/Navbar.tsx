@@ -40,7 +40,7 @@ const NAV_ITEMS = [
         href: "/payout",
         icon: <FaDollarSign />,
         label: "Payouts",
-        roles: ["admin", "waiter", "chef"]
+        roles: ["admin"]
     },
     {
         href: "/attendance",
@@ -52,7 +52,7 @@ const NAV_ITEMS = [
         href: "/inventory",
         icon: <MdOutlineInventory />,
         label: "Inventory",
-        roles: ["admin", "chef"]
+        roles: ["admin"]
     },
     {
         href: "/members",

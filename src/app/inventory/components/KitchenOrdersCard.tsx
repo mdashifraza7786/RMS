@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { FaTrash, FaFileAlt, FaCheck, FaTimes } from 'react-icons/fa';
 import { FaPenToSquare } from 'react-icons/fa6';
-import { Bars } from 'react-loader-spinner';
+import Skeleton from '@/components/ui/Skeleton';
 
 // Define the type for kitchen orders
 interface InventoryItem {
@@ -181,8 +181,24 @@ const KitchenOrdersCard: React.FC = () => {
     return (
         <div>
             {loading ? (
-                <div className="flex justify-center items-center py-12">
-                    <Bars height="50" width="50" color="#1e4569" ariaLabel="bars-loading" />
+                <div className="space-y-4">
+                    {[...Array(5)].map((_, i) => (
+                        <div key={i} className="flex items-center gap-4 py-4 border-b border-gray-50 last:border-0 px-6">
+                            <Skeleton variant="rect" width="24px" height="24px" className="rounded" />
+                            <div className="flex-grow space-y-2">
+                                <Skeleton variant="text" width="150px" height="16px" />
+                                <Skeleton variant="text" width="100px" height="12px" />
+                            </div>
+                            <div className="hidden md:flex gap-12">
+                                <Skeleton variant="text" width="100px" height="16px" />
+                                <Skeleton variant="text" width="80px" height="16px" />
+                            </div>
+                            <div className="flex gap-2">
+                                <Skeleton variant="rect" width="60px" height="32px" className="rounded-md" />
+                                <Skeleton variant="rect" width="60px" height="32px" className="rounded-md" />
+                            </div>
+                        </div>
+                    ))}
                 </div>
             ) : (
                 <>

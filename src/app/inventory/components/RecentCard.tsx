@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { FaTrash, FaTimes } from "react-icons/fa";
 import { FaPenToSquare } from "react-icons/fa6";
 import axios from 'axios';
-import { Bars } from "react-loader-spinner";
+import Skeleton from '@/components/ui/Skeleton';
 
 // Define the type for recent inventory order items
 interface InventoryOrderItem {
@@ -110,8 +110,24 @@ const RecentCard: React.FC = () => {
     return (
         <div>
             {loading ? (
-                <div className="flex justify-center items-center py-12">
-                    <Bars height="50" width="50" color="#1e4569" ariaLabel="bars-loading" />
+                <div className="space-y-4">
+                    {[...Array(5)].map((_, i) => (
+                        <div key={i} className="flex items-center gap-4 py-4 border-b border-gray-50 last:border-0 px-6">
+                            <div className="flex-grow space-y-2">
+                                <Skeleton variant="text" width="200px" height="16px" />
+                                <Skeleton variant="text" width="120px" height="12px" />
+                            </div>
+                            <div className="hidden md:flex gap-12">
+                                <Skeleton variant="text" width="100px" height="16px" />
+                                <Skeleton variant="text" width="100px" height="16px" />
+                                <Skeleton variant="text" width="80px" height="16px" />
+                            </div>
+                            <div className="flex gap-2">
+                                <Skeleton variant="rect" width="60px" height="32px" className="rounded-md" />
+                                <Skeleton variant="rect" width="60px" height="32px" className="rounded-md" />
+                            </div>
+                        </div>
+                    ))}
                 </div>
             ) : (
                 <>
@@ -384,14 +400,11 @@ const RecentCard: React.FC = () => {
                 <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-60 z-50 backdrop-blur-sm">
                     <div className="bg-white shadow-2xl rounded-xl p-8 max-w-md w-full animate-fadeIn">
                         {deleteLoading && (
-                            <div className='absolute inset-0 flex justify-center items-center bg-white bg-opacity-90 rounded-xl z-10'>
-                                <Bars
-                                    height="60"
-                                    width="60"
-                                    color="#1e4569"
-                                    ariaLabel="bars-loading"
-                                    visible={true}
-                                />
+                            <div className='absolute inset-0 flex flex-col justify-center items-center bg-white bg-opacity-90 rounded-xl z-10 p-8 space-y-4'>
+                                <Skeleton variant="circle" width="64px" height="64px" />
+                                <Skeleton variant="text" width="80%" height="24px" />
+                                <Skeleton variant="rect" width="100%" height="40px" className="rounded-lg" />
+                                <p className="text-red-500 font-medium animate-pulse mt-4">Deleting record...</p>
                             </div>
                         )}
                         

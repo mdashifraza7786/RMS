@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import axios from "axios";
-import { Bars } from 'react-loader-spinner';
+import Skeleton from "@/components/ui/Skeleton";
 import { FaExclamationTriangle, FaBoxOpen, FaWarehouse, FaTimes } from "react-icons/fa";
 import GeneratedOrderPage from "./GeneratedOrderPage";
 
@@ -98,14 +98,12 @@ const LowStock: React.FC<LowStockCardProps> = ({ item_id, item_name, current_sto
                 <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-60 z-50 backdrop-blur-sm">
                     <div className="bg-white shadow-2xl rounded-xl p-6 w-[90%] max-w-[500px] relative animate-fadeIn">
                         {loading && (
-                            <div className='absolute inset-0 flex justify-center items-center bg-white bg-opacity-90 rounded-xl z-10'>
-                                <Bars
-                                    height="60"
-                                    width="60"
-                                    color="#1e4569"
-                                    ariaLabel="bars-loading"
-                                    visible={true}
-                                />
+                            <div className='absolute inset-0 flex flex-col justify-center items-center bg-white bg-opacity-90 rounded-xl z-10 p-8 space-y-4'>
+                                <Skeleton variant="text" width="60%" height="24px" />
+                                <Skeleton variant="rect" width="100%" height="44px" className="rounded-lg" />
+                                <Skeleton variant="rect" width="100%" height="44px" className="rounded-lg" />
+                                <Skeleton variant="rect" width="100%" height="80px" className="rounded-lg" />
+                                <p className="text-[#1e4569] font-medium animate-pulse mt-4">Generating order...</p>
                             </div>
                         )}
                         

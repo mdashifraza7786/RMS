@@ -1,17 +1,17 @@
 "use client"
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { RowDataPacket } from 'mysql2';
 import { HiEye } from 'react-icons/hi';
 import { FaSearch, FaFileInvoiceDollar, FaCheck, FaMoneyBillWave, FaUserSlash } from 'react-icons/fa';
 import { RxCross2 } from 'react-icons/rx';
-import { Bars } from "react-loader-spinner";
+import Skeleton from "@/components/ui/Skeleton";
 import { BsBank, BsPerson } from 'react-icons/bs';
 import { MdPayment } from 'react-icons/md';
-import { toast, ToastContainer } from 'react-toastify';
+import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 interface PayoutInfo {
+    id: number,
     userid: string,
     account_number: string,
     upi_id: string,
@@ -56,7 +56,7 @@ const Page = () => {
     const [selectedItem, setSelectedItem] = useState<MergedUserPayout | null>(null);
     const [loading, setLoading] = useState(true);
     const [actionLoading, setActionLoading] = useState(false);
-      const [generating, setGenerating] = useState(false);
+    const [generating, setGenerating] = useState(false);
     const [debugInfo, setDebugInfo] = useState<string | null>(null);
 
     // Secondary table filters (raw payout list)
@@ -64,7 +64,7 @@ const Page = () => {
     const [filterMonth, setFilterMonth] = useState<string>(''); // YYYY-MM
     const [filterYear, setFilterYear] = useState<string>(''); // YYYY
 
-    const filteredData = mergedData.filter(item =>
+    const filteredData = (Array.isArray(mergedData) ? mergedData : []).filter(item =>
         (activeTab === 'all' || item.status === activeTab.toLowerCase()) &&
         (item.userid.toLowerCase().includes(searchQuery.toLowerCase()) || 
          item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -92,7 +92,6 @@ const Page = () => {
         setLoading(true);
         try {
             const payoutResponse = await axios.get('/api/payout');
-            // The API returns successResponse({ payouts, total })
             if (payoutResponse.data?.success && payoutResponse.data?.data?.payouts) {
                 setPayoutInfo(payoutResponse.data.data.payouts);
                 setDebugInfo(null);
@@ -143,18 +142,18 @@ const Page = () => {
           }
       };
 
-    const updatePayoutStatus = async (userId: string, newStatus: string) => {
+    const updatePayoutStatus = async (id: number, newStatus: string) => {
         setActionLoading(true);
         try {
             const response = await axios.post('/api/payout/update', {
-                userid: userId,
+                id: id,
                 status: newStatus
             });
 
             if (response.status === 200) {
                 setPayoutInfo(prev => 
                     prev.map(payout => 
-                        payout.userid === userId 
+                        payout.id === id 
                             ? { ...payout, status: newStatus } 
                             : payout
                     )
@@ -162,17 +161,17 @@ const Page = () => {
 
                 setMergedData(prev => 
                     prev.map(item => 
-                        item.userid === userId 
+                        item.id === id 
                             ? { ...item, status: newStatus } 
                             : item
                     )
                 );
 
-                if (selectedItem && selectedItem.userid === userId) {
+                if (selectedItem && selectedItem.id === id) {
                     setSelectedItem({ ...selectedItem, status: newStatus });
                 }
 
-                toast.success(`Payout for ${userId} marked as ${newStatus}`);
+                toast.success(`Payout marked as ${newStatus}`);
             } else {
                 toast.error("Failed to update payout status");
             }
@@ -184,12 +183,12 @@ const Page = () => {
         }
     };
 
-    const handleMarkAsPaid = (userId: string) => {
-        updatePayoutStatus(userId, 'paid');
+    const handleMarkAsPaid = (id: number) => {
+        updatePayoutStatus(id, 'paid');
     };
 
-    const handleMarkAsUnpaid = (userId: string) => {
-        updatePayoutStatus(userId, 'unpaid');
+    const handleMarkAsUnpaid = (id: number) => {
+        updatePayoutStatus(id, 'unpaid');
     };
 
     useEffect(() => {
@@ -197,6 +196,7 @@ const Page = () => {
             const merged = payoutInfo.map(payout => {
                 const user = userInfo.find(user => user.userid === payout.userid);
                 return {
+                    id: payout.id,
                     userid: payout.userid,
                     name: user?.name || '',
                     mobile: user?.mobile || '',
@@ -247,8 +247,6 @@ const Page = () => {
 
     return (
         <div className="container mx-auto px-6 pt-4 pb-8">
-            <ToastContainer position="top-right" autoClose={3000} />
-            
             <div className="py-4">
                 <div className="flex items-center gap-3">
                     <h1 className="text-xl font-semibold text-gray-800">Staff Payouts</h1>
@@ -303,8 +301,35 @@ const Page = () => {
                 </div>
 
                 {loading ? (
-                    <div className="flex justify-center items-center py-12">
-                        <Bars height="50" width="50" color="primary" ariaLabel="bars-loading" />
+                    <div className="space-y-4">
+                        <div className="hidden md:block bg-white rounded-xl border border-gray-100 overflow-hidden">
+                            <div className="p-6 border-b border-gray-100 flex gap-4">
+                                {[...Array(6)].map((_, i) => (
+                                    <Skeleton key={i} variant="text" width="15%" height="20px" />
+                                ))}
+                            </div>
+                            <div className="p-6 space-y-6">
+                                {[...Array(5)].map((_, i) => (
+                                    <div key={i} className="flex gap-4">
+                                        {[...Array(6)].map((_, j) => (
+                                            <Skeleton key={j} variant="text" width="15%" height="16px" />
+                                        ))}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                        <div className="md:hidden space-y-4">
+                            {[...Array(3)].map((_, i) => (
+                                <div key={i} className="bg-white p-4 rounded-xl border border-gray-100 space-y-3">
+                                    <div className="flex justify-between">
+                                        <Skeleton variant="text" width="40%" height="20px" />
+                                        <Skeleton variant="rect" width="60px" height="24px" className="rounded-full" />
+                                    </div>
+                                    <Skeleton variant="text" width="70%" height="16px" />
+                                    <Skeleton variant="text" width="30%" height="24px" />
+                                </div>
+                            ))}
+                        </div>
                     </div>
                 ) : (
                     <>
@@ -578,8 +603,37 @@ const Page = () => {
                 </div>
 
                 {loading ? (
-                    <div className="flex justify-center items-center py-12">
-                        <Bars height="50" width="50" color="primary" ariaLabel="bars-loading" />
+                    <div className="space-y-4">
+                        {/* Desktop Table Skeleton */}
+                        <div className="hidden md:block bg-white rounded-xl border border-gray-100 overflow-hidden">
+                            <div className="p-6 border-b border-gray-100 flex gap-4">
+                                {[...Array(6)].map((_, i) => (
+                                    <Skeleton key={i} variant="text" width="15%" height="20px" />
+                                ))}
+                            </div>
+                            <div className="p-6 space-y-6">
+                                {[...Array(5)].map((_, i) => (
+                                    <div key={i} className="flex gap-4">
+                                        {[...Array(6)].map((_, j) => (
+                                            <Skeleton key={j} variant="text" width="15%" height="16px" />
+                                        ))}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                        {/* Mobile Card Skeleton */}
+                        <div className="md:hidden space-y-4">
+                            {[...Array(3)].map((_, i) => (
+                                <div key={i} className="bg-white p-4 rounded-xl border border-gray-100 space-y-3">
+                                    <div className="flex justify-between">
+                                        <Skeleton variant="text" width="40%" height="20px" />
+                                        <Skeleton variant="rect" width="60px" height="24px" className="rounded-full" />
+                                    </div>
+                                    <Skeleton variant="text" width="70%" height="16px" />
+                                    <Skeleton variant="text" width="30%" height="24px" />
+                                </div>
+                            ))}
+                        </div>
                     </div>
                 ) : (
                     <>
@@ -830,7 +884,7 @@ const Page = () => {
                                 {selectedItem.status !== 'paid' && (
                                     <button
                                         className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg flex items-center justify-center"
-                                        onClick={() => handleMarkAsPaid(selectedItem.userid)}
+                                        onClick={() => handleMarkAsPaid(selectedItem.id)}
                                         disabled={actionLoading}
                                     >
                                         <FaCheck className="mr-2" />
@@ -840,7 +894,7 @@ const Page = () => {
                                 {selectedItem.status !== 'unpaid' && (
                                     <button
                                         className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg flex items-center justify-center"
-                                        onClick={() => handleMarkAsUnpaid(selectedItem.userid)}
+                                        onClick={() => handleMarkAsUnpaid(selectedItem.id)}
                                         disabled={actionLoading}
                                     >
                                         <RxCross2 className="mr-2" />

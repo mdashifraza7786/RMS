@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Bars } from 'react-loader-spinner';
+import Skeleton from '../../ui/Skeleton';
 import { FaExclamationTriangle, FaTrash } from 'react-icons/fa';
 
 interface DeleteMemberModalProps {
@@ -74,14 +74,8 @@ const DeleteMemberModal: React.FC<DeleteMemberModalProps> = ({
             </button>
             
             {loading ? (
-              <button className="px-4 py-2 bg-red-600 text-white font-medium rounded-lg flex items-center justify-center">
-                <Bars
-                  height="20"
-                  width="20"
-                  color="#ffffff"
-                  ariaLabel="bars-loading"
-                  visible={true}
-                />
+              <button className="px-4 py-2 bg-red-600 text-white font-medium rounded-lg flex items-center justify-center min-w-[120px]">
+                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
               </button>
             ) : (
               <button

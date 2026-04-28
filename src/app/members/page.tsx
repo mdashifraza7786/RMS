@@ -84,7 +84,7 @@ const Page: React.FC = () => {
         }
     };
 
-    const filteredData = memberData.filter(item =>
+    const filteredData = (Array.isArray(memberData) ? memberData : []).filter(item =>
         String(item.userid).toLowerCase().includes(searchQuery.toLowerCase()) ||
         String(item.name).toLowerCase().includes(searchQuery.toLowerCase()) ||
         String(item.role).toLowerCase().includes(searchQuery.toLowerCase()) ||

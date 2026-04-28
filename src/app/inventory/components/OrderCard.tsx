@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { FaPlus, FaTimes, FaFileAlt } from "react-icons/fa";
 import GeneratedOrderPage from "./GeneratedOrderPage";
-import { Bars } from "react-loader-spinner";
+import Skeleton from "@/components/ui/Skeleton";
 
 interface InventoryData {
     item_id: string;
@@ -89,8 +89,17 @@ const OrderCard: React.FC = () => {
     return (
         <div className="w-full">
             {loading ? (
-                <div className="flex justify-center items-center py-12">
-                    <Bars height="50" width="50" color="#1e4569" ariaLabel="bars-loading" />
+                <div className="space-y-4">
+                    {[...Array(3)].map((_, i) => (
+                        <div key={i} className="bg-white border border-gray-100 rounded-lg p-6 space-y-4">
+                            <div className="grid grid-cols-3 gap-4">
+                                <Skeleton variant="rect" width="100%" height="40px" className="rounded-lg" />
+                                <Skeleton variant="rect" width="100%" height="40px" className="rounded-lg" />
+                                <Skeleton variant="rect" width="100%" height="40px" className="rounded-lg" />
+                            </div>
+                            <Skeleton variant="rect" width="100%" height="80px" className="rounded-lg" />
+                        </div>
+                    ))}
                 </div>
             ) : (
                 <>

@@ -1,36 +1,35 @@
-import { dbConnect, getMenu, getTables } from "@/database";
+import { dbConnect, getTables } from "@/database";
 import { NextResponse } from "next/server";
+import { withErrorHandling } from "@/lib/api-handler";
+import { successResponse } from "@/lib/api-response";
+import { addTableSchema } from "@/lib/validation";
 
-export async function GET() {
+export const GET = withErrorHandling(async () => {
   const result = await getTables();
-  return NextResponse.json({ tables: result.data });
-}
+  if (!result.success) throw new Error(result.message);
+  return NextResponse.json(successResponse(result.data));
+});
 
-export async function POST(request: Request) {
-  const data = await request.json();
-  const { tablenumber } = data;
+export const POST = withErrorHandling(async (request: Request) => {
+  const body = await request.json();
+  const { tablenumber } = addTableSchema.parse(body);
   const availability = 0;
 
   const connection = await dbConnect();
   try {
     await connection.beginTransaction();
 
-    const [tables] = await connection.query(
-      `
-            INSERT INTO tables (tablenumber,availability) 
-            VALUES (?,?)
-        `,
+    const [tables]: any = await connection.query(
+      `INSERT INTO tables (tablenumber, availability) VALUES (?, ?)`,
       [tablenumber, availability]
     );
 
     await connection.commit();
-
-    return NextResponse.json(tables);
+    return NextResponse.json(successResponse({ id: tables.insertId, tablenumber }));
   } catch (err: any) {
     await connection.rollback();
-    return NextResponse.json({ message: "Failed to add table" });
+    throw err;
   } finally {
     connection.release();
   }
-
-}
+});

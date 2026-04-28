@@ -5,6 +5,7 @@ import { placeOrderSchema } from "@/lib/validation";
 import { withErrorHandling } from "@/lib/api-handler";
 import { successResponse, errorResponse } from "@/lib/api-response";
 
+
 export const POST = withErrorHandling(async (request: Request) => {
   const session = await auth();
   const userRole = (session?.user as any)?.role;
@@ -38,7 +39,10 @@ export const POST = withErrorHandling(async (request: Request) => {
     let serverSubtotal = 0;
     
     for (const item of items) {
-        const price = priceMap.get(item.item_id) || item.price;
+        const price = priceMap.get(item.item_id);
+        if (price === undefined) {
+            throw new Error(`Menu item ${item.item_id} not found`);
+        }
         serverSubtotal += Number(price) * Number(item.quantity);
     }
 

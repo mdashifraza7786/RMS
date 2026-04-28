@@ -3,7 +3,13 @@ import { NextResponse } from "next/server";
 import { withErrorHandling } from "@/lib/api-handler";
 import { successResponse, errorResponse } from "@/lib/api-response";
 
+import { auth } from "@/auth";
+
 export const POST = withErrorHandling(async (request: Request) => {
+  const session = await auth();
+  if (!session) {
+      return NextResponse.json(errorResponse("Unauthorized"), { status: 401 });
+  }
   const { orderid, itemid, status } = await request.json();
   if (!orderid || !itemid || !status) {
     return NextResponse.json(errorResponse("orderid, itemid, status required"), { status: 400 });

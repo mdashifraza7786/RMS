@@ -4,7 +4,7 @@ import { useState, FormEvent } from "react";
 import { toast, ToastContainer } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
 import axios from "axios";
-import { Bars } from 'react-loader-spinner';
+import Skeleton from "@/components/ui/Skeleton";
 import { FaUser, FaLock, FaSignInAlt } from 'react-icons/fa';
 
 function Login() {
@@ -96,15 +96,9 @@ function Login() {
                 className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-primary hover:bg-primary/80 focus:outline-none transition duration-150 ease-in-out"
               >
                 {loading ? (
-                  <div className="flex items-center justify-center">
-                    <Bars
-                      height="22"
-                      width="20"
-                      color="white"
-                      ariaLabel="bars-loading"
-                      visible={true}
-                    />
-                    <span className="ml-2">Signing in...</span>
+                  <div className="flex items-center justify-center gap-2">
+                    <Skeleton variant="circle" width="16px" height="16px" className="bg-white/30" />
+                    <span className="ml-2 font-medium">Signing in...</span>
                   </div>
                 ) : (
                   <div className="flex items-center justify-center">

@@ -1,8 +1,19 @@
 import { dbConnect } from "@/database";
 import { NextResponse } from "next/server";
 import { RowDataPacket } from "mysql2";
+import { auth } from "@/auth";
  
 export async function GET() {
+    // Auth check — only admins can generate payouts
+    const session = await auth();
+    const userRole = (session?.user as any)?.role;
+    if (!session || userRole !== "admin") {
+        return NextResponse.json(
+            { message: "Forbidden: Admins only" },
+            { status: 403 }
+        );
+    }
+
     const connection = await dbConnect();
  
     try {

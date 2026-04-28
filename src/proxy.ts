@@ -28,7 +28,7 @@ const PUBLIC_PATHS = [
     "/api/health", // Public for setup diagnostics
 ];
 
-export default async function middleware(req: NextRequest) {
+export async function proxy(req: NextRequest) {
     if (req.method === "OPTIONS") {
         return new NextResponse(null, {
             status: 200,
@@ -56,7 +56,7 @@ export default async function middleware(req: NextRequest) {
     // 2. Authentication Check (Must have valid JWT)
     const token = await getToken({
         req,
-        secret: process.env.NEXTAUTH_SECRET || "something",
+        secret: process.env.NEXTAUTH_SECRET,
         secureCookie: process.env.NODE_ENV === "production"
     });
 

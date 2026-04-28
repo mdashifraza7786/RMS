@@ -1,7 +1,6 @@
 "use client";
 
 import React, { Suspense, useEffect, useMemo, useState } from "react";
-import NextTopLoader from "nextjs-toploader";
 import Login from "@/components/Login";
 import { useSession, SessionProvider } from "next-auth/react";
 import Loading from "@/app/loading";
@@ -25,7 +24,6 @@ const MiddleWare: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
   return (
     <div>
-      <NextTopLoader color="white" />
       <Navbar
         role={(session?.user as { role: string })?.role}
         userid={(session?.user as { userid: string })?.userid}

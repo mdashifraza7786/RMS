@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { Bars } from 'react-loader-spinner';
+import Skeleton from "@/components/ui/Skeleton";
 import { MdSearch, MdTableBar, MdVisibility, MdOutlineInfo } from 'react-icons/md';
 import OrderScreen from "@/components/OrderScreen";
 import { FaFileInvoiceDollar } from "react-icons/fa";
@@ -187,7 +187,7 @@ export default function ActiveOrdersPage() {
         return items.reduce((acc, item) => acc + (item.price * item.quantity), 0);
     };
 
-    const filteredOrders = orders.filter(order => {
+    const filteredOrders = (Array.isArray(orders) ? orders : []).filter(order => {
         if (!searchQuery) return true;
         
         const query = searchQuery.toLowerCase();
@@ -288,10 +288,32 @@ export default function ActiveOrdersPage() {
             </div>
 
             {loading ? (
-                <div className="flex justify-center items-center h-64">
-                    <span className="text-primary">
-                        <Bars height="40" width="40" color="currentColor" ariaLabel="bars-loading" visible={true} />
-                    </span>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {[...Array(6)].map((_, i) => (
+                        <div key={i} className="bg-white border border-gray-100 rounded-lg shadow-sm p-4 space-y-4">
+                            <div className="flex items-center justify-between border-b border-gray-50 pb-4">
+                                <div className="flex items-center gap-3">
+                                    <Skeleton variant="circle" width="40px" height="40px" />
+                                    <div className="space-y-2">
+                                        <Skeleton variant="text" width="100px" height="16px" />
+                                        <Skeleton variant="text" width="60px" height="12px" />
+                                    </div>
+                                </div>
+                                <div className="flex flex-col items-end gap-2">
+                                    <Skeleton variant="rect" width="60px" height="20px" className="rounded-full" />
+                                    <Skeleton variant="text" width="80px" height="12px" />
+                                </div>
+                            </div>
+                            <div className="flex justify-between items-center py-2">
+                                <Skeleton variant="text" width="30%" height="14px" />
+                                <Skeleton variant="text" width="30%" height="14px" />
+                            </div>
+                            <div className="flex justify-between items-center pt-3 border-t border-gray-50">
+                                <Skeleton variant="text" width="40%" height="16px" />
+                                <Skeleton variant="rect" width="100px" height="32px" className="rounded-lg" />
+                            </div>
+                        </div>
+                    ))}
                 </div>
             ) : filteredOrders.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-64 bg-gray-50 rounded-lg border border-dashed border-gray-200">

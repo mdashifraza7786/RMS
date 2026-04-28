@@ -23,24 +23,6 @@ if (!global.mysqlPool) {
 export async function dbConnect() {
     try {
         const connection = await pool.getConnection();
-        
-        // Basic logging wrapper
-        const originalQuery = connection.query.bind(connection);
-        (connection as any).query = async (...args: any[]) => {
-            const start = Date.now();
-            try {
-                const result = await originalQuery(...args);
-                const duration = Date.now() - start;
-                if (duration > 500) {
-                    console.warn(`[SLOW QUERY] ${duration}ms: ${args[0]}`);
-                }
-                return result;
-            } catch (err) {
-                console.error(`[DB ERROR]: ${err} | Query: ${args[0]}`);
-                throw err;
-            }
-        };
-        
         return connection;
     } catch (error) {
         console.error('Error getting MySQL connection from pool:', error);

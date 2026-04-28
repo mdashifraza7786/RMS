@@ -34,31 +34,41 @@ export async function getTableOrders(page: number = 1, limit: number = 10, statu
 
         const [orderRows]: any = await connection.query(sql, params);
         
-        // Enrich with items from relational table
-        for (const order of orderRows) {
-            const [items]: any = await connection.query(
-                "SELECT id, item_id, item_name, quantity, price FROM order_items WHERE order_id = ? AND status != 'voided'",
-                [order.id]
+        if (orderRows.length > 0) {
+            const orderIds = orderRows.map((o: any) => o.id);
+            const [allItems]: any = await connection.query(
+                "SELECT id, order_id, item_id, item_name, quantity, price FROM order_items WHERE order_id IN (?) AND status != 'voided'",
+                [orderIds]
             );
-            
-            if (items.length > 0) {
-                order.order_items = items;
-            } else if (order.legacy_items) {
-                // Fallback to legacy JSON column for historical orders
-                try {
-                    order.order_items = typeof order.legacy_items === 'string' 
-                        ? JSON.parse(order.legacy_items) 
-                        : order.legacy_items;
-                } catch (e) {
+
+            const itemsByOrder = allItems.reduce((acc: any, item: any) => {
+                if (!acc[item.order_id]) acc[item.order_id] = [];
+                acc[item.order_id].push(item);
+                return acc;
+            }, {});
+
+            for (const order of orderRows) {
+                const items = itemsByOrder[order.id] || [];
+                
+                if (items.length > 0) {
+                    order.order_items = items;
+                } else if (order.legacy_items) {
+                    // Fallback to legacy JSON column for historical orders
+                    try {
+                        order.order_items = typeof order.legacy_items === 'string' 
+                            ? JSON.parse(order.legacy_items) 
+                            : order.legacy_items;
+                    } catch (e) {
+                        order.order_items = [];
+                    }
+                } else {
                     order.order_items = [];
                 }
-            } else {
-                order.order_items = [];
+                delete order.legacy_items;
             }
-            delete order.legacy_items;
         }
         
-        let countSql = `SELECT COUNT(*) as total FROM orders o LEFT JOIN user u1 ON o.waiter_id = u1.userid WHERE 1=1 `;
+        let countSql = `SELECT COUNT(*) as total FROM orders o LEFT JOIN user u1 ON o.waiter_id = u1.userid LEFT JOIN user u2 ON o.chef_id = u2.userid WHERE 1=1 `;
         const countParams: any[] = [];
         if (status) {
             countSql += ` AND o.status = ? `;
@@ -167,30 +177,41 @@ export async function getStaffOrders(role?: string, userid?: string, page: numbe
         params.push(limit, offset);
         
         const [rows]: any = await connection.query(sql, params);
-
-        for (const order of rows) {
-            const [items]: any = await connection.query(
-                "SELECT id, item_id, item_name, quantity, price FROM order_items WHERE order_id = ? AND status != 'voided'",
-                [order.id]
+        
+        if (rows.length > 0) {
+            const orderIds = rows.map((o: any) => o.id);
+            const [allItems]: any = await connection.query(
+                "SELECT id, order_id, item_id, item_name, quantity, price FROM order_items WHERE order_id IN (?) AND status != 'voided'",
+                [orderIds]
             );
-            
-            if (items.length > 0) {
-                order.order_items = items;
-            } else if (order.legacy_items) {
-                try {
-                    order.order_items = typeof order.legacy_items === 'string' 
-                        ? JSON.parse(order.legacy_items) 
-                        : order.legacy_items;
-                } catch (e) {
+
+            const itemsByOrder = allItems.reduce((acc: any, item: any) => {
+                if (!acc[item.order_id]) acc[item.order_id] = [];
+                acc[item.order_id].push(item);
+                return acc;
+            }, {});
+
+            for (const order of rows) {
+                const items = itemsByOrder[order.id] || [];
+                
+                if (items.length > 0) {
+                    order.order_items = items;
+                } else if (order.legacy_items) {
+                    try {
+                        order.order_items = typeof order.legacy_items === 'string' 
+                            ? JSON.parse(order.legacy_items) 
+                            : order.legacy_items;
+                    } catch (e) {
+                        order.order_items = [];
+                    }
+                } else {
                     order.order_items = [];
                 }
-            } else {
-                order.order_items = [];
+                delete order.legacy_items;
             }
-            delete order.legacy_items;
         }
 
-        let countSql = `SELECT COUNT(*) as total FROM orders o LEFT JOIN user u1 ON o.waiter_id = u1.userid WHERE 1=1 `;
+        let countSql = `SELECT COUNT(*) as total FROM orders o LEFT JOIN user u1 ON o.waiter_id = u1.userid LEFT JOIN user u2 ON o.chef_id = u2.userid WHERE 1=1 `;
         const countParams: any[] = [];
         if (role === 'waiter') {
             countSql += ` AND o.waiter_id = ? `;
@@ -242,13 +263,22 @@ export async function getInvoice(page: number = 1, limit: number = 20, orderId?:
 
         const [invoiceRows]: any = await connection.query(query, params);
         
-        // Enrich with items from relational table
-        for (const invoice of invoiceRows) {
-            const [items]: any = await connection.query(
-                "SELECT id, item_id, item_name, quantity, price FROM order_items WHERE order_id = ? AND status != 'voided'",
-                [invoice.orderid]
+        if (invoiceRows.length > 0) {
+            const orderIds = invoiceRows.map((i: any) => i.orderid);
+            const [allItems]: any = await connection.query(
+                "SELECT id, order_id, item_id, item_name, quantity, price FROM order_items WHERE order_id IN (?) AND status != 'voided'",
+                [orderIds]
             );
-            invoice.items = items;
+
+            const itemsByOrder = allItems.reduce((acc: any, item: any) => {
+                if (!acc[item.order_id]) acc[item.order_id] = [];
+                acc[item.order_id].push(item);
+                return acc;
+            }, {});
+
+            for (const invoice of invoiceRows) {
+                invoice.items = itemsByOrder[invoice.orderid] || [];
+            }
         }
 
         return { success: true, data: { invoices: invoiceRows, total } };
@@ -315,26 +345,37 @@ export async function getRecentOrders(): Promise<DbResponse<any[]>> {
              ORDER BY o.start_time DESC LIMIT 10`
         );
 
-        for (const order of rows) {
-            const [items]: any = await connection.query(
-                "SELECT id, item_id, item_name, quantity, price FROM order_items WHERE order_id = ? AND status != 'voided'",
-                [order.id]
+        if (rows.length > 0) {
+            const orderIds = rows.map((o: any) => o.id);
+            const [allItems]: any = await connection.query(
+                "SELECT id, order_id, item_id, item_name, quantity, price FROM order_items WHERE order_id IN (?) AND status != 'voided'",
+                [orderIds]
             );
-            
-            if (items.length > 0) {
-                order.order_items = items;
-            } else if (order.legacy_items) {
-                try {
-                    order.order_items = typeof order.legacy_items === 'string' 
-                        ? JSON.parse(order.legacy_items) 
-                        : order.legacy_items;
-                } catch (e) {
+
+            const itemsByOrder = allItems.reduce((acc: any, item: any) => {
+                if (!acc[item.order_id]) acc[item.order_id] = [];
+                acc[item.order_id].push(item);
+                return acc;
+            }, {});
+
+            for (const order of rows) {
+                const items = itemsByOrder[order.id] || [];
+                
+                if (items.length > 0) {
+                    order.order_items = items;
+                } else if (order.legacy_items) {
+                    try {
+                        order.order_items = typeof order.legacy_items === 'string' 
+                            ? JSON.parse(order.legacy_items) 
+                            : order.legacy_items;
+                    } catch (e) {
+                        order.order_items = [];
+                    }
+                } else {
                     order.order_items = [];
                 }
-            } else {
-                order.order_items = [];
+                delete order.legacy_items;
             }
-            delete order.legacy_items;
         }
 
         return { success: true, data: rows };

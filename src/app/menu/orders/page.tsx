@@ -1,14 +1,15 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import axios from "axios";
-import { Bars } from "react-loader-spinner";
-import { FaSearch, FaFileInvoiceDollar, FaUserSlash } from "react-icons/fa";
-import { IoFastFoodOutline } from "react-icons/io5";
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
+import { IoFastFoodOutline } from 'react-icons/io5';
+import { BiTable, BiTime } from 'react-icons/bi';
+import { FiSearch, FiFilter } from 'react-icons/fi';
+import Skeleton from "@/components/ui/Skeleton";
+import { MdPerson } from "react-icons/md";
+import { FaFileInvoiceDollar, FaUserSlash } from "react-icons/fa";
 import { BsClock, BsClockHistory, BsCalendar3 } from "react-icons/bs";
 import { FiCreditCard, FiDollarSign } from "react-icons/fi";
-import { BiTable } from "react-icons/bi";
-import { MdPerson } from "react-icons/md";
 
 interface Order {
     id: string;
@@ -41,7 +42,6 @@ const Page: React.FC = () => {
     const [loading, setLoading] = useState(false);
     const [allOrders, setAllOrders] = useState<Order[]>([]);
     const [invoices, setInvoices] = useState<Invoice[]>([]);
-    const [selectedRole, setSelectedRole] = useState("orders");
     const [detailsPopup, setDetailsPopup] = useState(false);
     const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
     const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
@@ -85,8 +85,6 @@ const Page: React.FC = () => {
         } catch (error) {
             console.error("Error fetching invoices:", error);
             setInvoices([]);
-            if (!allOrders.length) {
-            }
         }
     };
    
@@ -242,8 +240,8 @@ const Page: React.FC = () => {
         invoice.payment_method.toString().toLowerCase().includes(searchTerm.toLowerCase()) ||
         invoice.payment_status.toString().toLowerCase().includes(searchTerm.toLowerCase()) ||
         invoice.generated_at.toString().includes(searchTerm) ||
-        invoice.total_amount.toString().toString().includes(searchTerm) ||
-        invoice.subtotal.toString().toString().includes(searchTerm)
+        invoice.total_amount.toString().includes(searchTerm) ||
+        invoice.subtotal.toString().includes(searchTerm)
     );
 
     const formatCurrency = (amount: number | null | undefined) => {
@@ -300,8 +298,18 @@ const Page: React.FC = () => {
 
                 <div className="overflow-x-auto">
                     {loading ? (
-                        <div className="flex justify-center items-center py-12">
-                            <Bars height="50" width="50" color="primary" ariaLabel="bars-loading" />
+                        <div className="min-w-full divide-y divide-gray-200">
+                            {[...Array(5)].map((_, i) => (
+                                <div key={i} className="flex items-center space-x-4 px-6 py-4">
+                                    <Skeleton variant="text" width="10%" height="20px" />
+                                    <Skeleton variant="text" width="10%" height="20px" />
+                                    <Skeleton variant="text" width="15%" height="20px" />
+                                    <Skeleton variant="text" width="15%" height="20px" />
+                                    <Skeleton variant="text" width="10%" height="20px" />
+                                    <Skeleton variant="text" width="15%" height="20px" />
+                                    <Skeleton variant="rect" width="10%" height="32px" className="rounded-full" />
+                                </div>
+                            ))}
                         </div>
                     ) : (
                         <table className="min-w-full divide-y divide-gray-200">

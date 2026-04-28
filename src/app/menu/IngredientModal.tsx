@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { FaTrash, FaPlus, FaTimes } from "react-icons/fa";
-import { Bars } from 'react-loader-spinner';
+import Skeleton from '@/components/ui/Skeleton';
 
 interface IngredientMapping {
     id: number;
@@ -163,7 +163,7 @@ const IngredientModal: React.FC<IngredientModalProps> = ({ menuItem, onClose }) 
                             disabled={submitting}
                             className="bg-primary text-white px-6 py-2 rounded-lg hover:bg-primary-dark transition-all disabled:opacity-50 flex items-center gap-2 font-medium"
                         >
-                            {submitting ? <Bars height="20" width="20" color="#fff" /> : <FaPlus />}
+                            {submitting ? <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div> : <FaPlus />}
                             Add
                         </button>
                     </form>
@@ -176,7 +176,17 @@ const IngredientModal: React.FC<IngredientModalProps> = ({ menuItem, onClose }) 
                         </h4>
                         
                         {loading ? (
-                            <div className="flex justify-center py-8"><Bars height="40" width="40" color="var(--primary)" /></div>
+                            <div className="space-y-3 py-4">
+                                {[...Array(3)].map((_, i) => (
+                                    <div key={i} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
+                                        <div className="flex gap-3">
+                                            <Skeleton variant="text" width="100px" height="16px" />
+                                            <Skeleton variant="text" width="60px" height="12px" />
+                                        </div>
+                                        <Skeleton variant="text" width="50px" height="16px" />
+                                    </div>
+                                ))}
+                            </div>
                         ) : mappings.length === 0 ? (
                             <div className="text-center py-10 bg-gray-50 rounded-xl border border-dashed text-gray-400">
                                 No ingredients linked to this item yet.

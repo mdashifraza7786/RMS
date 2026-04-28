@@ -1,11 +1,11 @@
 "use client";
 
 import React, { Suspense } from "react";
-import { Bars } from "react-loader-spinner";
+import Skeleton from "../ui/Skeleton";
 import { MdTableBar } from "react-icons/md";
 
 interface TableManagementProps {
-  tableLoaded: boolean;
+  isTableLoading: boolean;
   tableData: { tablenumber: number; availability: number }[];
   TableStatusCard: React.ComponentType<any>;
   handleOrder: (tablenumber: number) => void;
@@ -13,7 +13,7 @@ interface TableManagementProps {
 }
 
 const TableManagement: React.FC<TableManagementProps> = ({
-  tableLoaded,
+  isTableLoading,
   tableData,
   TableStatusCard,
   handleOrder,
@@ -42,18 +42,18 @@ const TableManagement: React.FC<TableManagementProps> = ({
       <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2 sm:gap-3">
         <Suspense
           fallback={
-            <div className="col-span-full flex justify-center items-center h-32 sm:h-40">
-              <span className="text-primary">
-                <Bars height="32" width="32" color="currentColor" ariaLabel="bars-loading" visible={true} />
-              </span>
+            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2 sm:gap-3 w-full">
+              {[...Array(10)].map((_, i) => (
+                <Skeleton key={i} variant="rect" width="100%" height="80px" className="rounded-xl" />
+              ))}
             </div>
           }
         >
-          {tableLoaded ? (
-            <div className="col-span-full flex justify-center items-center h-32 sm:h-40">
-              <span className="text-primary">
-                <Bars height="32" width="32" color="currentColor" ariaLabel="bars-loading" visible={true} />
-              </span>
+          {isTableLoading ? (
+            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2 sm:gap-3 w-full">
+              {[...Array(10)].map((_, i) => (
+                <Skeleton key={i} variant="rect" width="100%" height="80px" className="rounded-xl" />
+              ))}
             </div>
           ) : tableData && tableData.length > 0 ? (
             [...tableData]

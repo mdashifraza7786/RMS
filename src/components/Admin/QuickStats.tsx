@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Skeleton from "../ui/Skeleton";
 import { FaUserTag, FaUsers, FaBox } from "react-icons/fa6";
 
 interface QuickStatsProps {
@@ -10,6 +11,7 @@ interface QuickStatsProps {
   periodLabel: string;
   revenuePerOrder: string;
   dailyAverage: string;
+  isLoading?: boolean;
 }
 
 const QuickStats: React.FC<QuickStatsProps> = ({
@@ -19,7 +21,30 @@ const QuickStats: React.FC<QuickStatsProps> = ({
   periodLabel,
   revenuePerOrder,
   dailyAverage,
+  isLoading = false,
 }) => {
+  if (isLoading) {
+    return (
+      <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+        <h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+          <Skeleton variant="circle" width="20px" height="20px" />
+          <Skeleton variant="text" width="100px" height="20px" />
+        </h2>
+        <div className="space-y-6">
+          {[...Array(3)].map((_, i) => (
+            <div key={i} className="p-4 bg-gray-50 rounded-lg border border-gray-100">
+              <div className="flex justify-between items-center mb-4">
+                <Skeleton variant="text" width="40%" height="16px" />
+                <Skeleton variant="rect" width="32px" height="32px" className="rounded-lg" />
+              </div>
+              <Skeleton variant="text" width="60%" height="28px" />
+              <Skeleton variant="text" width="80%" height="12px" className="mt-2" />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
   return (
     <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
       <h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">

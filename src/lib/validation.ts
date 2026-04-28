@@ -58,3 +58,8 @@ export const registerExpenseSchema = z.object({
   frequency: z.enum(["daily", "weekly", "monthly", "yearly", "once"]),
   cost: z.number().positive(),
 });
+
+// Tables
+export const addTableSchema = z.object({
+  tablenumber: z.number().int().positive("Table number must be positive"),
+});

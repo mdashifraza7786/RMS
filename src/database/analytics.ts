@@ -1,3 +1,4 @@
+import { getCache, setCache } from '@/lib/cache';
 import { RowDataPacket } from 'mysql2/promise';
 import dbConnect from './connection';
 import { DbResponse } from '../types';
@@ -40,8 +41,6 @@ export async function getOrdersCount(startDate: string, endDate: string): Promis
         await connection.release();
     }
 }
-
-import { getCache, setCache } from '@/lib/cache';
 
 export async function getFinancialOverview(period: string): Promise<DbResponse<any>> {
     const cacheKey = `finance_overview_${period}`;

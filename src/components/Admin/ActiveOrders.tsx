@@ -1,7 +1,7 @@
 "use client";
 
 import React, { Suspense } from "react";
-import { Bars } from "react-loader-spinner";
+import Skeleton from "../ui/Skeleton";
 import { MdKeyboardArrowLeft, MdKeyboardArrowRight, MdRestaurantMenu } from "react-icons/md";
 import Link from "next/link";
 
@@ -11,7 +11,7 @@ interface ActiveOrdersProps {
   onScrollLeft: () => void;
   onScrollRight: () => void;
   sliderRef: React.RefObject<HTMLDivElement>;
-  tableLoaded: boolean;
+  isTableLoading: boolean;
   orderedItems: any[];
   OrderQueueCard: React.ComponentType<any>;
   onViewOrder: (tablenumber: number) => void;
@@ -24,7 +24,7 @@ const ActiveOrders: React.FC<ActiveOrdersProps> = ({
   onScrollLeft,
   onScrollRight,
   sliderRef,
-  tableLoaded,
+  isTableLoading,
   orderedItems,
   OrderQueueCard,
   onViewOrder,
@@ -55,18 +55,18 @@ const ActiveOrders: React.FC<ActiveOrdersProps> = ({
         <div ref={sliderRef} className="flex gap-3 sm:gap-4 overflow-x-auto scroll-smooth pb-3 sm:pb-4 hide-scrollbar">
           <Suspense
             fallback={
-              <div className="flex justify-center items-center h-28 sm:h-32 w-full">
-                <span className="text-primary">
-                  <Bars height="32" width="32" color="currentColor" ariaLabel="bars-loading" visible={true} />
-                </span>
+              <div className="flex gap-4 w-full">
+                {[...Array(3)].map((_, i) => (
+                  <Skeleton key={i} variant="rect" width="280px" height="160px" className="flex-shrink-0 rounded-xl" />
+                ))}
               </div>
             }
           >
-            {tableLoaded ? (
-              <div className="flex justify-center items-center h-28 sm:h-32 w-full">
-                <span className="text-primary">
-                  <Bars height="32" width="32" color="currentColor" ariaLabel="bars-loading" visible={true} />
-                </span>
+            {isTableLoading ? (
+              <div className="flex gap-4 w-full">
+                {[...Array(3)].map((_, i) => (
+                  <Skeleton key={i} variant="rect" width="280px" height="160px" className="flex-shrink-0 rounded-xl" />
+                ))}
               </div>
             ) : orderedItems.length > 0 ? (
               orderedItems.map((order) =>

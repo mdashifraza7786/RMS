@@ -7,7 +7,7 @@ import { HiOutlineChevronLeft, HiOutlineChevronRight } from "react-icons/hi";
 import axios from 'axios';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { Bars } from 'react-loader-spinner';
+import Skeleton from '@/components/ui/Skeleton';
 import { useSession } from 'next-auth/react';
 import AttendanceHistory from '@/components/Attendance';
 
@@ -126,7 +126,7 @@ const Page: React.FC = () => {
     }, [getdate, role, userid]);
 
     useEffect(() => {
-        const filtered = attendanceData.filter(item =>
+        const filtered = (Array.isArray(attendanceData) ? attendanceData : []).filter(item =>
             (activeTab === 'All' || item.role === activeTab || 
              (activeTab === 'Present' && item.status === 'present') || 
              (activeTab === 'Absent' && item.status === 'absent') || 
@@ -449,8 +449,20 @@ const Page: React.FC = () => {
                     </div>
 
                     {attendanceloading ? (
-                        <div className="flex justify-center items-center py-12">
-                            <Bars height="50" width="50" color="#1e4569" ariaLabel="bars-loading" />
+                        <div className="p-6 space-y-4">
+                            {[...Array(5)].map((_, i) => (
+                                <div key={i} className="flex items-center gap-4 py-4 border-b border-gray-50 last:border-0">
+                                    <Skeleton variant="text" width="60px" height="16px" />
+                                    <Skeleton variant="text" width="180px" height="16px" />
+                                    <Skeleton variant="text" width="100px" height="16px" />
+                                    <div className="flex-grow" />
+                                    <Skeleton variant="rect" width="100px" height="24px" className="rounded-full" />
+                                    <div className="flex gap-2">
+                                        <Skeleton variant="rect" width="80px" height="32px" className="rounded-md" />
+                                        <Skeleton variant="rect" width="80px" height="32px" className="rounded-md" />
+                                    </div>
+                                </div>
+                            ))}
                         </div>
                     ) : (
                         <>

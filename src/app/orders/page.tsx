@@ -2,8 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { Bars } from "react-loader-spinner";
-import Skeleton from "@/components/Skeleton";
+import Skeleton from "@/components/ui/Skeleton";
 import { FaSearch, FaFileInvoiceDollar, FaUserSlash } from "react-icons/fa";
 import { IoFastFoodOutline } from "react-icons/io5";
 import { BsClock, BsClockHistory } from "react-icons/bs";
@@ -358,16 +357,17 @@ const OrdersPage: React.FC = () => {
         </div>
 
         {loading ? (
-          <div className="px-6 py-4 space-y-4">
-            {[1, 2, 3, 4, 5].map((i) => (
-              <div key={i} className="flex gap-4 items-center">
-                <Skeleton variant="rect" width="10%" height={40} />
-                <Skeleton variant="rect" width="15%" height={40} />
-                <Skeleton variant="rect" width="20%" height={40} />
-                <Skeleton variant="rect" width="15%" height={40} />
-                <Skeleton variant="rect" width="15%" height={40} />
-                <Skeleton variant="rect" width="15%" height={40} />
-                <Skeleton variant="rect" width="10%" height={40} />
+          <div className="p-6 space-y-4">
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className="flex items-center gap-4 py-4 border-b border-gray-50 last:border-0">
+                <Skeleton variant="text" width="100px" height="16px" />
+                <Skeleton variant="text" width="80px" height="16px" />
+                <Skeleton variant="text" width="150px" height="16px" />
+                <Skeleton variant="text" width="120px" height="16px" />
+                <Skeleton variant="text" width="100px" height="16px" />
+                <div className="flex-grow" />
+                <Skeleton variant="rect" width="80px" height="24px" className="rounded-full" />
+                <Skeleton variant="rect" width="100px" height="32px" className="rounded-lg" />
               </div>
             ))}
           </div>

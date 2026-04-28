@@ -2,7 +2,7 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import axios from "axios";
-import { Bars } from "react-loader-spinner";
+import Skeleton from "@/components/ui/Skeleton";
 
 interface AttendanceRecord {
   userid: string;
@@ -87,8 +87,17 @@ const Attendance: React.FC<AttendanceProps> = ({ userid }) => {
       </div>
 
       {loading ? (
-        <div className="flex justify-center items-center py-12">
-          <Bars height="50" width="50" color="#1e4569" ariaLabel="bars-loading" />
+        <div className="p-6 space-y-4">
+          {[...Array(5)].map((_, i) => (
+            <div key={i} className="flex items-center gap-4 py-4 border-b border-gray-50 last:border-0">
+              <Skeleton variant="text" width="150px" height="16px" />
+              <Skeleton variant="text" width="100px" height="16px" />
+              <Skeleton variant="text" width="120px" height="16px" />
+              <Skeleton variant="text" width="100px" height="16px" />
+              <div className="flex-grow" />
+              <Skeleton variant="rect" width="80px" height="24px" className="rounded-full" />
+            </div>
+          ))}
         </div>
       ) : (
         <>

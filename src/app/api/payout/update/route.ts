@@ -13,13 +13,15 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
     }
    
     const data = await request.json();
-    const { id, status } = data;
+    // Accept both 'id' and 'userid' for backward compatibility with frontend
+    const payoutId = data.id ?? data.userid;
+    const { status } = data;
     
-    if (!id || !status) {
-        return NextResponse.json(errorResponse("Missing id or status"), { status: 400 });
+    if (!payoutId || !status) {
+        return NextResponse.json(errorResponse("Missing id/userid or status"), { status: 400 });
     }
 
-    const result = await payPayout(Number(id), status);
+    const result = await payPayout(Number(payoutId), status);
     if (!result.success) {
         return NextResponse.json(errorResponse(result.message || "Update failed"), { status: 500 });
     }

@@ -6,7 +6,7 @@ import { FaSearch, FaUserSlash } from "react-icons/fa";
 import { FaTimes } from "react-icons/fa";
 import { MdOutlineRestaurantMenu } from "react-icons/md";
 import AddMenu from './popup';
-import { Bars } from 'react-loader-spinner';
+import Skeleton from '@/components/ui/Skeleton';
 import Image from 'next/image';
 import IngredientModal from './IngredientModal';
 import { FaListUl } from 'react-icons/fa';
@@ -224,8 +224,25 @@ const Page: React.FC = () => {
                 </div>
 
                 {loading ? (
-                    <div className="flex justify-center items-center py-12">
-                        <Bars height="50" width="50" color="primary" ariaLabel="bars-loading" />
+                    <div className="p-6 space-y-4">
+                        {[...Array(6)].map((_, i) => (
+                            <div key={i} className="flex items-center gap-4 py-4 border-b border-gray-50 last:border-0">
+                                <Skeleton variant="rect" width="64px" height="64px" className="rounded-md" />
+                                <div className="flex-grow space-y-2">
+                                    <Skeleton variant="text" width="200px" height="16px" />
+                                    <Skeleton variant="text" width="150px" height="12px" />
+                                </div>
+                                <div className="hidden md:flex gap-8">
+                                    <Skeleton variant="text" width="80px" height="16px" />
+                                    <Skeleton variant="text" width="80px" height="16px" />
+                                    <Skeleton variant="rect" width="60px" height="20px" className="rounded-full" />
+                                </div>
+                                <div className="flex gap-2">
+                                    <Skeleton variant="rect" width="32px" height="32px" className="rounded-md" />
+                                    <Skeleton variant="rect" width="32px" height="32px" className="rounded-md" />
+                                </div>
+                            </div>
+                        ))}
                     </div>
                 ) : (
                     <>
@@ -453,14 +470,14 @@ const Page: React.FC = () => {
                 <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-60 z-50 backdrop-blur-sm">
                     <div className="bg-white shadow-2xl rounded-xl p-8 w-[90%] max-w-[600px] relative animate-fadeIn">
                         {editLoading && (
-                            <div className='absolute inset-0 flex justify-center items-center bg-white bg-opacity-90 rounded-xl z-10'>
-                                <Bars
-                                    height="80"
-                                    width="80"
-                                    color="primary"
-                                    ariaLabel="bars-loading"
-                                    visible={true}
-                                />
+                            <div className='absolute inset-0 flex flex-col justify-center items-center bg-white bg-opacity-90 rounded-xl z-10 p-8 space-y-4'>
+                                <Skeleton variant="text" width="40%" height="24px" />
+                                <div className="grid grid-cols-2 gap-4 w-full">
+                                    <Skeleton variant="rect" width="100%" height="40px" className="rounded-lg" />
+                                    <Skeleton variant="rect" width="100%" height="40px" className="rounded-lg" />
+                                </div>
+                                <Skeleton variant="rect" width="100%" height="100px" className="rounded-lg" />
+                                <p className="text-primary font-medium animate-pulse">Saving changes...</p>
                             </div>
                         )}
 
@@ -619,14 +636,11 @@ const Page: React.FC = () => {
                 <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-60 z-50 backdrop-blur-sm">
                     <div className="bg-white shadow-2xl rounded-xl p-8 max-w-md w-full animate-fadeIn">
                         {deleteLoading && (
-                            <div className='absolute inset-0 flex justify-center items-center bg-white bg-opacity-90 rounded-xl z-10'>
-                                <Bars
-                                    height="60"
-                                    width="60"
-                                    color="primary"
-                                    ariaLabel="bars-loading"
-                                    visible={true}
-                                />
+                            <div className='absolute inset-0 flex flex-col justify-center items-center bg-white bg-opacity-90 rounded-xl z-10 p-8 space-y-4 text-center'>
+                                <Skeleton variant="circle" width="64px" height="64px" className="mx-auto" />
+                                <Skeleton variant="text" width="80%" height="20px" className="mx-auto" />
+                                <Skeleton variant="rect" width="100%" height="40px" className="rounded-lg" />
+                                <p className="text-red-500 font-medium animate-pulse">Deleting item...</p>
                             </div>
                         )}
 

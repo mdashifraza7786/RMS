@@ -1,0 +1,5 @@
+body.sunset-orange-theme-active {
+  --color-primary: #EA580C;
+  --color-secondary: #F97316;
+  background-color: #FFF7ED;
+}

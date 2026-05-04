@@ -4,6 +4,7 @@ import { FaCheckCircle, FaUser, FaKey, FaCopy } from 'react-icons/fa';
 interface RegistrationCompleteProps {
   credentials: {
     uniqueID?: string;
+    userid?: string;
     password?: string;
   };
 }
@@ -34,11 +35,11 @@ const RegistrationComplete: React.FC<RegistrationCompleteProps> = ({ credentials
               <FaUser className="text-gray-500 mr-3" />
               <div>
                 <p className="text-xs text-gray-500">User ID</p>
-                <p className="font-medium">{credentials.uniqueID}</p>
+                <p className="font-medium">{credentials.userid || credentials.uniqueID}</p>
               </div>
             </div>
             <button 
-              onClick={() => copyToClipboard(credentials.uniqueID || '')}
+              onClick={() => copyToClipboard(credentials.userid || credentials.uniqueID || '')}
               className="p-2 hover:bg-gray-100 rounded-full transition-colors"
               title="Copy to clipboard"
             >

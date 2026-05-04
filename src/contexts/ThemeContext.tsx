@@ -9,6 +9,7 @@ interface ThemeSettings {
   secondary_color: string;
   accent_color: string;
   font_family: string;
+  active_theme_folder: string;
 }
 
 interface ThemeContextType {
@@ -24,6 +25,7 @@ const defaultTheme: ThemeSettings = {
   secondary_color: '#50E3C2',
   accent_color: '#1891C3',
   font_family: 'Inter, sans-serif',
+  active_theme_folder: 'default',
 };
 
 const ThemeContext = createContext<ThemeContextType>({
@@ -56,6 +58,7 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
             secondary_color: settings.secondary_color || defaultTheme.secondary_color,
             accent_color: settings.accent_color || defaultTheme.accent_color,
             font_family: settings.font_family || defaultTheme.font_family,
+            active_theme_folder: settings.active_theme_folder || defaultTheme.active_theme_folder,
           });
         }
       } catch (error) {

@@ -1,5 +1,6 @@
 "use client"
-import React from 'react';
+import React, { useState } from 'react';
+import ChangePasswordModal from './ChangePasswordModal';
 import Link from 'next/link';
 import { BsPersonCircle } from 'react-icons/bs';
 import { Raleway } from 'next/font/google';
@@ -23,7 +24,7 @@ const raleway = Raleway({
     subsets: ['latin'],
 });
 
-const NAV_ITEMS = [
+export const NAV_ITEMS = [
     {
         href: "/",
         icon: <GrHomeRounded />,
@@ -92,7 +93,24 @@ const NAV_ITEMS = [
     }
 ];
 
-const isPathActive = (href: string, path: string | null) => {
+export const BOTTOM_NAV_ITEMS = [
+    {
+        href: "/settings",
+        icon: <FaCog />,
+        label: "Settings",
+        roles: ["admin"],
+        action: null
+    },
+    {
+        href: "#",
+        icon: <AiOutlineLogout />,
+        label: "Logout",
+        roles: ["admin", "waiter", "chef"],
+        action: "logout"
+    }
+];
+
+export const isPathActive = (href: string, path: string | null) => {
     if (!path) return false;
     if (href === '/') return path === '/';
     // Build a boundary-aware regex: ^/inventory(?:/|$) will NOT match /inventory-forecast
@@ -103,6 +121,7 @@ const isPathActive = (href: string, path: string | null) => {
 
 const Navbar: React.FC<{ role: string, userid: string }> = ({ role, userid }) => {
     const pathName = usePathname();
+    const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
 
     async function handleLogout() {
         await signOut({ callbackUrl: '/' });
@@ -113,6 +132,7 @@ const Navbar: React.FC<{ role: string, userid: string }> = ({ role, userid }) =>
     const filteredNavItems = NAV_ITEMS.filter(item => item.roles.includes(role?.toLowerCase()));
 
     return (
+        <>
         <nav className="w-full sticky top-0 z-50 shadow-sm bg-white mx-auto hidden lg:block">
             <div className="bg-primary text-white px-[8vw]">
                 <div className="container mx-auto px-6 flex justify-between items-center h-16">
@@ -123,25 +143,38 @@ const Navbar: React.FC<{ role: string, userid: string }> = ({ role, userid }) =>
                     </div>
 
                     <div className="flex items-center space-x-3">
-                        <div className="flex items-center space-x-2 bg-primaryhover hover:bg-opacity-90 transition-all duration-200 px-4 py-2 rounded-lg cursor-pointer">
+                        <div 
+                            onClick={() => setIsPasswordModalOpen(true)}
+                            className="flex items-center space-x-2 bg-primaryhover hover:bg-opacity-90 transition-all duration-200 px-4 py-2 rounded-lg cursor-pointer"
+                        >
                             <BsPersonCircle className="w-4 h-4" />
                             <span>{userid}</span>
                         </div>
-                        {role === 'admin' && (
-                            <div className="flex items-center space-x-2 bg-primaryhover hover:bg-opacity-90 transition-all duration-200 px-4 py-2 rounded-lg cursor-pointer">
-                            <FaCog className="w-4 h-4" />
-                            <Link href="/settings">
-                                <span>Settings</span>
-                            </Link>
-                        </div>
-                        )}
-                        <button
-                            onClick={handleLogout}
-                            className="flex items-center space-x-2 bg-primaryhover hover:bg-opacity-90 transition-all duration-200 px-4 py-2 rounded-lg"
-                        >
-                            <AiOutlineLogout className="w-4 h-4" />
-                            <span>Logout</span>
-                        </button>
+                        {BOTTOM_NAV_ITEMS.map((item, index) => {
+                            if (!role || !item.roles.includes(role)) return null;
+                            if (item.action === 'logout') {
+                                return (
+                                    <button
+                                        key={index}
+                                        onClick={handleLogout}
+                                        className="flex items-center space-x-2 bg-primaryhover hover:bg-opacity-90 transition-all duration-200 px-4 py-2 rounded-lg"
+                                    >
+                                        {React.cloneElement(item.icon, { className: "w-4 h-4" })}
+                                        <span>{item.label}</span>
+                                    </button>
+                                );
+                            }
+                            return (
+                                <Link
+                                    key={index} 
+                                    href={item.href}
+                                    className="flex items-center space-x-2 bg-primaryhover hover:bg-opacity-90 transition-all duration-200 px-4 py-2 rounded-lg cursor-pointer text-white"
+                                >
+                                    {React.cloneElement(item.icon, { className: "w-4 h-4" })}
+                                    <span>{item.label}</span>
+                                </Link>
+                            );
+                        })}
                     </div>
                 </div>
             </div>
@@ -162,6 +195,8 @@ const Navbar: React.FC<{ role: string, userid: string }> = ({ role, userid }) =>
                 </div>
             </div>
         </nav>
+        <ChangePasswordModal isOpen={isPasswordModalOpen} onClose={() => setIsPasswordModalOpen(false)} />
+        </>
     );
 };
 

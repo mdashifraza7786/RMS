@@ -7,6 +7,8 @@ import PayoutStep from './PayoutStep';
 import LoadingState from './LoadingState';
 import RegistrationComplete from './RegistrationComplete';
 import { BasicInfoFields, AddressFields, PayoutFields } from '../MemberTypes';
+import { registerMemberSchema } from '@/lib/validation';
+import { toast } from 'react-toastify';
 
 interface AddMemberProps {
   onClose: () => void;
@@ -16,7 +18,7 @@ const AddMember: React.FC<AddMemberProps> = ({ onClose }) => {
   // Step state
   const [currentStep, setCurrentStep] = useState<'basicInfo' | 'address' | 'payout' | 'submitting' | 'completed'>('basicInfo');
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
-  const [credentials, setCredentials] = useState<{ uniqueID?: string; password?: string }>({});
+  const [credentials, setCredentials] = useState<{ uniqueID?: string; userid?: string; password?: string }>({});
 
   // Form data
   const [basicInfoFields, setBasicInfoFields] = useState<BasicInfoFields>({
@@ -168,22 +170,35 @@ const AddMember: React.FC<AddMemberProps> = ({ onClose }) => {
 
   // Form submission
   const handleSubmit = async () => {
+    // Validate with Zod
+    const payload = {
+      basicInfoFields,
+      addressFields,
+      payoutFields
+    };
+
+    const validation = registerMemberSchema.safeParse(payload);
+    if (!validation.success) {
+      toast.error(validation.error.issues[0].message);
+      return;
+    }
+
     setCurrentStep('submitting');
     try {
-      const response = await axios.post('/api/members/register', {
-        basicInfoFields,
-        addressFields,
-        payoutFields
-      });
+      const response = await axios.post('/api/members/register', payload);
       
-      if (response.status === 200) {
-        setCredentials(response.data.cred || {});
+      if (response.data.success) {
+        setCredentials(response.data.data || {});
         setCurrentStep('completed');
+        toast.success("Member registered successfully!");
+      } else {
+        toast.error(response.data.message || "Failed to register member");
+        setCurrentStep('payout');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error registering member:', error);
-      alert('An error occurred while registering the member.');
-      onClose();
+      toast.error(error.response?.data?.message || 'An error occurred while registering the member.');
+      setCurrentStep('payout');
     }
   };
 

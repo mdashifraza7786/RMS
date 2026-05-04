@@ -34,3 +34,26 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
     return NextResponse.json(successResponse(result.data));
   }
 });
+
+export const POST = withErrorHandling(async (request: NextRequest) => {
+  const session = await auth();
+  if (!session || session.user?.role !== "admin") {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+  }
+
+  const body = await request.json();
+  const { key, value } = body;
+
+  if (!key || value === undefined) {
+    return NextResponse.json({ error: "Key and value are required" }, { status: 400 });
+  }
+
+  const { updateSetting } = await import("@/database/settings");
+  const result = await updateSetting(key, String(value));
+  
+  if (!result.success) {
+    throw new Error(result.message);
+  }
+
+  return NextResponse.json(successResponse({ success: true }));
+});

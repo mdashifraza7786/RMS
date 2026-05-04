@@ -293,7 +293,16 @@ export async function getInvoice(page: number = 1, limit: number = 20, orderId?:
 export async function getTables(): Promise<DbResponse<any[]>> {
     const connection = await dbConnect();
     try {
-        const [rows] = await connection.query<RowDataPacket[]>('SELECT id, tablenumber, availability FROM tables');
+        let rows;
+        try {
+            // Try fetching with assigned_waiter_id if the column exists
+            const [result] = await connection.query<RowDataPacket[]>('SELECT id, tablenumber, availability, assigned_waiter_id FROM tables');
+            rows = result;
+        } catch (e) {
+            // Fallback if column doesn't exist yet
+            const [result] = await connection.query<RowDataPacket[]>('SELECT id, tablenumber, availability FROM tables');
+            rows = result;
+        }
         return { success: true, data: rows };
     } catch (error) {
         console.error('Error fetching tables:', error);

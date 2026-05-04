@@ -13,6 +13,7 @@ interface GeneralSettingsType {
   restaurant_email: string;
   tax_rate: string;
   currency_symbol: string;
+  waiter_zones_enabled: string;
 }
 
 const GeneralSettings: React.FC = () => {
@@ -24,6 +25,7 @@ const GeneralSettings: React.FC = () => {
     restaurant_email: '',
     tax_rate: '',
     currency_symbol: '',
+    waiter_zones_enabled: 'false',
   });
   const [originalSettings, setOriginalSettings] = useState<GeneralSettingsType | null>(null);
   const [loading, setLoading] = useState(true);
@@ -35,11 +37,12 @@ const GeneralSettings: React.FC = () => {
     const fetchSettings = async () => {
       try {
         const response = await axios.get('/api/settings?type=general');
-        if (response.data) {
-          setSettings(response.data);
-          setOriginalSettings(response.data);
-          if (response.data.restaurant_logo) {
-            setLogoPreview(response.data.restaurant_logo);
+        if (response.data && response.data.success) {
+          const settingsData = response.data.data;
+          setSettings(settingsData);
+          setOriginalSettings(settingsData);
+          if (settingsData.restaurant_logo) {
+            setLogoPreview(settingsData.restaurant_logo);
           }
         }
       } catch (error) {
@@ -91,6 +94,7 @@ const GeneralSettings: React.FC = () => {
         { key: 'restaurant_email', value: settings.restaurant_email },
         { key: 'tax_rate', value: settings.tax_rate },
         { key: 'currency_symbol', value: settings.currency_symbol },
+        { key: 'waiter_zones_enabled', value: settings.waiter_zones_enabled },
       ];
 
       await axios.post('/api/settings/update', { settings: settingsToSave });
@@ -333,6 +337,52 @@ const GeneralSettings: React.FC = () => {
         </div>
       </div>
 
+      {/* Operational Settings */}
+      <div className="mt-8">
+        <h3 className="text-lg font-medium mb-3 flex items-center">
+          <FaStore className="mr-2" />
+          Operational Settings
+        </h3>
+        
+        <div className="grid grid-cols-1 gap-6 p-4 border border-gray-200 rounded-lg bg-gray-50">
+          <div className="flex items-center justify-between">
+            <div>
+              <h4 className="text-sm font-medium text-gray-800">Waiter-Specific Table Zones</h4>
+              <p className="text-xs text-gray-500 mt-1">
+                When enabled, waiters can only see and manage tables explicitly assigned to them by an admin. When disabled, any waiter can manage any table.
+              </p>
+            </div>
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input 
+                type="checkbox" 
+                className="sr-only peer"
+                checked={settings.waiter_zones_enabled === 'true'}
+                onChange={async (e) => {
+                  const newValue = e.target.checked ? 'true' : 'false';
+                  setSettings(prev => ({ ...prev, waiter_zones_enabled: newValue }));
+                  
+                  // Instant Save for the toggle
+                  try {
+                    await axios.post('/api/settings/update', { 
+                      key: 'waiter_zones_enabled', 
+                      value: newValue 
+                    });
+                    setOriginalSettings(prev => prev ? { ...prev, waiter_zones_enabled: newValue } : null);
+                    toast.success(e.target.checked ? 'Waiter Zones Enabled' : 'Waiter Zones Disabled');
+                  } catch (error) {
+                    console.error('Error saving Waiter Zones setting:', error);
+                    toast.error('Failed to save Waiter Zones setting');
+                    // Revert on failure
+                    setSettings(prev => ({ ...prev, waiter_zones_enabled: e.target.checked ? 'false' : 'true' }));
+                  }
+                }}
+              />
+              <div className="w-11 h-6 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#1e4569]"></div>
+            </label>
+          </div>
+        </div>
+      </div>
+
       {/* Action Buttons */}
       <div className="flex justify-end space-x-3 mt-8">
         <button
@@ -352,7 +402,7 @@ const GeneralSettings: React.FC = () => {
           disabled={!hasChanges() || isSaving}
           className={`px-4 py-2 rounded-lg flex items-center ${
             !hasChanges() || isSaving
-              ? 'bg-primary/60 text-white cursor-not-allowed'
+              ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
               : 'bg-primary text-white hover:bg-primaryhover'
           }`}
         >

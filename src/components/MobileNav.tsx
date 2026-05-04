@@ -18,6 +18,9 @@ import { IoBarChartSharp } from "react-icons/io5";
 import { RiMenu3Line } from 'react-icons/ri';
 import { AiOutlineLogout } from "react-icons/ai";
 import { signOut } from 'next-auth/react';
+import ChangePasswordModal from './ChangePasswordModal';
+import { FaLock } from 'react-icons/fa';
+import { BOTTOM_NAV_ITEMS } from './Navbar';
 
 const NAV_ITEMS = [
   { 
@@ -99,6 +102,7 @@ const isPathActive = (href: string, path: string | null) => {
 const MobileNav: React.FC<{ role: string }> = ({ role }) => {
   const pathName = usePathname();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
 
   async function handleLogout() {
     await signOut({ callbackUrl: '/' });
@@ -162,19 +166,48 @@ const MobileNav: React.FC<{ role: string }> = ({ role }) => {
                 <span>{item.label}</span>
               </Link>
             ))}
-            
             <button
-              onClick={handleLogout}
-              className="flex items-center space-x-3 px-4 py-3 text-red-600 hover:bg-red-50 mt-2"
+              onClick={() => {
+                  setIsMenuOpen(false);
+                  setIsPasswordModalOpen(true);
+              }}
+              className="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-gray-50 mt-2 border-t"
             >
-              <span className="text-lg"><AiOutlineLogout /></span>
-              <span>Logout</span>
+              <span className="text-lg"><FaLock /></span>
+              <span>Change Password</span>
             </button>
+            {BOTTOM_NAV_ITEMS.map((item, index) => {
+              if (!role || !item.roles.includes(role)) return null;
+              if (item.action === 'logout') {
+                  return (
+                    <button
+                      key={index}
+                      onClick={handleLogout}
+                      className="flex items-center space-x-3 px-4 py-3 text-red-600 hover:bg-red-50"
+                    >
+                      <span className="text-lg">{item.icon}</span>
+                      <span>{item.label}</span>
+                    </button>
+                  );
+              }
+              return (
+                  <Link
+                    key={index}
+                    href={item.href}
+                    onClick={() => setIsMenuOpen(false)}
+                    className="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-gray-50"
+                  >
+                    <span className="text-lg">{item.icon}</span>
+                    <span>{item.label}</span>
+                  </Link>
+              );
+            })}
           </div>
         </div>
       </div>
 
       {/* Bottom navigation removed as we now have the header */}
+      <ChangePasswordModal isOpen={isPasswordModalOpen} onClose={() => setIsPasswordModalOpen(false)} />
     </>
   );
 };

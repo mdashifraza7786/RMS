@@ -36,12 +36,19 @@ const OrderScreen: React.FC<OrderScreenProps> = ({
     const [completeOrderPopup, setCompleteOrderPopup] = useState<boolean>(false);
     const [currentCompleteOrder, setCurrentCompleteOrder] = useState<{ tablenumber: number, orderid: number }>({} as { tablenumber: number, orderid: number });
     const [activeTab, setActiveTab] = useState<'menu' | 'order'>(role === 'chef' ? 'order' : 'menu');
+    const [businessInfo, setBusinessInfo] = useState({ 
+        name: 'RESTAURANT NAME', 
+        address: '123 Main Street, Suite 567<br>City Name, State 54321', 
+        phone: '123-456-7890', 
+        gst: 0.18 
+    });
     const isChef = role === 'chef';
 
     // Effects
     useEffect(() => {
         document.body.style.overflow = "hidden";
         fetchMenuData();
+        fetchBusinessInfo();
         return () => {
             document.body.style.overflow = "auto";
         };
@@ -57,6 +64,23 @@ const OrderScreen: React.FC<OrderScreenProps> = ({
     }, [tabledata, tableNumber]);
 
     // API handlers
+    const fetchBusinessInfo = async () => {
+        try {
+            const res = await axios.get('/api/settings?type=general');
+            if (res.data?.success && res.data?.data) {
+                const settings = res.data.data;
+                setBusinessInfo({
+                    name: settings.business_name || 'RESTAURANT NAME',
+                    address: settings.business_address ? settings.business_address.replace(/\n/g, '<br>') : '123 Main Street, Suite 567<br>City Name, State 54321',
+                    phone: settings.business_phone || '123-456-7890',
+                    gst: settings.gst_percentage ? parseFloat(settings.gst_percentage) / 100 : 0.18
+                });
+            }
+        } catch (error) {
+            console.error('Error fetching business info:', error);
+        }
+    };
+
     const fetchMenuData = async () => {
         try {
             const response = await axios.get('/api/menu');
@@ -250,7 +274,7 @@ const OrderScreen: React.FC<OrderScreenProps> = ({
         }
         
         const discountedSubtotal = Math.max(0, subtotal - discountAmount);
-        const GST = discountedSubtotal * 0.18;
+        const GST = discountedSubtotal * businessInfo.gst;
         const totalAmount = discountedSubtotal + GST;
         const currentDate = new Date().toLocaleString();
 
@@ -275,8 +299,8 @@ const OrderScreen: React.FC<OrderScreenProps> = ({
             </head>
             <body onload="window.print(); window.onafterprint = window.close;">
                 <div class="bill-container">
-                    <h2>BUSINESS NAME</h2>
-                    <p style="text-align:center; color: #666;">123 Main Street, Suite 567<br>City Name, State 54321<br>📞 123-456-7890</p>
+                    <h2>${businessInfo.name}</h2>
+                    <p style="text-align:center; color: #666;">${businessInfo.address}<br>📞 ${businessInfo.phone}</p>
                     <hr>
                     <div class="details">
                         ${tablenumber === 0 ? "<p><strong>Order Type: Parcel Order</strong></p>" : `<p><strong>Table Number:</strong> ${tablenumber}</p>`}
@@ -307,7 +331,7 @@ const OrderScreen: React.FC<OrderScreenProps> = ({
                     ${discountAmount > 0 ? 
                         `<p class="total">Discount (${discount?.type === 'percent' ? discount.value + '%' : 'Flat'}): ₹${discountAmount.toFixed(2)}</p>` 
                         : ''}
-                    <p class="total">GST (18%): ₹${GST.toFixed(2)}</p>
+                    <p class="total">GST (${(businessInfo.gst * 100).toFixed(0)}%): ₹${GST.toFixed(2)}</p>
                     <p class="grand-total">TOTAL: ₹${totalAmount.toFixed(2)}</p>
                     <div class="payment-method">Paid By: ${method.toUpperCase()}</div>
                     <hr>

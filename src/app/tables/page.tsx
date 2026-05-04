@@ -9,6 +9,7 @@ interface Table {
     id: number;
     tablenumber: string;
     availability: number;
+    assigned_waiter_id?: string | null;
 }
 
 const TableManagement = () => {
@@ -26,10 +27,36 @@ const TableManagement = () => {
     const [deleteTableNumber, setDeleteTableNumber] = useState("");
     const [deleteConfirmText, setDeleteConfirmText] = useState("");
 
+    const [waiters, setWaiters] = useState<any[]>([]);
+    const [zonesEnabled, setZonesEnabled] = useState(false);
+    const [updatingTableId, setUpdatingTableId] = useState<number | null>(null);
+
     useEffect(() => {
         fetchTables();
+        fetchConfig();
         document.title = "Table Management";
     }, []);
+
+    const fetchConfig = async () => {
+        try {
+            // Fetch settings
+            const settingsRes = await fetch("/api/settings?type=general");
+            const settingsData = await settingsRes.json();
+            if (settingsData.success && settingsData.data?.waiter_zones_enabled === 'true') {
+                setZonesEnabled(true);
+            }
+
+            // Fetch waiters
+            const membersRes = await fetch("/api/members?limit=100");
+            const membersData = await membersRes.json();
+            if (membersData.success && membersData.data?.members) {
+                const waiterList = membersData.data.members.filter((m: any) => m.role === 'waiter');
+                setWaiters(waiterList);
+            }
+        } catch (error) {
+            console.error("Error fetching config:", error);
+        }
+    };
 
     const fetchTables = async () => {
         try {
@@ -111,6 +138,30 @@ const TableManagement = () => {
             setDeleteTableId(null);
             setDeleteTableNumber("");
             setDeleteConfirmText("");
+        }
+    };
+
+    const assignWaiter = async (tableId: number, waiterId: string) => {
+        try {
+            setUpdatingTableId(tableId);
+            const response = await fetch(`/api/tables/${tableId}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ assigned_waiter_id: waiterId || null }),
+            });
+
+            if (response.ok) {
+                // Update local state directly instead of refetching everything
+                setTables(prev => prev.map(t => 
+                    t.id === tableId ? { ...t, assigned_waiter_id: waiterId || null } : t
+                ));
+            } else {
+                console.error("Failed to assign waiter");
+            }
+        } catch (error) {
+            console.error("Error:", error);
+        } finally {
+            setUpdatingTableId(null);
         }
     };
 
@@ -233,6 +284,24 @@ const TableManagement = () => {
                                             </p>
                                         </div>
                                     </div>
+
+                                    {zonesEnabled && (
+                                        <div className="mt-4 w-full pt-3 border-t border-gray-100" onClick={(e) => e.stopPropagation()}>
+                                            <select
+                                                value={table.assigned_waiter_id || ""}
+                                                onChange={(e) => assignWaiter(table.id, e.target.value)}
+                                                disabled={updatingTableId === table.id}
+                                                className="w-full text-xs py-1.5 px-2 border border-gray-200 rounded text-gray-600 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary disabled:opacity-50"
+                                            >
+                                                <option value="">Unassigned (Any Waiter)</option>
+                                                {waiters.map(w => (
+                                                    <option key={w.userid} value={w.userid}>
+                                                        {w.name}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                    )}
                                 </div>
                             ))}
                         </div>

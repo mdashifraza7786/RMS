@@ -4,10 +4,30 @@ import { withErrorHandling } from "@/lib/api-handler";
 import { successResponse } from "@/lib/api-response";
 import { addTableSchema } from "@/lib/validation";
 
+import { auth } from "@/auth";
+import { getSettingsByType } from "@/database";
+
 export const GET = withErrorHandling(async () => {
   const result = await getTables();
   if (!result.success) throw new Error(result.message);
-  return NextResponse.json(successResponse(result.data));
+
+  let tables = result.data || [];
+  
+  // Filter by waiter zones if enabled
+  const session = await auth();
+  const role = (session?.user as any)?.role;
+  const userid = (session?.user as any)?.userid;
+
+  if (role === 'waiter') {
+    const settingsResult = await getSettingsByType('general');
+    const zonesEnabled = settingsResult.data?.waiter_zones_enabled === 'true';
+
+    if (zonesEnabled) {
+      tables = tables.filter((table: any) => table.assigned_waiter_id === userid);
+    }
+  }
+
+  return NextResponse.json(successResponse(tables));
 });
 
 export const POST = withErrorHandling(async (request: Request) => {

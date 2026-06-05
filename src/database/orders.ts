@@ -327,8 +327,8 @@ export async function getRecentPayments(page: number = 1, limit: number = 10): P
              JOIN orders o ON i.orderid = o.id
              LEFT JOIN user u ON o.waiter_id = u.userid
              LEFT JOIN (
-                SELECT order_id, name, mobile 
-                FROM customer 
+                SELECT order_id, ANY_VALUE(name) as name, ANY_VALUE(mobile) as mobile
+                FROM customer
                 GROUP BY order_id
              ) c ON i.orderid = c.order_id
              WHERE i.payment_status = 'paid'

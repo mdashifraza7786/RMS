@@ -92,7 +92,7 @@ export function useDashboardData(role: string | undefined, userid: string | unde
         } catch (error: any) {
             console.error("Error fetching tables:", error.message);
         } finally {
-            if (!silent && !tablesEverLoadedRef.current) {
+            if (!silent) {
                 setIsTableLoading(false);
             }
         }

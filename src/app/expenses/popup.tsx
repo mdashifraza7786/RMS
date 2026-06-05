@@ -2,7 +2,7 @@ import axios from 'axios';
 import { useState, ChangeEvent, FormEvent } from 'react';
 import { FaTimes } from 'react-icons/fa';
 import { MdOutlineAttachMoney } from 'react-icons/md';
-import { Bars } from 'react-loader-spinner';
+import Skeleton from '@/components/ui/Skeleton';
 
 interface AddExpenseProps {
     popupHandle: () => void;
@@ -74,14 +74,15 @@ const AddExpense: React.FC<AddExpenseProps> = ({ popupHandle, onExpenseAdded }) 
                 {/* Form Content */}
                 <div className="p-6">
                     {isLoading && (
-                        <div className='absolute inset-0 flex justify-center items-center bg-white bg-opacity-90 rounded-xl z-10'>
-                            <Bars
-                                height="50"
-                                width="50"
-                                color="#1e4569"
-                                ariaLabel="bars-loading"
-                                visible={true}
-                            />
+                        <div className='absolute inset-0 flex flex-col justify-center items-center bg-white bg-opacity-90 rounded-xl z-10 p-8 space-y-4'>
+                            <Skeleton variant="text" width="60%" height="24px" />
+                            <Skeleton variant="rect" width="100%" height="44px" className="rounded-lg" />
+                            <Skeleton variant="rect" width="100%" height="44px" className="rounded-lg" />
+                            <div className="w-full flex gap-3 justify-end pt-4">
+                                <Skeleton variant="rect" width="80px" height="36px" className="rounded-lg" />
+                                <Skeleton variant="rect" width="100px" height="36px" className="rounded-lg" />
+                            </div>
+                            <p className="text-[#1e4569] font-medium animate-pulse mt-4">Creating expense...</p>
                         </div>
                     )}
                     

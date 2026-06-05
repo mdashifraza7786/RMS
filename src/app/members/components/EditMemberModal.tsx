@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Bars } from 'react-loader-spinner';
+import Skeleton from '@/components/ui/Skeleton';
 import { Member } from './MemberTypes';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
 
@@ -138,17 +138,18 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
         </div>
 
         {loading && (
-          <div className="absolute inset-0 bg-white/80 flex justify-center items-center z-20">
-            <div className="bg-white p-6 rounded-lg shadow-md flex flex-col items-center">
-              <Bars
-                height="60"
-                width="60"
-                color="primary"
-                ariaLabel="bars-loading"
-                visible={true}
-              />
-              <p className="mt-4 text-gray-700 font-medium">Saving changes...</p>
+          <div className='absolute inset-0 flex flex-col justify-center items-center bg-white bg-opacity-90 rounded-xl z-20 p-8 space-y-4'>
+            <Skeleton variant="text" width="40%" height="24px" />
+            <div className="grid grid-cols-2 gap-4 w-full">
+              <Skeleton variant="rect" width="100%" height="40px" className="rounded-lg" />
+              <Skeleton variant="rect" width="100%" height="40px" className="rounded-lg" />
             </div>
+            <Skeleton variant="rect" width="100%" height="120px" className="rounded-lg" />
+            <div className="w-full flex gap-4 justify-end">
+              <Skeleton variant="rect" width="100px" height="40px" className="rounded-lg" />
+              <Skeleton variant="rect" width="120px" height="40px" className="rounded-lg" />
+            </div>
+            <p className="text-primary font-medium animate-pulse mt-4">Saving changes...</p>
           </div>
         )}
 

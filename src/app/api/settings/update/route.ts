@@ -1,33 +1,28 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { updateSetting, updateSettingsBatch } from "@/database";
 import { auth } from "@/auth";
+import { withErrorHandling } from "@/lib/api-handler";
+import { successResponse, errorResponse } from "@/lib/api-response";
 
-export async function POST(request: NextRequest) {
-  try {
+export const POST = withErrorHandling(async (request: Request) => {
     const session = await auth();
+    const userRole = (session?.user as any)?.role;
     
-    // Check if user is authenticated and is admin
-    if (!session || !session.user || session.user.role !== "admin") {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (!session || userRole !== "admin") {
+      return NextResponse.json(errorResponse("Unauthorized: Admins only"), { status: 403 });
     }
     
     const body = await request.json();
     
-    // Single setting update
     if (body.key && body.value !== undefined) {
       const result = await updateSetting(body.key, body.value);
-      return NextResponse.json(result);
+      return NextResponse.json(successResponse(result));
     }
     
-    // Batch update
     if (Array.isArray(body.settings)) {
       const result = await updateSettingsBatch(body.settings);
-      return NextResponse.json(result);
+      return NextResponse.json(successResponse(result));
     }
     
-    return NextResponse.json({ error: "Invalid request format" }, { status: 400 });
-  } catch (error) {
-    console.error("Error updating settings:", error);
-    return NextResponse.json({ error: "Failed to update settings" }, { status: 500 });
-  }
-}
+    return NextResponse.json(errorResponse("Invalid request format"), { status: 400 });
+});

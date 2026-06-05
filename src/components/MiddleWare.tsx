@@ -1,17 +1,20 @@
 "use client";
 
 import React, { Suspense, useEffect, useMemo, useState } from "react";
-import NextTopLoader from "nextjs-toploader";
 import Login from "@/components/Login";
 import { useSession, SessionProvider } from "next-auth/react";
 import Loading from "@/app/loading";
 import Navbar from "@/components/Navbar";
 import MobileNav from "@/components/MobileNav";
 
+import { useTheme } from "@/contexts/ThemeContext";
+import { themeRegistry } from "../../themes/theme-registry";
+
 const MiddleWare: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { data: session, status } = useSession();
+  const { theme, loading } = useTheme();
 
-  if (status === "loading") {
+  if (status === "loading" || loading) {
     return <Loading />;
   }
 
@@ -23,20 +26,18 @@ const MiddleWare: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     );
   }
 
+  // Lookup the active theme in the registry
+  const activeThemeName = theme.active_theme_folder || 'default';
+  const ThemeConfig = themeRegistry[activeThemeName] || themeRegistry['default'];
+  const ActiveLayout = ThemeConfig.Layout;
+
   return (
-    <div>
-      <NextTopLoader color="white" />
-      <Navbar
-        role={(session?.user as { role: string })?.role}
-        userid={(session?.user as { userid: string })?.userid}
-      />
-      <MobileNav
-        role={(session?.user as { role: string })?.role}
-      />
-      <div className="min-h-screen px-2 sm:px-4 md:px-[8vw] pt-16 lg:pt-0">
-        {children}
-      </div>
-    </div>
+    <ActiveLayout 
+      role={(session?.user as { role: string })?.role}
+      userid={(session?.user as { userid: string })?.userid}
+    >
+      {children}
+    </ActiveLayout>
   );
 };
 

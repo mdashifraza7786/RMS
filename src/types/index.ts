@@ -2,7 +2,7 @@
 export interface User {
   userid: string;
   name: string;
-  role: 'admin' | 'manager' | 'chef' | 'waiter' | 'washer';
+  role: 'admin' | 'chef' | 'waiter' | 'washer';
   mobile: string;
   email?: string | null;
   password?: string;
@@ -79,6 +79,7 @@ export interface Expense {
 
 // Payout Related
 export interface Payout {
+  id: number;
   userid: string;
   account_number: string;
   upi_id?: string | null;

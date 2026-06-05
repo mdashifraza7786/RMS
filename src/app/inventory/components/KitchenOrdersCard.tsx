@@ -3,7 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import { FaTrash, FaFileAlt, FaCheck, FaTimes } from 'react-icons/fa';
 import { FaPenToSquare } from 'react-icons/fa6';
-import { Bars } from 'react-loader-spinner';
+import { HiOutlineChevronLeft, HiOutlineChevronRight } from "react-icons/hi";
+import Skeleton from '@/components/ui/Skeleton';
 
 // Define the type for kitchen orders
 interface InventoryItem {
@@ -38,6 +39,10 @@ const KitchenOrdersCard: React.FC = () => {
     const [deleteItemName, setDeleteItemName] = useState("");
     const [deleteItemId, setDeleteItemId] = useState("");
     const [deleteItemBoxValue, setDeleteItemBoxValue] = useState("");
+
+    // Pagination state
+    const [currentPage, setCurrentPage] = useState<number>(1);
+    const [itemsPerPage] = useState<number>(10);
 
     useEffect(() => {
         fetchKitchenOrders();
@@ -178,11 +183,32 @@ const KitchenOrdersCard: React.FC = () => {
         return new Date(dateString).toLocaleDateString();
     };
 
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    const paginatedOrders = kitchenOrders.slice(indexOfFirstItem, indexOfLastItem);
+    const totalPages = Math.ceil(kitchenOrders.length / itemsPerPage);
+
     return (
         <div>
             {loading ? (
-                <div className="flex justify-center items-center py-12">
-                    <Bars height="50" width="50" color="#1e4569" ariaLabel="bars-loading" />
+                <div className="space-y-4">
+                    {[...Array(5)].map((_, i) => (
+                        <div key={i} className="flex items-center gap-4 py-4 border-b border-gray-50 last:border-0 px-6">
+                            <Skeleton variant="rect" width="24px" height="24px" className="rounded" />
+                            <div className="flex-grow space-y-2">
+                                <Skeleton variant="text" width="150px" height="16px" />
+                                <Skeleton variant="text" width="100px" height="12px" />
+                            </div>
+                            <div className="hidden md:flex gap-12">
+                                <Skeleton variant="text" width="100px" height="16px" />
+                                <Skeleton variant="text" width="80px" height="16px" />
+                            </div>
+                            <div className="flex gap-2">
+                                <Skeleton variant="rect" width="60px" height="32px" className="rounded-md" />
+                                <Skeleton variant="rect" width="60px" height="32px" className="rounded-md" />
+                            </div>
+                        </div>
+                    ))}
                 </div>
             ) : (
                 <>
@@ -220,8 +246,8 @@ const KitchenOrdersCard: React.FC = () => {
                                 </tr>
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-200">
-                                {kitchenOrders.length > 0 ? (
-                                    kitchenOrders.map((item) => (
+                                {paginatedOrders.length > 0 ? (
+                                    paginatedOrders.map((item) => (
                                         <tr key={`${item.order_id}-${item.unit}`} className="hover:bg-gray-50 transition duration-150">
                                             <td className="px-6 py-4 whitespace-nowrap">
                                                 <input
@@ -292,12 +318,12 @@ const KitchenOrdersCard: React.FC = () => {
                         </table>
                     </div>
 
-                    {/* Mobile Card View */}
-                    <div className="md:hidden px-4">
-                        {kitchenOrders.length > 0 ? (
+                    {/* Mobile View */}
+                    <div className="md:hidden space-y-4">
+                        {paginatedOrders.length > 0 ? (
                             <div className="space-y-4">
-                                {kitchenOrders.map((item) => (
-                                    <div key={`${item.order_id}-${item.unit}`} className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                                {paginatedOrders.map((item) => (
+                                    <div key={`${item.order_id}-${item.unit}`} className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
                                         <div className="bg-gray-50 p-3 flex justify-between items-center">
                                             <div className="flex items-center">
                                                 <input
@@ -377,6 +403,80 @@ const KitchenOrdersCard: React.FC = () => {
                             </div>
                         )}
                     </div>
+
+                    {/* Pagination Controls */}
+                    {totalPages > 1 && (
+                        <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between sm:px-6">
+                            <div className="flex-1 flex justify-between sm:hidden">
+                                <button
+                                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                                    disabled={currentPage === 1}
+                                    className={`relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md ${
+                                        currentPage === 1 ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-700 hover:bg-gray-50'
+                                    }`}
+                                >
+                                    Previous
+                                </button>
+                                <button
+                                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                                    disabled={currentPage === totalPages}
+                                    className={`ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md ${
+                                        currentPage === totalPages ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-700 hover:bg-gray-50'
+                                    }`}
+                                >
+                                    Next
+                                </button>
+                            </div>
+                            <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between mt-4">
+                                <div>
+                                    <p className="text-sm text-gray-700">
+                                        Showing <span className="font-medium">{indexOfFirstItem + 1}</span> to <span className="font-medium">{Math.min(indexOfLastItem, kitchenOrders.length)}</span> of{' '}
+                                        <span className="font-medium">{kitchenOrders.length}</span> results
+                                    </p>
+                                </div>
+                                <div>
+                                    <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                                        <button
+                                            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                                            disabled={currentPage === 1}
+                                            className={`relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium ${
+                                                currentPage === 1 ? 'text-gray-300 cursor-not-allowed' : 'text-gray-500 hover:bg-gray-50'
+                                            }`}
+                                        >
+                                            <span className="sr-only">Previous</span>
+                                            <HiOutlineChevronLeft className="h-5 w-5" aria-hidden="true" />
+                                        </button>
+                                        
+                                        {/* Page Numbers */}
+                                        {[...Array(totalPages)].map((_, i) => (
+                                            <button
+                                                key={i + 1}
+                                                onClick={() => setCurrentPage(i + 1)}
+                                                className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
+                                                    currentPage === i + 1
+                                                        ? 'z-10 bg-[#1e4569]/10 border-[#1e4569] text-[#1e4569]'
+                                                        : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
+                                                }`}
+                                            >
+                                                {i + 1}
+                                            </button>
+                                        ))}
+
+                                        <button
+                                            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                                            disabled={currentPage === totalPages}
+                                            className={`relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium ${
+                                                currentPage === totalPages ? 'text-gray-300 cursor-not-allowed' : 'text-gray-500 hover:bg-gray-50'
+                                            }`}
+                                        >
+                                            <span className="sr-only">Next</span>
+                                            <HiOutlineChevronRight className="h-5 w-5" aria-hidden="true" />
+                                        </button>
+                                    </nav>
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </>
             )}
 

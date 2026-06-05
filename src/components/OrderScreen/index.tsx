@@ -10,8 +10,9 @@ import BillSummary from "./BillSummary";
 import CompleteOrderModal from "./CompleteOrderModal";
 import ConfirmationModal from "./ConfirmationModal";
 import MenuDisplay from "./MenuDisplay";
-import { OrderedItems as OrderedItemType } from "../Dashboard";
+import { OrderedItems as OrderedItemType } from "@/hooks/useDashboardData";
 import { toast } from "react-toastify";
+import { GST_RATE } from "@/lib/constants";
 
 const OrderScreen: React.FC<OrderScreenProps> = ({
     role,
@@ -28,6 +29,7 @@ const OrderScreen: React.FC<OrderScreenProps> = ({
 }) => {
     // State variables
     const [menuData, setMenuData] = useState<MenuData[]>([]);
+    const [menuLoading, setMenuLoading] = useState<boolean>(true);
     const [searchTerm, setSearchTerm] = useState<string>('');
     const [selectedItems, setSelectedItems] = useState<{ item: MenuData; quantity: number }[]>([]);
     const [modal, setModal] = useState<{ visible: boolean; message: string; success: boolean }>({ visible: false, message: "", success: false });
@@ -36,12 +38,19 @@ const OrderScreen: React.FC<OrderScreenProps> = ({
     const [completeOrderPopup, setCompleteOrderPopup] = useState<boolean>(false);
     const [currentCompleteOrder, setCurrentCompleteOrder] = useState<{ tablenumber: number, orderid: number }>({} as { tablenumber: number, orderid: number });
     const [activeTab, setActiveTab] = useState<'menu' | 'order'>(role === 'chef' ? 'order' : 'menu');
+    const [businessInfo, setBusinessInfo] = useState({ 
+        name: 'RESTAURANT NAME', 
+        address: '123 Main Street, Suite 567\nCity Name, State 54321',
+        phone: '123-456-7890', 
+        gst: 0.18 
+    });
     const isChef = role === 'chef';
 
     // Effects
     useEffect(() => {
         document.body.style.overflow = "hidden";
         fetchMenuData();
+        fetchBusinessInfo();
         return () => {
             document.body.style.overflow = "auto";
         };
@@ -57,17 +66,40 @@ const OrderScreen: React.FC<OrderScreenProps> = ({
     }, [tabledata, tableNumber]);
 
     // API handlers
-    const fetchMenuData = async () => {
+    const fetchBusinessInfo = async () => {
         try {
-            const response = await axios.get('/api/menu');
-            if (Array.isArray(response.data.menu)) {
-                setMenuData(response.data.menu.map((item: any) => ({
+            const res = await axios.get('/api/settings?type=general');
+            if (res.data?.success && res.data?.data) {
+                const settings = res.data.data;
+                setBusinessInfo({
+                    name: settings.business_name || 'RESTAURANT NAME',
+                    address: settings.business_address || '123 Main Street, Suite 567\nCity Name, State 54321',
+                    phone: settings.business_phone || '123-456-7890',
+                    gst: settings.gst_percentage ? parseFloat(settings.gst_percentage) / 100 : GST_RATE
+                });
+            }
+        } catch (error) {
+            console.error('Error fetching business info:', error);
+            toast.error("Failed to load business settings. Using defaults.");
+        }
+    };
+
+    const fetchMenuData = async () => {
+        setMenuLoading(true);
+        try {
+            const response = await axios.get('/api/menu?limit=500&page=1');
+            const menu = response.data?.data?.menu ?? response.data?.menu ?? [];
+            if (Array.isArray(menu)) {
+                setMenuData(menu.map((item: any) => ({
                     ...item,
                     item_price: Number(item.item_price),
                 })));
             }
         } catch (error) {
             console.error("Error fetching menu data:", error);
+            toast.error("Failed to load menu. Please refresh and try again.");
+        } finally {
+            setMenuLoading(false);
         }
     };
 
@@ -100,6 +132,7 @@ const OrderScreen: React.FC<OrderScreenProps> = ({
             if (response.data.success) {
                 const responseData = response.data.data;
                 const bookedItems = selectedItems.map(({ item, quantity }) => ({
+                    id: 0, // placeholder; parent refreshes with real DB ids on next fetch
                     item_id: item.item_id,
                     item_name: item.item_name,
                     quantity,
@@ -211,12 +244,14 @@ const OrderScreen: React.FC<OrderScreenProps> = ({
         }
     };
 
-    // Bill calculations
+    // Bill calculations — derive subtotal from actual ordered items, not cached billing amount
     const currentOrder = orderedItem.find(table => table.tablenumber === tableNumber);
-    const presubtotal = currentOrder?.billing?.subtotal ?? 0;
+    const existingItemsSubtotal = (currentOrder?.itemsordered ?? []).reduce(
+        (sum, item) => sum + Number(item.price) * Number(item.quantity), 0
+    );
     const newSubtotal = selectedItems.reduce((total, entry) => total + (entry.item.item_price * entry.quantity), 0);
-    const subtotal = presubtotal + newSubtotal;
-    const gst = subtotal * 0.18;
+    const subtotal = existingItemsSubtotal + newSubtotal;
+    const gst = subtotal * (businessInfo.gst ?? GST_RATE);
     const totalAmount = subtotal + gst;
 
     // Memoized data
@@ -226,6 +261,10 @@ const OrderScreen: React.FC<OrderScreenProps> = ({
             item.item_id.toLowerCase().includes(searchTerm.toLowerCase())
         );
     }, [searchTerm, menuData]);
+
+    // Escape untrusted strings before embedding in HTML
+    const escapeHtml = (str: string) =>
+        str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 
     // Helper functions
     const printBill = (tablenumber: number, orderid: number, method: string, discount?: { value: number, type: string }) => {
@@ -250,7 +289,7 @@ const OrderScreen: React.FC<OrderScreenProps> = ({
         }
         
         const discountedSubtotal = Math.max(0, subtotal - discountAmount);
-        const GST = discountedSubtotal * 0.18;
+        const GST = discountedSubtotal * businessInfo.gst;
         const totalAmount = discountedSubtotal + GST;
         const currentDate = new Date().toLocaleString();
 
@@ -275,8 +314,8 @@ const OrderScreen: React.FC<OrderScreenProps> = ({
             </head>
             <body onload="window.print(); window.onafterprint = window.close;">
                 <div class="bill-container">
-                    <h2>BUSINESS NAME</h2>
-                    <p style="text-align:center; color: #666;">123 Main Street, Suite 567<br>City Name, State 54321<br>📞 123-456-7890</p>
+                    <h2>${escapeHtml(businessInfo.name)}</h2>
+                    <p style="text-align:center; color: #666;">${escapeHtml(businessInfo.address).replace(/\n/g, '<br>')}<br>📞 ${escapeHtml(businessInfo.phone)}</p>
                     <hr>
                     <div class="details">
                         ${tablenumber === 0 ? "<p><strong>Order Type: Parcel Order</strong></p>" : `<p><strong>Table Number:</strong> ${tablenumber}</p>`}
@@ -295,7 +334,7 @@ const OrderScreen: React.FC<OrderScreenProps> = ({
                         <tbody>
                             ${currentOrder.itemsordered.map(item => `
                                 <tr>
-                                    <td>${item.item_name}</td>
+                                    <td>${escapeHtml(item.item_name)}</td>
                                     <td>${item.quantity}</td>
                                     <td>₹${(item.quantity * item.price).toFixed(2)}</td>
                                 </tr>
@@ -307,7 +346,7 @@ const OrderScreen: React.FC<OrderScreenProps> = ({
                     ${discountAmount > 0 ? 
                         `<p class="total">Discount (${discount?.type === 'percent' ? discount.value + '%' : 'Flat'}): ₹${discountAmount.toFixed(2)}</p>` 
                         : ''}
-                    <p class="total">GST (18%): ₹${GST.toFixed(2)}</p>
+                    <p class="total">GST (${(businessInfo.gst * 100).toFixed(0)}%): ₹${GST.toFixed(2)}</p>
                     <p class="grand-total">TOTAL: ₹${totalAmount.toFixed(2)}</p>
                     <div class="payment-method">Paid By: ${method.toUpperCase()}</div>
                     <hr>
@@ -401,11 +440,12 @@ const OrderScreen: React.FC<OrderScreenProps> = ({
                                       />
                                   </div>
                                   <div className="flex-grow flex flex-col overflow-hidden">
-                                      <MenuDisplay 
+                                      <MenuDisplay
                                           filteredData={filteredData}
                                           selectedItems={selectedItems}
                                           handleItemSelect={handleItemSelect}
                                           handleQuantityChange={handleQuantityChange}
+                                          loading={menuLoading}
                                       />
                                   </div>
                               </div>
@@ -430,9 +470,10 @@ const OrderScreen: React.FC<OrderScreenProps> = ({
                               <h2 className="font-medium text-base sm:text-lg">Order Summary</h2>
                           </div>
                           <div className="flex-grow">
-                              <BillSummary 
+                              <BillSummary
                                   subtotal={subtotal}
                                   gst={gst}
+                                  gstRate={businessInfo.gst}
                                   totalAmount={totalAmount}
                                   booked={booked}
                                   isSubmitting={isSubmitting}
@@ -447,7 +488,7 @@ const OrderScreen: React.FC<OrderScreenProps> = ({
                                           if (idx > -1) {
                                               combined[idx] = { ...combined[idx], quantity: combined[idx].quantity + quantity };
                                           } else {
-                                              combined.push({ item_id: item.item_id, item_name: item.item_name, quantity, price: item.item_price });
+                                              combined.push({ id: 0, item_id: item.item_id, item_name: item.item_name, quantity, price: item.item_price });
                                           }
                                       });
                                       return combined;

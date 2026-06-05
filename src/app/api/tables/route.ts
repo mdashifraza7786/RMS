@@ -1,36 +1,55 @@
-import { dbConnect, getMenu, getTables } from "@/database";
+import { dbConnect, getTables } from "@/database";
 import { NextResponse } from "next/server";
+import { withErrorHandling } from "@/lib/api-handler";
+import { successResponse } from "@/lib/api-response";
+import { addTableSchema } from "@/lib/validation";
 
-export async function GET() {
+import { auth } from "@/auth";
+import { getSettingsByType } from "@/database";
+
+export const GET = withErrorHandling(async () => {
   const result = await getTables();
-  return NextResponse.json({ tables: result.data });
-}
+  if (!result.success) throw new Error(result.message);
 
-export async function POST(request: Request) {
-  const data = await request.json();
-  const { tablenumber } = data;
+  let tables = result.data || [];
+  
+  // Filter by waiter zones if enabled
+  const session = await auth();
+  const role = (session?.user as any)?.role;
+  const userid = (session?.user as any)?.userid;
+
+  if (role === 'waiter') {
+    const settingsResult = await getSettingsByType('general');
+    const zonesEnabled = settingsResult.data?.waiter_zones_enabled === 'true';
+
+    if (zonesEnabled) {
+      tables = tables.filter((table: any) => table.assigned_waiter_id === userid);
+    }
+  }
+
+  return NextResponse.json(successResponse(tables));
+});
+
+export const POST = withErrorHandling(async (request: Request) => {
+  const body = await request.json();
+  const { tablenumber } = addTableSchema.parse(body);
   const availability = 0;
 
   const connection = await dbConnect();
   try {
     await connection.beginTransaction();
 
-    const [tables] = await connection.query(
-      `
-            INSERT INTO tables (tablenumber,availability) 
-            VALUES (?,?)
-        `,
+    const [tables]: any = await connection.query(
+      `INSERT INTO tables (tablenumber, availability) VALUES (?, ?)`,
       [tablenumber, availability]
     );
 
     await connection.commit();
-
-    return NextResponse.json(tables);
+    return NextResponse.json(successResponse({ id: tables.insertId, tablenumber }));
   } catch (err: any) {
     await connection.rollback();
-    return NextResponse.json({ message: "Failed to add table" });
+    throw err;
   } finally {
     connection.release();
   }
-
-}
+});

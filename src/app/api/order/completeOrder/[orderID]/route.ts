@@ -41,15 +41,16 @@ export const POST = withErrorHandling(async (request: Request, { params }: { par
     
     // Update invoice (Finalize Payment)
     const updateInvoiceQuery = `
-      UPDATE invoices 
-      SET payment_status = 'paid', 
-          payment_method = ?, 
-          discount = ?, 
-          discount_type = ?,
-          total_amount = subtotal + gst - ?
+      UPDATE invoices
+      SET payment_status = 'paid',
+          payment_method = ?,
+          discount       = ?,
+          discount_type  = ?,
+          total_amount   = subtotal + gst - ?,
+          generated_at   = NOW()
       WHERE orderid = ?
     `;
-    
+
     await connection.query(updateInvoiceQuery, [paymentmethod, discountAmount, discountTypeValue, discountAmount, orderID]);
     
     // Update order status

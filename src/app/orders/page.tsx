@@ -2,9 +2,8 @@
 
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { Bars } from "react-loader-spinner";
-import Skeleton from "@/components/Skeleton";
-import { FaSearch, FaFileInvoiceDollar, FaUserSlash } from "react-icons/fa";
+import Skeleton from "@/components/ui/Skeleton";
+import { FaSearch, FaFileInvoiceDollar, FaUserSlash, FaDownload } from "react-icons/fa";
 import { IoFastFoodOutline } from "react-icons/io5";
 import { BsClock, BsClockHistory } from "react-icons/bs";
 import { BiTable } from "react-icons/bi";
@@ -269,6 +268,44 @@ const OrdersPage: React.FC = () => {
     printWindow.document.close();
   };
 
+  const handleExportCSV = () => {
+    if (orders.length === 0) return;
+
+    // Define CSV headers
+    const headers = ["Order ID", "Table", "Waiter", "Chef", "Total", "Start Time", "End Time", "Status", "Items (Qty)"];
+    
+    // Map order data to rows
+    const rows = orders.map(order => {
+      const itemsString = order.order_items.map(item => `${item.item_name} (${item.quantity})`).join("; ");
+      const total = order.order_items.reduce((sum, item) => sum + item.price * item.quantity, 0).toFixed(2);
+      
+      return [
+        order.id,
+        order.table_id || "Parcel",
+        order.waiter_name || "N/A",
+        order.chef_name || "N/A",
+        total,
+        new Date(order.start_time).toLocaleString(),
+        order.end_time ? new Date(order.end_time).toLocaleString() : "In Progress",
+        order.status,
+        `"${itemsString}"` // wrap in quotes to handle commas
+      ].join(",");
+    });
+
+    // Create CSV content
+    const csvContent = [headers.join(","), ...rows].join("\n");
+    
+    // Trigger download
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `orders_export_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   const paginatedOrders = orders;
   const totalPages = Math.ceil(totalOrders / pageSize);
   const pageStart = (currentPage - 1) * pageSize;
@@ -332,6 +369,16 @@ const OrdersPage: React.FC = () => {
               />
             </div>
             <div>
+              <button
+                onClick={handleExportCSV}
+                disabled={orders.length === 0}
+                className={`mr-3 inline-flex items-center px-4 py-2 rounded-lg shadow transition-colors text-sm font-medium ${
+                  orders.length === 0 ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                <FaDownload className="mr-2" />
+                Export CSV
+              </button>
               <Link
                 href="/orders/active"
                 className="inline-flex items-center px-4 py-2 bg-primary text-white rounded-lg shadow hover:bg-primary/90 transition-colors text-sm font-medium"
@@ -358,16 +405,17 @@ const OrdersPage: React.FC = () => {
         </div>
 
         {loading ? (
-          <div className="px-6 py-4 space-y-4">
-            {[1, 2, 3, 4, 5].map((i) => (
-              <div key={i} className="flex gap-4 items-center">
-                <Skeleton variant="rect" width="10%" height={40} />
-                <Skeleton variant="rect" width="15%" height={40} />
-                <Skeleton variant="rect" width="20%" height={40} />
-                <Skeleton variant="rect" width="15%" height={40} />
-                <Skeleton variant="rect" width="15%" height={40} />
-                <Skeleton variant="rect" width="15%" height={40} />
-                <Skeleton variant="rect" width="10%" height={40} />
+          <div className="p-6 space-y-4">
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className="flex items-center gap-4 py-4 border-b border-gray-50 last:border-0">
+                <Skeleton variant="text" width="100px" height="16px" />
+                <Skeleton variant="text" width="80px" height="16px" />
+                <Skeleton variant="text" width="150px" height="16px" />
+                <Skeleton variant="text" width="120px" height="16px" />
+                <Skeleton variant="text" width="100px" height="16px" />
+                <div className="flex-grow" />
+                <Skeleton variant="rect" width="80px" height="24px" className="rounded-full" />
+                <Skeleton variant="rect" width="100px" height="32px" className="rounded-lg" />
               </div>
             ))}
           </div>

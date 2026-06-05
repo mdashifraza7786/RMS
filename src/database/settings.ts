@@ -8,15 +8,11 @@ export async function getAllSettings(): Promise<DbResponse<{ [key: string]: { [k
         const [rows] = await connection.query<RowDataPacket[]>(
             'SELECT setting_key, setting_value, setting_type FROM settings'
         );
-        
         const settings: { [key: string]: { [key: string]: string } } = {};
         rows.forEach((row: any) => {
-            if (!settings[row.setting_type]) {
-                settings[row.setting_type] = {};
-            }
+            if (!settings[row.setting_type]) settings[row.setting_type] = {};
             settings[row.setting_type][row.setting_key] = row.setting_value;
         });
-        
         return { success: true, data: settings };
     } catch (error) {
         console.error('Error fetching settings:', error);
@@ -33,12 +29,8 @@ export async function getSettingsByType(settingType: string): Promise<DbResponse
             'SELECT setting_key, setting_value FROM settings WHERE setting_type = ?',
             [settingType]
         );
-        
         const settings: { [key: string]: string } = {};
-        rows.forEach((row: any) => {
-            settings[row.setting_key] = row.setting_value;
-        });
-        
+        rows.forEach((row: any) => { settings[row.setting_key] = row.setting_value; });
         return { success: true, data: settings };
     } catch (error) {
         console.error(`Error fetching ${settingType} settings:`, error);
@@ -48,14 +40,18 @@ export async function getSettingsByType(settingType: string): Promise<DbResponse
     }
 }
 
-export async function updateSettingsBatch(settings: { key: string, value: string }[]): Promise<DbResponse<void>> {
+export async function updateSettingsBatch(
+    settings: { key: string; value: string; type?: string }[]
+): Promise<DbResponse<void>> {
     const connection = await dbConnect();
     try {
         await connection.beginTransaction();
         for (const setting of settings) {
             await connection.query(
-                'UPDATE settings SET setting_value = ? WHERE setting_key = ?',
-                [setting.value, setting.key]
+                `INSERT INTO settings (setting_key, setting_value, setting_type)
+                 VALUES (?, ?, ?)
+                 ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)`,
+                [setting.key, setting.value, setting.type || 'general']
             );
         }
         await connection.commit();
@@ -69,12 +65,14 @@ export async function updateSettingsBatch(settings: { key: string, value: string
     }
 }
 
-export async function updateSetting(key: string, value: string): Promise<DbResponse<void>> {
+export async function updateSetting(key: string, value: string, type: string = 'general'): Promise<DbResponse<void>> {
     const connection = await dbConnect();
     try {
         await connection.query(
-            'UPDATE settings SET setting_value = ? WHERE setting_key = ?',
-            [value, key]
+            `INSERT INTO settings (setting_key, setting_value, setting_type)
+             VALUES (?, ?, ?)
+             ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)`,
+            [key, value, type]
         );
         return { success: true, message: 'Setting updated successfully' };
     } catch (error) {

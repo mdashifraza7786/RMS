@@ -4,7 +4,6 @@ import React, { useState, useEffect, useMemo } from 'react';
 import BarChart from '../chartConfiguration/Bar';
 import PieChart from '../chartConfiguration/Pie';
 import LineChart from '../chartConfiguration/Line';
-import { ChartOptions } from 'chart.js';
 import { FaChartBar, FaChartPie, FaChartLine, FaCalendarAlt, FaFilter, FaExchangeAlt } from 'react-icons/fa';
 import axios from 'axios';
 
@@ -253,7 +252,7 @@ const Demand: React.FC = () => {
         return generateData(label);
     }, [chartXY, comparisonMode, generateData]);
 
-    const chartOptions: ChartOptions<'bar'> | ChartOptions<'line'> = useMemo(() => {
+    const chartOptions: any = useMemo(() => {
         const xAxisLabels: Record<ChartKey, string> = {
             'Menu Item vs Demand': timeFrame === 'weekly' ? 'Week Days' : (timeFrame === 'monthly' ? 'Weeks' : 'Months'),
             'Dish Category vs Demand': 'Menu Items',
@@ -410,9 +409,9 @@ const Demand: React.FC = () => {
 
             {/* Chart container */}
             <div className="bg-white p-4 rounded-lg shadow-sm" style={{ minHeight: '400px' }}>
-                {chartType === 'bar' && <BarChart data={chartData} options={chartOptions as ChartOptions<'bar'>} />}
+                {chartType === 'bar' && <BarChart data={chartData} options={chartOptions} />}
                 {chartType === 'pie' && <PieChart data={chartData} />}
-                {chartType === 'line' && <LineChart data={chartData} options={chartOptions as ChartOptions<'line'>} />}
+                {chartType === 'line' && <LineChart data={chartData} options={chartOptions} />}
             </div>
         </div>
     );

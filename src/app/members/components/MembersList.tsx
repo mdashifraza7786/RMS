@@ -1,6 +1,6 @@
 import React from 'react';
 import { FaEye, FaTrash, FaUserEdit, FaUserSlash } from "react-icons/fa";
-import { Bars } from 'react-loader-spinner';
+import Skeleton from "@/components/ui/Skeleton";
 import { Member } from './MemberTypes';
 import Image from 'next/image';
 
@@ -25,14 +25,25 @@ const MembersList: React.FC<MembersListProps> = ({
 }) => {
   if (loading && members.length === 0) {
     return (
-      <div className="flex justify-center items-center py-12">
-        <Bars
-          height="50"
-          width="50"
-          color="primary"
-          ariaLabel="bars-loading"
-          visible={true}
-        />
+      <div className="p-6 space-y-4">
+        {[...Array(5)].map((_, i) => (
+          <div key={i} className="flex items-center gap-4 py-4 border-b border-gray-50 last:border-0">
+            <Skeleton variant="circle" width="32px" height="32px" />
+            <div className="flex-grow space-y-2">
+              <Skeleton variant="text" width="150px" height="16px" />
+              <Skeleton variant="text" width="100px" height="12px" />
+            </div>
+            <div className="hidden md:flex gap-8">
+              <Skeleton variant="text" width="80px" height="16px" />
+              <Skeleton variant="text" width="120px" height="16px" />
+              <Skeleton variant="rect" width="60px" height="20px" className="rounded-full" />
+            </div>
+            <div className="flex gap-2">
+              <Skeleton variant="rect" width="32px" height="32px" className="rounded-md" />
+              <Skeleton variant="rect" width="32px" height="32px" className="rounded-md" />
+            </div>
+          </div>
+        ))}
       </div>
     );
   }

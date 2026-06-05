@@ -58,3 +58,19 @@ export const registerExpenseSchema = z.object({
   frequency: z.enum(["daily", "weekly", "monthly", "yearly", "once"]),
   cost: z.number().positive(),
 });
+
+// Tables
+export const addTableSchema = z.object({
+  tablenumber: z.number().int().positive("Table number must be positive"),
+});
+
+// Menu
+export const registerMenuItemSchema = z.object({
+  item_name: z.string().min(1, "Item name is required"),
+  item_description: z.string().optional().nullable(),
+  item_foodtype: z.enum(["veg", "nveg"], "Food type must be 'veg' or 'nveg'"),
+  item_price: z.number().positive("Price must be greater than 0"),
+  making_cost: z.number().nonnegative("Making cost must be 0 or greater").optional().nullable(),
+  item_type: z.string().min(1, "Item category is required"),
+  item_thumbnail: z.string().optional().nullable(),
+});

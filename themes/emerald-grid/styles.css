@@ -1,0 +1,8 @@
+body.emerald-grid-theme-active {
+  --color-primary: #059669;
+  --color-secondary: #10B981;
+  background-color: #F0FDF4;
+}
+.emerald-grid-theme-active * {
+  border-radius: 0 !important;
+}

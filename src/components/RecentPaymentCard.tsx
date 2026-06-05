@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Bars } from "react-loader-spinner";
+import Skeleton from "./ui/Skeleton";
 import Link from "next/link";
 import { MdPayment, MdPerson, MdTableBar, MdOutlineLocalAtm, MdPhone, MdKeyboardArrowLeft, MdKeyboardArrowRight } from "react-icons/md";
 import { FaRegCreditCard } from "react-icons/fa";
@@ -78,10 +78,32 @@ export default function PaymentsComponent() {
             </div>
 
             {loading ? (
-                <div className="flex-grow flex justify-center items-center">
-                    <span className="text-primary">
-                        <Bars height="40" width="40" color="currentColor" ariaLabel="bars-loading" visible={true} />
-                    </span>
+                <div className="space-y-4">
+                    {[...Array(3)].map((_, i) => (
+                        <div key={i} className="bg-white border border-gray-100 rounded-lg shadow-sm p-4 space-y-3">
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                    <Skeleton variant="circle" width="40px" height="40px" />
+                                    <div className="space-y-1">
+                                        <Skeleton variant="text" width="100px" height="16px" />
+                                        <Skeleton variant="text" width="80px" height="12px" />
+                                    </div>
+                                </div>
+                                <div className="flex flex-col items-end gap-1">
+                                    <Skeleton variant="text" width="60px" height="16px" />
+                                    <Skeleton variant="text" width="80px" height="12px" />
+                                </div>
+                            </div>
+                            <div className="flex justify-between items-center py-2 border-t border-gray-50">
+                                <Skeleton variant="text" width="30%" height="12px" />
+                                <Skeleton variant="text" width="30%" height="12px" />
+                            </div>
+                            <div className="flex justify-between items-center pt-2 border-t border-gray-50">
+                                <Skeleton variant="rect" width="60px" height="20px" className="rounded-full" />
+                                <Skeleton variant="rect" width="80px" height="28px" className="rounded-lg" />
+                            </div>
+                        </div>
+                    ))}
                 </div>
             ) : (invoice?.length === 0 || !invoice) ? (
                 <div className="flex-grow flex items-center justify-center bg-gray-50 rounded-lg border border-dashed border-gray-200">

@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { FaSearch, FaBox } from "react-icons/fa";
-import { Bars } from 'react-loader-spinner';
+import Skeleton from "@/components/ui/Skeleton";
 import LowStock from '@/app/inventory/components/LowStock';
 import InventoryCard from '@/app/inventory/components/InventoryCard';
 import KitchenOrdersCard from '@/app/inventory/components/KitchenOrdersCard';
@@ -32,7 +32,7 @@ const Page: React.FC = () => {
 
     useEffect(() => {
         const checkLowStock = () => {
-            const array = inventory.filter(item => item.current_stock < item.low_limit);
+            const array = (Array.isArray(inventory) ? inventory : []).filter(item => item.current_stock < item.low_limit);
             setLowStock(array);
         };
 
@@ -129,18 +129,10 @@ const Page: React.FC = () => {
                 </div>
 
                 <div className="p-6">
-                    {loading ? (
-                        <div className="flex justify-center items-center py-12">
-                            <Bars height="50" width="50" color="primary" ariaLabel="bars-loading" />
-                        </div>
-                    ) : (
-                        <>
-                            {selectedFilter === 'inventory' && <InventoryCard />}
-                            {selectedFilter === 'order' && <OrderCard />}
-                            {selectedFilter === 'kitchenOrders' && <KitchenOrdersCard />}
-                            {selectedFilter === 'recent' && <RecentCard />}
-                        </>
-                    )}
+                    {selectedFilter === 'inventory' && <InventoryCard />}
+                    {selectedFilter === 'order' && <OrderCard />}
+                    {selectedFilter === 'kitchenOrders' && <KitchenOrdersCard />}
+                    {selectedFilter === 'recent' && <RecentCard />}
                 </div>
             </div>
 

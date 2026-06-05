@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { withErrorHandling } from "@/lib/api-handler";
 import { successResponse, errorResponse } from "@/lib/api-response";
+import { GST_RATE } from "@/lib/constants";
 
 export const POST = withErrorHandling(async (request: Request) => {
     const session = await auth();
@@ -76,8 +77,7 @@ export const POST = withErrorHandling(async (request: Request) => {
 
         // 5. RECALCULATE INVOICE
         const itemTotal = Number(item.price) * Number(item.quantity);
-        const gstRate = 0.18; 
-        const removedGst = itemTotal * gstRate;
+        const removedGst = itemTotal * GST_RATE;
         const removedTotal = itemTotal + removedGst;
 
         await connection.query(
@@ -92,7 +92,12 @@ export const POST = withErrorHandling(async (request: Request) => {
         // 6. SYNC LEGACY JSON COLUMN (Consistency Assurance)
         const [orderRow]: any = await connection.query("SELECT order_items FROM orders WHERE id = ?", [item.order_id]);
         if (orderRow.length > 0) {
-            let legacyItems = JSON.parse(orderRow[0].order_items);
+            let legacyItems: any[];
+            try {
+                legacyItems = JSON.parse(orderRow[0].order_items);
+            } catch {
+                legacyItems = [];
+            }
             // In the legacy model, we usually just reduce quantity or remove the item
             // Here we'll reduce the quantity or remove it entirely if it matches
             const itemIdx = legacyItems.findIndex((li: any) => li.item_id === item.item_id);
@@ -113,6 +118,6 @@ export const POST = withErrorHandling(async (request: Request) => {
         await connection.rollback();
         return NextResponse.json(errorResponse(error.message || "Void failed"), { status: 500 });
     } finally {
-        await connection.release();
+        connection.release();
     }
 });

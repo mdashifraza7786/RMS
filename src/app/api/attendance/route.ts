@@ -1,35 +1,48 @@
 import { dbConnect } from "@/database";
 import { NextResponse } from "next/server";
-import { RowDataPacket } from "mysql2";  
+import { RowDataPacket } from "mysql2";
 import { withErrorHandling } from "@/lib/api-handler";
 import { successResponse } from "@/lib/api-response";
+
+/** Convert a Date (or date-like string from MySQL) to a local YYYY-MM-DD string. */
+const localDateStr = (d: Date | string | null | undefined): string | null => {
+    if (!d) return null;
+    const date = d instanceof Date ? d : new Date(d);
+    if (isNaN(date.getTime())) return String(d).slice(0, 10);
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+};
 
 export const GET = withErrorHandling(async (request: Request) => {
     const { searchParams } = new URL(request.url);
     const userid = searchParams.get('userid') || undefined;
-    const role = searchParams.get('role') || undefined;
+    const role   = searchParams.get('role')   || undefined;
     const connection = await dbConnect();
 
     try {
-        const urlDate = searchParams.get('date');
-        const fetchDate = urlDate || new Date().toISOString().split('T')[0]; 
+        const urlDate   = searchParams.get('date');
+        const fetchDate = urlDate || localDateStr(new Date())!;
 
         const [[{ minDate, maxDate }]] = await connection.query<RowDataPacket[]>(
             `SELECT MIN(date) as minDate, MAX(date) as maxDate FROM attendance`
         );
 
         let records: any;
-        if(role === 'waiter' || role === 'chef'){
+        if (role === 'waiter' || role === 'chef') {
             const [rows] = await connection.query<RowDataPacket[]>(
-                `SELECT userid, name, role, status, date, time
+                `SELECT userid, name, role, status,
+                        DATE_FORMAT(date, '%Y-%m-%d') as date, time
                  FROM attendance
                  WHERE date = ? AND userid = ?`,
                 [fetchDate, userid]
             );
             records = rows;
-        }else{
+        } else {
             const [rows] = await connection.query<RowDataPacket[]>(
-                `SELECT userid, name, role, status, date, time
+                `SELECT userid, name, role, status,
+                        DATE_FORMAT(date, '%Y-%m-%d') as date, time
                  FROM attendance
                  WHERE date = ?`,
                 [fetchDate]
@@ -38,21 +51,18 @@ export const GET = withErrorHandling(async (request: Request) => {
         }
 
         const [dateRecords] = await connection.query<RowDataPacket[]>(
-            `SELECT DISTINCT date FROM attendance ORDER BY date`
+            `SELECT DATE_FORMAT(date, '%Y-%m-%d') as date FROM attendance GROUP BY date ORDER BY date`
         );
-        
-        const availableDates = dateRecords.map((record: any) => {
-            return record.date ? new Date(record.date).toISOString().split('T')[0] : null;
-        }).filter(Boolean);
 
-        const responseMaxDate = maxDate ? new Date(maxDate).toISOString().split('T')[0] : fetchDate;
-        const responseMinDate = minDate ? new Date(minDate).toISOString().split('T')[0] : null;
+        const availableDates = dateRecords
+            .map((r: any) => r.date as string)
+            .filter(Boolean);
 
         return NextResponse.json(successResponse({
             records,
-            minDate: responseMinDate,
-            maxDate: responseMaxDate,
-            availableDates
+            minDate: localDateStr(minDate),
+            maxDate: localDateStr(maxDate) ?? fetchDate,
+            availableDates,
         }, 'Attendance Fetched Successfully'));
     } finally {
         connection.release();

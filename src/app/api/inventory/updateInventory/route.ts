@@ -1,14 +1,19 @@
-import { NextRequest, NextResponse } from "next/server";
-import {updateInventory} from "@/database";
+import { NextResponse } from "next/server";
+import { updateInventory } from "@/database";
+import { auth } from "@/auth";
+import { withErrorHandling } from "@/lib/api-handler";
+import { successResponse, errorResponse } from "@/lib/api-response";
 
-export async function PUT(request: NextRequest) {
-    try {
-        const data = await request.json();
-        await updateInventory(data);
+export const PUT = withErrorHandling(async (request: Request) => {
+    const session = await auth();
+    const userRole = (session?.user as any)?.role;
 
-        return NextResponse.json({ message: 'Inventory updated successfuly' }, { status: 200 });
-    } catch (error) {
-        console.error('Error updating Inventory:', error);
-        return NextResponse.json({ message: 'Error updating Inventory' }, { status: 500 });
+    if (!session || (userRole !== "admin" && userRole !== "chef")) {
+        return NextResponse.json(errorResponse("Unauthorized: Admin or Chef only"), { status: 403 });
     }
-}
+
+    const data = await request.json();
+    await updateInventory(data);
+
+    return NextResponse.json(successResponse(null, "Inventory updated successfully"));
+});

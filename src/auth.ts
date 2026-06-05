@@ -2,8 +2,10 @@ import NextAuth from "next-auth"
 import Credentials from "next-auth/providers/credentials"
 import { getUserByUserid } from "@/database";
 import { compare } from "bcryptjs";
- 
+import type { JWT } from "next-auth/jwt";
+
 export const { handlers, signIn, signOut, auth } = NextAuth({
+  trustHost: true,
   session: { strategy: "jwt" },
   providers: [
     Credentials({
@@ -34,27 +36,28 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           throw new Error("Incorrect Password");
         }
 
-        const minimalUser = {
-          userid: (user as any).userid,
-          name: (user as any).name,
-          role: (user as any).role,
-          email: (user as any).email ?? null,
-          mobile: (user as any).mobile ?? null,
+        return {
+          id: user.userid,
+          userid: user.userid,
+          name: user.name,
+          role: user.role,
+          email: user.email ?? null,
+          mobile: user.mobile ?? null,
         };
-        return minimalUser as any;
       },
     }),
   ],
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.user = user as any;
+        token.user = user;
       }
       return token;
     },
     async session({ session, token }) {
-      if (token && (token as any).user) {
-        session.user = (token as any).user as any;
+      const tokenWithUser = token as JWT & { user?: typeof session.user };
+      if (tokenWithUser?.user) {
+        session.user = tokenWithUser.user;
       }
       return session;
     },

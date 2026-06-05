@@ -3,7 +3,7 @@
 import React, { useMemo, useState } from 'react';
 import { FaChartLine, FaFilter, FaMoneyBillWave } from 'react-icons/fa';
 import axios from 'axios';
-import { Bars } from 'react-loader-spinner';
+import Skeleton from "@/components/ui/Skeleton";
 import {
   LineChart,
   Line,
@@ -196,8 +196,13 @@ const InventoryForecastPage: React.FC = () => {
 
       {/* Loading */}
       {mode === 'inventory' && loading && (
-        <div className="flex justify-center items-center py-10">
-          <Bars height={48} width={48} color="#00589C" />
+        <div className="mt-6 space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {[...Array(3)].map((_, i) => (
+              <Skeleton key={i} variant="rect" width="100%" height="100px" className="rounded-xl" />
+            ))}
+          </div>
+          <Skeleton variant="rect" width="100%" height="400px" className="rounded-xl" />
         </div>
       )}
 
@@ -257,8 +262,13 @@ const InventoryForecastPage: React.FC = () => {
       )}
 
       {mode === 'revenue' && revLoading && (
-        <div className="flex justify-center items-center py-10">
-          <Bars height={48} width={48} color="#00589C" />
+        <div className="mt-6 space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {[...Array(3)].map((_, i) => (
+              <Skeleton key={i} variant="rect" width="100%" height="100px" className="rounded-xl" />
+            ))}
+          </div>
+          <Skeleton variant="rect" width="100%" height="400px" className="rounded-xl" />
         </div>
       )}
 

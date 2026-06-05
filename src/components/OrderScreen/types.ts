@@ -1,4 +1,4 @@
-import { Table, OrderedItems, billingAmount } from "../Dashboard";
+import { Table, OrderedItems, billingAmount } from "@/hooks/useDashboardData";
 
 export interface MenuData {
     item_id: string;
@@ -56,6 +56,7 @@ export interface OrderedItemsProps {
 export interface BillSummaryProps {
     subtotal: number;
     gst: number;
+    gstRate: number;
     totalAmount: number;
     booked: boolean;
     isSubmitting?: boolean;
@@ -66,6 +67,7 @@ export interface BillSummaryProps {
     selectedItemsRaw?: { item: MenuData; quantity: number }[];
     handleQuantityChange?: (itemId: string, newQuantity: string) => void;
 }
+export interface CompleteOrderModalProps {
     isVisible: boolean;
     tableNumber: number;
     orderId: number;

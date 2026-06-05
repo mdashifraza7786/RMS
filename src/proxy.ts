@@ -6,20 +6,25 @@ import { getToken } from "next-auth/jwt";
  * 100% API Coverage - Deny by Default
  */
 const ROLE_PERMISSIONS: Record<string, string[]> = {
-    "/api/members": ["admin"],
+    // Admin-only
+    "/api/members":  ["admin"],
     "/api/expenses": ["admin"],
-    "/api/inventory": ["admin"], // Sensitive financial stock data
-    "/api/settings": ["admin"],
-    "/api/dashboard": ["admin"],  // Protects all dashboard sub-routes
-    "/api/payout": ["admin"],
-    "/api/chart": ["admin"],
-    "/api/attendance": ["admin", "waiter", "chef"],
-    "/api/order": ["admin", "waiter", "chef"],
-    "/api/orders": ["admin", "waiter", "chef"],
-    "/api/kitchenOrder": ["admin", "chef", "waiter"],
-    "/api/menu": ["admin", "waiter"],
+    "/api/inventory":["admin"],
+    "/api/dashboard":["admin"],
+    "/api/payout":   ["admin"],
+    "/api/chart":    ["admin"],
+
+    // Admin + Waiter
     "/api/recentOrder": ["admin", "waiter"],
-    "/api/tables": ["admin", "waiter"],
+    "/api/tables":      ["admin", "waiter"],
+
+    // Admin + Waiter + Chef
+    "/api/settings":    ["admin", "waiter", "chef"],  // fine-grained at route level
+    "/api/attendance":  ["admin", "waiter", "chef"],
+    "/api/order":       ["admin", "waiter", "chef"],
+    "/api/orders":      ["admin", "waiter", "chef"],
+    "/api/kitchenOrder":["admin", "waiter", "chef"],
+    "/api/menu":        ["admin", "waiter", "chef"],  // edit sub-routes are admin-only at route level
 };
 
 const PUBLIC_PATHS = [
@@ -28,7 +33,7 @@ const PUBLIC_PATHS = [
     "/api/health", // Public for setup diagnostics
 ];
 
-export default async function middleware(req: NextRequest) {
+export async function proxy(req: NextRequest) {
     if (req.method === "OPTIONS") {
         return new NextResponse(null, {
             status: 200,
@@ -56,7 +61,7 @@ export default async function middleware(req: NextRequest) {
     // 2. Authentication Check (Must have valid JWT)
     const token = await getToken({
         req,
-        secret: process.env.NEXTAUTH_SECRET || "something",
+        secret: process.env.NEXTAUTH_SECRET,
         secureCookie: process.env.NODE_ENV === "production"
     });
 

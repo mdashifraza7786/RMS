@@ -1,0 +1,21 @@
+body.neo-brutalism-theme-active {
+  --color-primary: #FDE047;
+  --color-secondary: #000000;
+  background-color: #FFFFFF;
+}
+/* Brutalism forces heavy black borders and hard shadows on everything */
+.neo-brutalism-theme-active * {
+  border-radius: 0 !important;
+}
+.neo-brutalism-theme-active .shadow-sm,
+.neo-brutalism-theme-active .shadow-md,
+.neo-brutalism-theme-active .shadow-lg,
+.neo-brutalism-theme-active .shadow-xl {
+  box-shadow: 6px 6px 0px 0px rgba(0,0,0,1) !important;
+  border: 3px solid black !important;
+}
+.neo-brutalism-theme-active button:active,
+.neo-brutalism-theme-active a:active {
+  transform: translate(6px, 6px);
+  box-shadow: 0px 0px 0px 0px rgba(0,0,0,1) !important;
+}

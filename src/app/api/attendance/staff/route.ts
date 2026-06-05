@@ -11,7 +11,8 @@ export async function GET(request: Request) {
   const connection = await dbConnect();
   try {
     const [rows] = await connection.query<RowDataPacket[]>(
-      `SELECT userid,name,role,status,date,time
+      `SELECT userid, name, role, status,
+              DATE_FORMAT(date, '%Y-%m-%d') as date, time
        FROM attendance
        WHERE userid = ?
        ORDER BY date DESC, time DESC`,

@@ -5,7 +5,7 @@ import { IoFastFoodOutline } from 'react-icons/io5';
 import { MdOutlineAttachMoney, MdOutlineDescription } from 'react-icons/md';
 import { BiFoodMenu } from 'react-icons/bi';
 import { FiImage } from 'react-icons/fi';
-import { Bars } from 'react-loader-spinner';
+import Skeleton from '@/components/ui/Skeleton';
 import Image from 'next/image';
 
 interface AddMenuProps {
@@ -97,14 +97,14 @@ const AddMenu: React.FC<AddMenuProps> = ({ popuphandle }) => {
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-60 z-50 backdrop-blur-sm">
             <div className="bg-white shadow-2xl rounded-xl p-8 w-full max-w-2xl relative animate-scaleIn">
                 {isLoading && (
-                    <div className="absolute inset-0 flex justify-center items-center bg-white bg-opacity-90 rounded-xl z-10">
-                        <Bars
-                            height="80"
-                            width="80"
-                            color="#1e4569"
-                            ariaLabel="bars-loading"
-                            visible={true}
-                        />
+                    <div className="absolute inset-0 flex flex-col justify-center items-center bg-white bg-opacity-90 rounded-xl z-10 p-8 space-y-4">
+                        <Skeleton variant="text" width="60%" height="24px" />
+                        <Skeleton variant="rect" width="100%" height="200px" className="rounded-xl" />
+                        <div className="w-full flex gap-4">
+                            <Skeleton variant="rect" width="50%" height="40px" className="rounded-lg" />
+                            <Skeleton variant="rect" width="50%" height="40px" className="rounded-lg" />
+                        </div>
+                        <p className="text-primary font-medium animate-pulse">Processing...</p>
                     </div>
                 )}
 

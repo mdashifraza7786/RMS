@@ -18,6 +18,7 @@ export function getCache(key: string): any | null {
 }
 
 export function setCache(key: string, data: any, ttlSeconds: number = 300): void {
+    if (cache.size > 1000) cache.clear();
     cache.set(key, {
         data,
         expiry: Date.now() + (ttlSeconds * 1000)

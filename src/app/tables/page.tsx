@@ -1,15 +1,15 @@
 "use client";
 import { useState, useEffect } from "react";
-import { FaPlus, FaTrash, FaSearch } from "react-icons/fa";
-import { FaTimes } from "react-icons/fa";
+import { FaPlus, FaTrash, FaSearch, FaTimes } from "react-icons/fa";
 import { MdTableBar, MdTableRestaurant } from "react-icons/md";
 import { BiTable } from "react-icons/bi";
-import { Bars } from 'react-loader-spinner';
+import Skeleton from "@/components/ui/Skeleton";
 
 interface Table {
     id: number;
     tablenumber: string;
     availability: number;
+    assigned_waiter_id?: string | null;
 }
 
 const TableManagement = () => {
@@ -27,17 +27,45 @@ const TableManagement = () => {
     const [deleteTableNumber, setDeleteTableNumber] = useState("");
     const [deleteConfirmText, setDeleteConfirmText] = useState("");
 
+    const [waiters, setWaiters] = useState<any[]>([]);
+    const [zonesEnabled, setZonesEnabled] = useState(false);
+    const [updatingTableId, setUpdatingTableId] = useState<number | null>(null);
+
     useEffect(() => {
         fetchTables();
+        fetchConfig();
         document.title = "Table Management";
     }, []);
+
+    const fetchConfig = async () => {
+        try {
+            // Fetch settings
+            const settingsRes = await fetch("/api/settings?type=general");
+            const settingsData = await settingsRes.json();
+            if (settingsData.success && settingsData.data?.waiter_zones_enabled === 'true') {
+                setZonesEnabled(true);
+            }
+
+            // Fetch waiters
+            const membersRes = await fetch("/api/members?limit=100");
+            const membersData = await membersRes.json();
+            if (membersData.success && membersData.data?.members) {
+                const waiterList = membersData.data.members.filter((m: any) => m.role === 'waiter');
+                setWaiters(waiterList);
+            }
+        } catch (error) {
+            console.error("Error fetching config:", error);
+        }
+    };
 
     const fetchTables = async () => {
         try {
             setLoading(true);
             const response = await fetch("/api/tables");
             const data = await response.json();
-            setTables(data.tables);
+            if (data.success) {
+                setTables(data.data || []);
+            }
         } catch (error) {
             console.error("Error fetching tables:", error);
         } finally {
@@ -113,7 +141,31 @@ const TableManagement = () => {
         }
     };
 
-    const filteredTables = tables
+    const assignWaiter = async (tableId: number, waiterId: string) => {
+        try {
+            setUpdatingTableId(tableId);
+            const response = await fetch(`/api/tables/${tableId}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ assigned_waiter_id: waiterId || null }),
+            });
+
+            if (response.ok) {
+                // Update local state directly instead of refetching everything
+                setTables(prev => prev.map(t => 
+                    t.id === tableId ? { ...t, assigned_waiter_id: waiterId || null } : t
+                ));
+            } else {
+                console.error("Failed to assign waiter");
+            }
+        } catch (error) {
+            console.error("Error:", error);
+        } finally {
+            setUpdatingTableId(null);
+        }
+    };
+
+    const filteredTables = (Array.isArray(tables) ? tables : [])
         .filter(table => {
             const tableNumberStr = String(table.tablenumber);
             const matchesSearch = tableNumberStr.toLowerCase().includes(searchTerm.toLowerCase());
@@ -181,8 +233,16 @@ const TableManagement = () => {
                 </div>
 
                 {loading ? (
-                    <div className="flex justify-center items-center py-12">
-                        <Bars height="50" width="50" color="#1e4569" ariaLabel="bars-loading" />
+                    <div className="p-6">
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+                            {[...Array(12)].map((_, i) => (
+                                <div key={i} className="flex flex-col items-center justify-center p-5 rounded-2xl border border-gray-100 space-y-3">
+                                    <Skeleton variant="circle" width="56px" height="56px" />
+                                    <Skeleton variant="text" width="60%" height="20px" />
+                                    <Skeleton variant="text" width="40%" height="12px" />
+                                </div>
+                            ))}
+                        </div>
                     </div>
                 ) : filteredTables && filteredTables.length > 0 ? (
                     <div className="p-6">
@@ -224,6 +284,24 @@ const TableManagement = () => {
                                             </p>
                                         </div>
                                     </div>
+
+                                    {zonesEnabled && (
+                                        <div className="mt-4 w-full pt-3 border-t border-gray-100" onClick={(e) => e.stopPropagation()}>
+                                            <select
+                                                value={table.assigned_waiter_id || ""}
+                                                onChange={(e) => assignWaiter(table.id, e.target.value)}
+                                                disabled={updatingTableId === table.id}
+                                                className="w-full text-xs py-1.5 px-2 border border-gray-200 rounded text-gray-600 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary disabled:opacity-50"
+                                            >
+                                                <option value="">Unassigned (Any Waiter)</option>
+                                                {waiters.map(w => (
+                                                    <option key={w.userid} value={w.userid}>
+                                                        {w.name}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                    )}
                                 </div>
                             ))}
                         </div>
@@ -261,14 +339,14 @@ const TableManagement = () => {
 
                         <div className="p-6">
                             {loading && (
-                                <div className='absolute inset-0 flex justify-center items-center bg-white bg-opacity-90 rounded-xl z-10'>
-                                    <Bars
-                                        height="50"
-                                        width="50"
-                                        color="primary"
-                                        ariaLabel="loading"
-                                        visible={true}
-                                    />
+                                <div className='absolute inset-0 flex flex-col justify-center items-center bg-white bg-opacity-90 rounded-xl z-10 p-8 space-y-4'>
+                                    <Skeleton variant="text" width="60%" height="24px" />
+                                    <Skeleton variant="rect" width="100%" height="44px" className="rounded-lg" />
+                                    <div className="w-full flex gap-3 justify-end">
+                                        <Skeleton variant="rect" width="80px" height="36px" className="rounded-lg" />
+                                        <Skeleton variant="rect" width="100px" height="36px" className="rounded-lg" />
+                                    </div>
+                                    <p className="text-primary font-medium animate-pulse mt-4">Creating table...</p>
                                 </div>
                             )}
 
@@ -357,7 +435,7 @@ const TableManagement = () => {
                                 disabled={deleteConfirmText !== "delete" || deleteLoading}
                             >
                                 {deleteLoading ? (
-                                    <Bars height="18" width="18" color="white" ariaLabel="deleting" />
+                                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                                 ) : (
                                     <>
                                         <FaTrash className="mr-1.5" />

@@ -2,6 +2,7 @@ import mysql from 'mysql2/promise';
 
 const dbConfig = {
     host: process.env.DB_HOST || 'localhost',
+    port: process.env.DB_PORT ? Number(process.env.DB_PORT) : 3306,
     user: process.env.DB_USER || 'root',
     password: process.env.DB_PASSWORD || '',
     database: process.env.DB_NAME || 'rms',
@@ -9,6 +10,7 @@ const dbConfig = {
     connectionLimit: Number(process.env.DB_CONN_LIMIT || 10),
     queueLimit: 0,
     connectTimeout: Number(process.env.DB_CONNECT_TIMEOUT || 5000),
+    ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : undefined,
 } as const;
 
 declare global {

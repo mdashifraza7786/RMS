@@ -15,12 +15,14 @@ export async function POST(request: Request) {
     const time = status === "absent" ? null : getCurrentTime();
 
     try {
-        await connection.query<ResultSetHeader>(
-            `INSERT INTO attendance (userid, date, status, time)
-             VALUES (?, ?, ?, ?)
-             ON DUPLICATE KEY UPDATE status = VALUES(status), time = VALUES(time)`,
-            [userid, date, status, time]
+        const [result] = await connection.query<ResultSetHeader>(
+            'UPDATE attendance SET status = ?, time = ? WHERE userid = ? AND date = ?',
+            [status, time, userid, date]
         );
+
+        if (result.affectedRows === 0) {
+            return NextResponse.json({ message: 'No attendance record found for this date. Please generate attendance first.' }, { status: 422 });
+        }
 
         return NextResponse.json({ message: 'Attendance Updated Successfully' });
     } catch (error) {

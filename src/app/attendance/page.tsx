@@ -40,6 +40,7 @@ const Page: React.FC = () => {
     const [selectedDate, setSelectedDate]   = useState('');
     const [currentMonth, setCurrentMonth]   = useState(new Date());
     const [availableDates, setAvailableDates] = useState<string[]>([]);
+    const [updatingId, setUpdatingId]       = useState<string | null>(null);
 
     const { data: session } = useSession();
     const role   = session?.user?.role;
@@ -75,8 +76,10 @@ const Page: React.FC = () => {
     };
 
     const giveAttendance = async (id: string, status: string) => {
-        setAttendanceData(prev =>
-            prev.map(item =>
+        setUpdatingId(id);
+        const prev = attendanceData;
+        setAttendanceData(list =>
+            list.map(item =>
                 item.userid === id
                     ? { ...item, status: item.status === status ? '' : status }
                     : item
@@ -86,7 +89,10 @@ const Page: React.FC = () => {
             await axios.post('/api/attendance/updateAttendence', { userid: id, status, date: today });
             toast.success(`Marked as ${status}`);
         } catch {
+            setAttendanceData(prev);
             toast.error('Failed to update attendance');
+        } finally {
+            setUpdatingId(null);
         }
     };
 
@@ -377,18 +383,20 @@ const Page: React.FC = () => {
                                 ) : (
                                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-3">
                                         {filtered.map((item, idx) => {
-                                            const isPresent = item.status === 'present';
-                                            const isAbsent  = item.status === 'absent';
-                                            const initial   = item.name?.charAt(0)?.toUpperCase() || '?';
-                                            const isToday   = selectedDate === today;
+                                            const isPresent  = item.status === 'present';
+                                            const isAbsent   = item.status === 'absent';
+                                            const initial    = item.name?.charAt(0)?.toUpperCase() || '?';
+                                            const isToday    = selectedDate === today;
+                                            const isUpdating = updatingId === item.userid;
 
                                             return (
                                                 <div
                                                     key={idx}
                                                     className={`relative rounded-xl border p-3 flex flex-col items-center gap-2 transition-all ${
-                                                        isPresent ? 'border-green-200 bg-green-50/40' :
-                                                        isAbsent  ? 'border-red-200   bg-red-50/40'   :
-                                                                    'border-gray-100  bg-white'
+                                                        isUpdating ? 'opacity-60 pointer-events-none border-gray-200 bg-gray-50' :
+                                                        isPresent  ? 'border-green-200 bg-green-50/40' :
+                                                        isAbsent   ? 'border-red-200   bg-red-50/40'   :
+                                                                     'border-gray-100  bg-white'
                                                     }`}
                                                 >
                                                     {/* Avatar */}
@@ -422,28 +430,39 @@ const Page: React.FC = () => {
                                                     {/* Action buttons — only for today */}
                                                     {isToday && (
                                                         <div className="flex gap-1.5 w-full">
-                                                            <button
-                                                                disabled={isPresent}
-                                                                onClick={() => giveAttendance(item.userid, 'present')}
-                                                                className={`flex-1 py-1 rounded-md text-[11px] font-semibold transition-all ${
-                                                                    isPresent
-                                                                        ? 'bg-green-500 text-white cursor-not-allowed'
-                                                                        : 'bg-green-50 text-green-700 hover:bg-green-100 border border-green-200'
-                                                                }`}
-                                                            >
-                                                                <FaCheck className="inline mr-0.5" size={8} />P
-                                                            </button>
-                                                            <button
-                                                                disabled={isAbsent}
-                                                                onClick={() => giveAttendance(item.userid, 'absent')}
-                                                                className={`flex-1 py-1 rounded-md text-[11px] font-semibold transition-all ${
-                                                                    isAbsent
-                                                                        ? 'bg-red-500 text-white cursor-not-allowed'
-                                                                        : 'bg-red-50 text-red-700 hover:bg-red-100 border border-red-200'
-                                                                }`}
-                                                            >
-                                                                <RxCross2 className="inline mr-0.5" size={8} />A
-                                                            </button>
+                                                            {isUpdating ? (
+                                                                <div className="w-full flex items-center justify-center py-1">
+                                                                    <svg className="animate-spin h-4 w-4 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                                                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                                                                    </svg>
+                                                                </div>
+                                                            ) : (
+                                                                <>
+                                                                    <button
+                                                                        disabled={isPresent}
+                                                                        onClick={() => giveAttendance(item.userid, 'present')}
+                                                                        className={`flex-1 py-1 rounded-md text-[11px] font-semibold transition-all ${
+                                                                            isPresent
+                                                                                ? 'bg-green-500 text-white cursor-not-allowed'
+                                                                                : 'bg-green-50 text-green-700 hover:bg-green-100 border border-green-200'
+                                                                        }`}
+                                                                    >
+                                                                        <FaCheck className="inline mr-0.5" size={8} />P
+                                                                    </button>
+                                                                    <button
+                                                                        disabled={isAbsent}
+                                                                        onClick={() => giveAttendance(item.userid, 'absent')}
+                                                                        className={`flex-1 py-1 rounded-md text-[11px] font-semibold transition-all ${
+                                                                            isAbsent
+                                                                                ? 'bg-red-500 text-white cursor-not-allowed'
+                                                                                : 'bg-red-50 text-red-700 hover:bg-red-100 border border-red-200'
+                                                                        }`}
+                                                                    >
+                                                                        <RxCross2 className="inline mr-0.5" size={8} />A
+                                                                    </button>
+                                                                </>
+                                                            )}
                                                         </div>
                                                     )}
                                                 </div>

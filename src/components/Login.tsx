@@ -3,7 +3,7 @@
 import { useState, FormEvent } from "react";
 import { toast, ToastContainer } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
-import { signIn } from "next-auth/react";
+import axios from "axios";
 import { FaUser, FaLock, FaArrowRight } from 'react-icons/fa';
 
 function Login() {
@@ -18,17 +18,15 @@ function Login() {
       const userid = formData.get('userid') as string;
       const password = formData.get('password') as string;
 
-      const result = await signIn('credentials', {
-        userid,
-        password,
-        redirect: false,
-      });
+      const response = await axios.post('/api/login', { userid, password });
+      const data = response.data;
 
-      if (result?.ok) {
+      if (data.success) {
+        localStorage.setItem('user', JSON.stringify(data.data));
         toast.success('Login successful');
         window.location.href = '/';
       } else {
-        toast.error(result?.error === 'CredentialsSignin' ? 'Invalid user ID or password' : 'Login failed');
+        toast.error(data.message || 'Login failed');
       }
     } catch (error: any) {
       toast.error(error.message || 'Failed to login');

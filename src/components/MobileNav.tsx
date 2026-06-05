@@ -99,7 +99,7 @@ const isPathActive = (href: string, path: string | null) => {
   return pattern.test(path);
 };
 
-const MobileNav: React.FC<{ role: string }> = ({ role }) => {
+const MobileNav: React.FC<{ role?: string }> = ({ role = '' }) => {
   const pathName = usePathname();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);

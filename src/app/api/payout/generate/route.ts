@@ -38,7 +38,7 @@ export async function GET() {
         if (existingRecords[0]?.count > 0) {
             return NextResponse.json(
                 { message: "Payout already generated for this month" },
-                { status: 209 }
+                { status: 409 }
             );
         }
  
@@ -99,13 +99,17 @@ export async function GET() {
         });
  
     } catch (error) {
-        try { await connection.rollback(); } catch {}
+        try {
+            await connection.rollback();
+        } catch (rollbackError) {
+            console.error("Error rolling back payout transaction:", rollbackError);
+        }
         console.error("Error generating payout records:", error);
         return NextResponse.json(
             { message: "Failed to generate payout records" },
             { status: 500 }
         );
     } finally {
-        connection.release();
+        await connection.release();
     }
 }

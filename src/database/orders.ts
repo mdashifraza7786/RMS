@@ -1,6 +1,6 @@
 import { RowDataPacket, ResultSetHeader } from 'mysql2/promise';
 import dbConnect from './connection';
-import { Order, Invoice, DbResponse } from '../types';
+import { Order, Invoice, DbResponse, OrderItem } from '../types';
 
 export async function getTableOrders(page: number = 1, limit: number = 10, status: string = '', search: string = ''): Promise<DbResponse<{ orders: any[], total: number }>> {
     const connection = await dbConnect();
@@ -81,7 +81,7 @@ export async function getTableOrders(page: number = 1, limit: number = 10, statu
 
         const [totalRows] = await connection.query<RowDataPacket[]>(countSql, countParams);
 
-        return { success: true, data: { orders: orderRows, total: totalRows[0].total } };
+        return { success: true, data: { orders: orderRows, total: totalRows.length > 0 ? totalRows[0].total : 0 } };
     } catch (error) {
         console.error('Error fetching table orders:', error);
         return { success: false, message: 'Failed to fetch table orders' };

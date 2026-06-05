@@ -1,14 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
-import {updateMember, updatePassword} from "@/database";
-import bcrypt from 'bcryptjs'
+import { updateMember, updatePassword } from "@/database";
+import { auth } from "@/auth";
+import bcrypt from 'bcryptjs';
 
 export async function PUT(request: NextRequest) {
+    const session = await auth();
+    const userRole = (session?.user as any)?.role;
+    if (!session || userRole !== 'admin') {
+        return NextResponse.json({ message: 'Unauthorized' }, { status: 403 });
+    }
+
     try {
         const data = await request.json();
-        if(data.type === 'passwordChange'){
+
+        if (data.type === 'passwordChange') {
             const hashedPassword = await bcrypt.hash(data.newPassword, 10);
-            await updatePassword({...data, newPassword: hashedPassword});
-        }else{
+            await updatePassword(data.userid, hashedPassword);
+        } else {
             await updateMember(data);
         }
 

@@ -29,9 +29,10 @@ const StaffSettings: React.FC = () => {
     const fetchSettings = async () => {
       try {
         const response = await axios.get('/api/settings?type=staff');
-        if (response.data) {
-          setSettings(response.data);
-          setOriginalSettings(response.data);
+        if (response.data?.success) {
+          const merged = { ...settings, ...(response.data.data || {}) };
+          setSettings(merged);
+          setOriginalSettings(merged);
         }
       } catch (error) {
         console.error('Error fetching staff settings:', error);
@@ -59,11 +60,11 @@ const StaffSettings: React.FC = () => {
     setIsSaving(true);
     try {
       const settingsToSave = [
-        { key: 'dashboard_refresh_rate', value: settings.dashboard_refresh_rate },
-        { key: 'enable_notifications', value: settings.enable_notifications },
-        { key: 'default_order_view', value: settings.default_order_view },
-        { key: 'enable_staff_chat', value: settings.enable_staff_chat },
-        { key: 'enable_kitchen_alerts', value: settings.enable_kitchen_alerts },
+        { key: 'dashboard_refresh_rate', value: settings.dashboard_refresh_rate, type: 'staff' },
+        { key: 'enable_notifications',   value: settings.enable_notifications,   type: 'staff' },
+        { key: 'default_order_view',     value: settings.default_order_view,     type: 'staff' },
+        { key: 'enable_staff_chat',      value: settings.enable_staff_chat,      type: 'staff' },
+        { key: 'enable_kitchen_alerts',  value: settings.enable_kitchen_alerts,  type: 'staff' },
       ];
 
       await axios.post('/api/settings/update', { settings: settingsToSave });

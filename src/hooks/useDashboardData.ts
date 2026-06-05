@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import axios from 'axios';
 
 
@@ -27,8 +27,9 @@ export interface ActiveOrder {
     tablenumber: number;
     itemsordered: OrderedItems[];
     start_time?: string;
-    chef_id?: string;
+    waiter_id?: string | null;
     waiter_name?: string | null;
+    chef_id?: string | null;
     chef_name?: string | null;
 }
 
@@ -43,7 +44,7 @@ export function useDashboardData(role: string | undefined, userid: string | unde
     const [isFinancialLoading, setIsFinancialLoading] = useState(true);
     const [orderedItems, setOrderedItems] = useState<ActiveOrder[]>([]);
     const [isTableLoading, setIsTableLoading] = useState(false);
-    const [tablesEverLoaded, setTablesEverLoaded] = useState(false);
+    const tablesEverLoadedRef = useRef(false);
 
     const fetchActiveOrders = useCallback(async () => {
         if (!role || !userid) return;
@@ -64,8 +65,9 @@ export function useDashboardData(role: string | undefined, userid: string | unde
                     price: item.price,
                     status: item.status ?? 'pending',
                 })),
-                chef_id: order.chef_id || undefined,
+                waiter_id: order.waiter_id || null,
                 waiter_name: order.waiter_name || null,
+                chef_id: order.chef_id || null,
                 chef_name: order.chef_name || null,
                 start_time: order.start_time,
             }));
@@ -77,7 +79,7 @@ export function useDashboardData(role: string | undefined, userid: string | unde
 
     const fetchTables = useCallback(async (silent: boolean = false) => {
         try {
-            if (!silent && !tablesEverLoaded) {
+            if (!silent && !tablesEverLoadedRef.current) {
                 setIsTableLoading(true);
             }
 
@@ -85,16 +87,16 @@ export function useDashboardData(role: string | undefined, userid: string | unde
             if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
 
             const data = await response.json();
-            setTableData(data.data || []); // Adjusted for successResponse wrapper
-            if (!tablesEverLoaded) setTablesEverLoaded(true);
+            setTableData(data.data || []);
+            tablesEverLoadedRef.current = true;
         } catch (error: any) {
             console.error("Error fetching tables:", error.message);
         } finally {
-            if (!silent && !tablesEverLoaded) {
+            if (!silent && !tablesEverLoadedRef.current) {
                 setIsTableLoading(false);
             }
         }
-    }, [tablesEverLoaded]);
+    }, []);
 
     const fetchFinancialData = useCallback(async (period = 'today') => {
         try {
@@ -140,7 +142,7 @@ export function useDashboardData(role: string | undefined, userid: string | unde
             clearInterval(financialInterval);
             document.removeEventListener('visibilitychange', onVisibility);
         };
-    }, [role, userid, fetchActiveOrders, fetchTables, fetchFinancialData, financialData.period]);
+    }, [role, userid, fetchActiveOrders, fetchTables, fetchFinancialData]);
 
     const resetTable = useCallback((tablenumber: number) => {
         setOrderedItems((prevItems) => prevItems.filter(order => order.tablenumber !== tablenumber));

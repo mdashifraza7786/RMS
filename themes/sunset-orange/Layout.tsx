@@ -14,8 +14,8 @@ export default function SunsetOrangeLayout({ children, role }: { children: React
   }, []);
 
   return (
-    <div className="min-h-screen flex bg-[#FFF7ED]">
-      <aside className="w-72 bg-[#1C1917] text-gray-300 hidden lg:flex flex-col rounded-r-3xl my-4 shadow-[10px_0_30px_rgba(234,88,12,0.1)] relative overflow-hidden">
+    <div className="h-screen flex bg-[#FFF7ED] overflow-hidden">
+      <aside className="w-72 bg-[#1C1917] text-gray-300 hidden lg:flex flex-col rounded-r-3xl my-4 shadow-[10px_0_30px_rgba(234,88,12,0.1)] relative overflow-hidden flex-shrink-0">
         {/* Decorative background circle */}
         <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-[#EA580C]/20 to-transparent rounded-bl-full pointer-events-none"></div>
         

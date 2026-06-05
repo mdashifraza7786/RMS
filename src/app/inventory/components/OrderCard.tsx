@@ -25,8 +25,8 @@ const OrderCard: React.FC = () => {
         const fetchInventory = async () => {
             try {
                 const response = await axios.get("/api/inventory");
-                if (response.data && Array.isArray(response.data.users)) {
-                    setInventory(response.data.users);
+                if (response.data?.success && Array.isArray(response.data.data?.inventory)) {
+                    setInventory(response.data.data.inventory);
                 } else {
                     console.error("Invalid inventory data:", response.data);
                 }

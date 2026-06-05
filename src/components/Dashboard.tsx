@@ -142,6 +142,7 @@ const Dashboard: React.FC = () => {
                     OrderQueueCard={OrderQueueCard as any}
                     onViewOrder={handleOrder}
                     canAssignChef={role === 'admin' || role === 'waiter'}
+                    canAssignWaiter={role === 'admin'}
                 />
 
                 {role !== 'chef' && (

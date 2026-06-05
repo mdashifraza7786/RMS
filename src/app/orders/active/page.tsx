@@ -14,6 +14,7 @@ interface Table {
 }
 
 interface OrderedItems {
+    id: number;
     item_id: string;
     item_name: string;
     quantity: number;
@@ -66,8 +67,8 @@ export default function ActiveOrdersPage() {
             }
             const data = await response.json();
 
-            if (data && Array.isArray(data)) {
-                setOrders(data);
+            if (data?.success && Array.isArray(data.data)) {
+                setOrders(data.data);
                 if (!everLoaded) setEverLoaded(true);
             }
         } catch (error) {
@@ -82,8 +83,8 @@ export default function ActiveOrdersPage() {
             const response = await fetch("/api/tables");
             const data = await response.json();
             
-            if (data && Array.isArray(data.tables)) {
-                setTableData(data.tables);
+            if (data?.success && Array.isArray(data.data)) {
+                setTableData(data.data);
             }
         } catch (error) {
             console.error("Error fetching tables:", error);
@@ -122,32 +123,30 @@ export default function ActiveOrdersPage() {
         );
     }
     
-    const removeOrderedItem = async (itemId: string, tableNumber: number, orderID: number) => {
+    const removeOrderedItem = async (voidItemId: number, tableNumber: number, orderID: number) => {
+        if (!window.confirm("Are you sure you want to void this item? Stock will be restored.")) return;
         try {
-            await fetch(`/api/order/modifyOrder`, {
+            const response = await fetch(`/api/order/voidItem`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    orderid: orderID,
-                    itemid: itemId,
-                }),
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ order_item_id: voidItemId }),
             });
-            
-            setOrders(prevOrders => {
-                return prevOrders.map(order => {
-                    if (order.orderId === orderID) {
-                        return {
-                            ...order,
-                            orderItems: order.orderItems.filter(item => item.item_id !== itemId)
-                        };
-                    }
-                    return order;
-                });
-            });
+            if (response.ok) {
+                setOrders(prevOrders =>
+                    prevOrders.map(order => {
+                        if (order.orderId === orderID) {
+                            return {
+                                ...order,
+                                orderItems: order.orderItems.filter((item: any) => item.id !== voidItemId),
+                            };
+                        }
+                        return order;
+                    })
+                );
+                getActiveOrders();
+            }
         } catch (error) {
-            console.error("Error removing item:", error);
+            console.error("Error voiding item:", error);
         }
     };
     

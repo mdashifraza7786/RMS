@@ -4,7 +4,6 @@ import React, { useState, useEffect, useMemo } from 'react';
 import BarChart from '../chartConfiguration/Bar';
 import PieChart from '../chartConfiguration/Pie';
 import LineChart from '../chartConfiguration/Line';
-import { ChartOptions, TooltipItem } from 'chart.js';
 import { FaChartBar, FaChartPie, FaChartLine, FaCalendarAlt, FaFilter } from 'react-icons/fa';
 
 // Define types for ChartKey and other possible values
@@ -342,7 +341,7 @@ const ProfitLoss: React.FC = () => {
         return generateData('Profit (₹)');
     }, [chartXY, comparisonMode, profitLossData, generateData]);
 
-    const chartOptions: ChartOptions<'bar'> | ChartOptions<'line'> = useMemo(() => {
+    const chartOptions: any = useMemo(() => {
         const xAxisLabels: Record<ChartKey, string> = {
             'timeline vs profit': timeFrame === 'weekly' ? 'Week Days' : (timeFrame === 'monthly' ? 'Weeks' : 'Months'),
             'menu item vs profit': 'Menu Items',
@@ -400,7 +399,7 @@ const ProfitLoss: React.FC = () => {
             plugins: {
                 tooltip: {
                     callbacks: {
-                        label: function (context: TooltipItem<'bar'>) {
+                        label: function (context: any) {
                             const value = context.raw as number;
                             const label = tooltipLabels[chartXY] || '';
                             return `${value} ${label}`;

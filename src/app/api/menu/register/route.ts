@@ -1,9 +1,27 @@
 import { dbConnect } from '@/database';
 import { NextResponse } from 'next/server';
+import { auth } from '@/auth';
+import { successResponse, errorResponse } from '@/lib/api-response';
+import { registerMenuItemSchema } from '@/lib/validation';
 
 export async function POST(request: Request) {
-    const data = await request.json();
-    const { item_name, item_description, item_foodtype, item_price,making_cost, item_type , item_thumbnail } = data;
+    const session = await auth();
+    const userRole = (session?.user as any)?.role;
+    if (!session || userRole !== 'admin') {
+        return NextResponse.json(errorResponse("Unauthorized"), { status: 403 });
+    }
+
+    const body = await request.json();
+    const validation = registerMenuItemSchema.safeParse(body);
+
+    if (!validation.success) {
+        return NextResponse.json(
+            errorResponse("Invalid input: " + JSON.stringify(validation.error.format())),
+            { status: 400 }
+        );
+    }
+
+    const { item_name, item_description, item_foodtype, item_price, making_cost, item_type, item_thumbnail } = validation.data;
 
     let foodType: string;
     switch (item_foodtype) {
@@ -14,7 +32,7 @@ export async function POST(request: Request) {
             foodType = "NVEG";
             break;
         default:
-            return NextResponse.json({ message: "Contact Developer" });
+            return NextResponse.json(errorResponse("Invalid food type. Must be 'veg' or 'nveg'"), { status: 400 });
     }
 
     function generateFourDigitRandomNumber(): number {
@@ -56,10 +74,10 @@ export async function POST(request: Request) {
 
         await connection.commit();
 
-        return NextResponse.json({ message: "Data inserted successfully", cred: { uniqueID } });
+        return NextResponse.json(successResponse({ uniqueID }, "Menu item registered successfully"), { status: 201 });
     } catch (err: any) {
         await connection.rollback();
-        return NextResponse.json({ error: err.message });
+        return NextResponse.json(errorResponse(err.message || "Failed to register menu item"), { status: 500 });
     } finally {
         connection.release();
     }

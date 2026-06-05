@@ -4,6 +4,7 @@ import { BillSummaryProps } from "./types";
 const BillSummary: React.FC<BillSummaryProps> = ({
     subtotal,
     gst,
+    gstRate,
     totalAmount,
     booked,
     handlePlaceOrder,
@@ -22,7 +23,7 @@ const BillSummary: React.FC<BillSummaryProps> = ({
                     <span className="font-medium">₹{subtotal.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between items-center pb-2">
-                    <span className="text-gray-600">GST (18%):</span>
+                    <span className="text-gray-600">GST ({(gstRate * 100).toFixed(0)}%):</span>
                     <span className="font-medium">₹{gst.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between items-center pt-3 text-lg">

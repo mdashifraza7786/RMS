@@ -16,6 +16,7 @@ interface ActiveOrdersProps {
   OrderQueueCard: React.ComponentType<any>;
   onViewOrder: (tablenumber: number) => void;
   canAssignChef?: boolean;
+  canAssignWaiter?: boolean;
 }
 
 const ActiveOrders: React.FC<ActiveOrdersProps> = ({
@@ -29,6 +30,7 @@ const ActiveOrders: React.FC<ActiveOrdersProps> = ({
   OrderQueueCard,
   onViewOrder,
   canAssignChef = false,
+  canAssignWaiter = false,
 }) => {
   return (
     <section className="bg-white rounded-xl shadow-sm p-4 sm:p-6 border border-gray-100 mb-6 sm:mb-8">
@@ -75,12 +77,15 @@ const ActiveOrders: React.FC<ActiveOrdersProps> = ({
                     key={order.orderid}
                     table={order.tablenumber.toString()}
                     waiter={order.waiter_name || "Not assigned"}
+                    waiterId={order.waiter_id || null}
                     amount={(Number(order.billing.subtotal) + Number(order.billing.subtotal) * 0.18).toFixed(2)}
                     orid={order.orderid.toString()}
                     orderedItems={order.itemsordered}
-                    start_time={order.start_time || "N/A"}
+                    start_time={order.start_time || ""}
+                    chefId={order.chef_id || null}
                     onViewDetails={() => onViewOrder(order.tablenumber)}
                     showAssignChef={canAssignChef}
+                    showAssignWaiter={canAssignWaiter}
                   />
                 ) : null
               )

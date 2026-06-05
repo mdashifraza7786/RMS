@@ -1,6 +1,7 @@
 import { IoClose } from "react-icons/io5";
 import axios from "axios";
 import { FaShoppingBag } from "react-icons/fa";
+import { toast } from "react-toastify";
 import { OrderedItemsProps } from "./types";
 
 const OrderedItems: React.FC<OrderedItemsProps> = ({
@@ -71,7 +72,9 @@ const OrderedItems: React.FC<OrderedItemsProps> = ({
                                                 try {
                                                     await axios.post('/api/order/updateItemStatus', { orderid: order.orderid, itemid: item.item_id, status });
                                                     onUpdateItemStatus && onUpdateItemStatus(order.orderid, item.item_id, status);
-                                                } catch {}
+                                                } catch {
+                                                    toast.error("Failed to update item status. Please try again.");
+                                                }
                                             }}
                                             className="text-xs border border-gray-300 rounded-md px-2 py-1 text-gray-700"
                                         >

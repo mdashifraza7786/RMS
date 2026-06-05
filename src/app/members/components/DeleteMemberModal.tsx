@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import Skeleton from '../../ui/Skeleton';
+import Skeleton from '@/components/ui/Skeleton';
 import { FaExclamationTriangle, FaTrash } from 'react-icons/fa';
 
 interface DeleteMemberModalProps {

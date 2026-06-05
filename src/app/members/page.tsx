@@ -38,7 +38,8 @@ const Page: React.FC = () => {
             const response = await axios.get(`/api/members`, {
                 params: { page, search: searchQuery }
             });
-            const members = response.data?.success ? response.data.data : [];
+            const raw = response.data?.data;
+            const members: any[] = Array.isArray(raw) ? raw : (Array.isArray(raw?.members) ? raw.members : []);
 
             if (members.length < 10) {
                 setHasMore(false);

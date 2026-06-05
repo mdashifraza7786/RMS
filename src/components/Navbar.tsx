@@ -119,7 +119,7 @@ export const isPathActive = (href: string, path: string | null) => {
     return pattern.test(path);
 };
 
-const Navbar: React.FC<{ role: string, userid: string }> = ({ role, userid }) => {
+const Navbar: React.FC<{ role?: string, userid?: string }> = ({ role = '', userid = '' }) => {
     const pathName = usePathname();
     const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
 
@@ -133,9 +133,10 @@ const Navbar: React.FC<{ role: string, userid: string }> = ({ role, userid }) =>
 
     return (
         <>
-        <nav className="w-full sticky top-0 z-50 shadow-sm bg-white mx-auto hidden lg:block">
-            <div className="bg-primary text-white px-[8vw]">
-                <div className="container mx-auto px-6 flex justify-between items-center h-16">
+        <nav className="w-full sticky top-0 z-50 shadow-sm bg-white hidden lg:block">
+            {/* Top bar */}
+            <div className="bg-primary text-white">
+                <div className="flex justify-between items-center h-16 px-[8vw]">
                     <div className={`flex items-center ${raleway.className}`}>
                         <span className="font-semibold text-lg text-white">
                             Restaurant Management System
@@ -143,7 +144,7 @@ const Navbar: React.FC<{ role: string, userid: string }> = ({ role, userid }) =>
                     </div>
 
                     <div className="flex items-center space-x-3">
-                        <div 
+                        <div
                             onClick={() => setIsPasswordModalOpen(true)}
                             className="flex items-center space-x-2 bg-primaryhover hover:bg-opacity-90 transition-all duration-200 px-4 py-2 rounded-lg cursor-pointer"
                         >
@@ -166,7 +167,7 @@ const Navbar: React.FC<{ role: string, userid: string }> = ({ role, userid }) =>
                             }
                             return (
                                 <Link
-                                    key={index} 
+                                    key={index}
                                     href={item.href}
                                     className="flex items-center space-x-2 bg-primaryhover hover:bg-opacity-90 transition-all duration-200 px-4 py-2 rounded-lg cursor-pointer text-white"
                                 >
@@ -179,19 +180,18 @@ const Navbar: React.FC<{ role: string, userid: string }> = ({ role, userid }) =>
                 </div>
             </div>
 
+            {/* Nav links bar */}
             <div className="bg-white border-b">
-                <div className="container mx-auto px-2">
-                    <div className="flex items-center h-14 overflow-x-auto scrollbar-hide px-[8vw] [@media(min-width:1920px)]:px-0">
-                        {filteredNavItems.map((item) => (
-                            <NavItem
-                                key={item.href}
-                                href={item.href}
-                                icon={React.cloneElement(item.icon, { className: "w-4 h-4" })}
-                                label={item.label}
-                                isActive={isPathActive(item.href, pathName)}
-                            />
-                        ))}
-                    </div>
+                <div className="flex items-center h-14 overflow-x-auto scrollbar-hide px-[8vw]">
+                    {filteredNavItems.map((item) => (
+                        <NavItem
+                            key={item.href}
+                            href={item.href}
+                            icon={React.cloneElement(item.icon, { className: "w-4 h-4" })}
+                            label={item.label}
+                            isActive={isPathActive(item.href, pathName)}
+                        />
+                    ))}
                 </div>
             </div>
         </nav>

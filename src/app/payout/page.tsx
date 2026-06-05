@@ -31,6 +31,7 @@ interface User {
 }
 
 interface MergedUserPayout {
+    id: number;
     userid: string;
     name: string;
     mobile: string;
@@ -102,7 +103,8 @@ const Page = () => {
 
             const userResponse = await axios.get('/api/members');
             if (userResponse.data?.success && userResponse.data?.data) {
-                const combinedData = userResponse.data.data;
+                const raw = userResponse.data.data;
+                const combinedData: any[] = Array.isArray(raw) ? raw : (Array.isArray(raw?.members) ? raw.members : []);
 
                 setUserInfo(prevData => {
                     const existingIds = new Set(prevData.map(item => item.userid));
@@ -394,7 +396,7 @@ const Page = () => {
                                                         {item.status !== 'paid' && (
                                                             <button
                                                                 className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-green-600 hover:bg-green-700 transition"
-                                                                onClick={() => handleMarkAsPaid(item.userid)}
+                                                                onClick={() => handleMarkAsPaid(item.id)}
                                                                 disabled={actionLoading}
                                                             >
                                                                 <FaCheck className="mr-1.5" /> Paid
@@ -403,7 +405,7 @@ const Page = () => {
                                                         {item.status !== 'unpaid' && (
                                                             <button
                                                                 className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-red-600 hover:bg-red-700 transition"
-                                                                onClick={() => handleMarkAsUnpaid(item.userid)}
+                                                                onClick={() => handleMarkAsUnpaid(item.id)}
                                                                 disabled={actionLoading}
                                                             >
                                                                 <RxCross2 className="mr-1.5" /> Unpaid
@@ -464,7 +466,7 @@ const Page = () => {
                                                 {item.status !== 'paid' && (
                                                     <button
                                                         className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-green-600 hover:bg-green-700 transition"
-                                                        onClick={() => handleMarkAsPaid(item.userid)}
+                                                        onClick={() => handleMarkAsPaid(item.id)}
                                                         disabled={actionLoading}
                                                     >
                                                         <FaCheck className="mr-1.5" /> Paid
@@ -473,7 +475,7 @@ const Page = () => {
                                                 {item.status !== 'unpaid' && (
                                                     <button
                                                         className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-red-600 hover:bg-red-700 transition"
-                                                        onClick={() => handleMarkAsUnpaid(item.userid)}
+                                                        onClick={() => handleMarkAsUnpaid(item.id)}
                                                         disabled={actionLoading}
                                                     >
                                                         <RxCross2 className="mr-1.5" /> Unpaid

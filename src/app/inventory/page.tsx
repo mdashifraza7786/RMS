@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { FaSearch, FaBox } from "react-icons/fa";
 import Skeleton from "@/components/ui/Skeleton";
+import PageHeader from '@/components/PageHeader';
 import LowStock from '@/app/inventory/components/LowStock';
 import InventoryCard from '@/app/inventory/components/InventoryCard';
 import KitchenOrdersCard from '@/app/inventory/components/KitchenOrdersCard';
@@ -64,12 +65,12 @@ const Page: React.FC = () => {
     ];
 
     return (
-        <div className="container mx-auto px-6 pt-4 pb-8">
-            <div className="py-4">
-                <div className="flex items-center gap-3">
-                    <h1 className="text-xl font-semibold text-gray-800">Inventory Management</h1>
-                </div>
-            </div>
+        <div className="px-6 lg:px-10 py-4 pb-8">
+            <PageHeader
+                title="Inventory"
+                subtitle="Stock levels and supply management"
+                accent="warning"
+            />
 
             {lowStock.length > 0 && (
                 <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6">
@@ -105,7 +106,7 @@ const Page: React.FC = () => {
                             <input
                                 type="search"
                                 placeholder="Search by name or ID..."
-                                className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary w-full md:w-80"
+                                className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent/20 focus:border-accent focus:outline-none w-full md:w-80"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                             />
@@ -118,7 +119,7 @@ const Page: React.FC = () => {
                                 key={tab.id}
                                 onClick={() => setSelectedFilter(tab.id as any)}
                                 className={`px-4 py-2 text-sm font-medium rounded-t-lg transition-all ${selectedFilter === tab.id
-                                        ? 'text-primary border-b-2 border-primary bg-primary/5'
+                                        ? 'text-accent border-b-2 border-accent bg-accent/5'
                                         : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
                                     }`}
                             >

@@ -2,6 +2,7 @@
 
 import React, { useMemo, useState } from 'react';
 import { FaChartLine, FaFilter, FaMoneyBillWave } from 'react-icons/fa';
+import PageHeader from '@/components/PageHeader';
 import axios from 'axios';
 import Skeleton from "@/components/ui/Skeleton";
 import {
@@ -91,13 +92,12 @@ const InventoryForecastPage: React.FC = () => {
     : 'Forecast revenue based on paid invoices';
 
   return (
-    <div className="container mx-auto px-6 pt-4 pb-8">
-      <header className="mb-4">
-        <h1 className="text-2xl font-semibold text-gray-800 flex items-center gap-2">
-          <FaChartLine /> {title}
-        </h1>
-        <p className="text-gray-500 text-sm mt-1">{subtitle}</p>
-      </header>
+    <div className="px-6 lg:px-10 py-4 pb-8">
+      <PageHeader
+        title={title}
+        subtitle={subtitle}
+        accent="accent"
+      />
 
       {/* Mode toggle */}
       <div className="sticky top-[64px] z-30 bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/60 border border-gray-100 rounded-xl shadow-sm mb-4">
@@ -105,7 +105,7 @@ const InventoryForecastPage: React.FC = () => {
           <button
             onClick={() => setMode('inventory')}
             className={`px-3 py-2 rounded-lg text-sm transition-colors ${
-              mode === 'inventory' ? 'bg-primary text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              mode === 'inventory' ? 'bg-accent text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             }`}
             aria-pressed={mode === 'inventory'}
           >
@@ -114,7 +114,7 @@ const InventoryForecastPage: React.FC = () => {
           <button
             onClick={() => setMode('revenue')}
             className={`px-3 py-2 rounded-lg text-sm transition-colors ${
-              mode === 'revenue' ? 'bg-primary text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              mode === 'revenue' ? 'bg-accent text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             }`}
             aria-pressed={mode === 'revenue'}
           >
@@ -133,7 +133,7 @@ const InventoryForecastPage: React.FC = () => {
                 <FaFilter className="inline mr-1" /> Item
               </label>
               <select
-                className="p-2 border border-gray-200 rounded-md cursor-pointer text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 w-full"
+                className="p-2 border border-gray-200 rounded-md cursor-pointer text-sm focus:outline-none focus:ring-2 focus:ring-accent/20 w-full"
                 value={selectedItem}
                 onChange={(e) => setSelectedItem(e.target.value)}
               >
@@ -154,7 +154,7 @@ const InventoryForecastPage: React.FC = () => {
                   type="number"
                   min={1}
                   max={60}
-                  className="p-2 border border-gray-200 rounded-md w-28 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                  className="p-2 border border-gray-200 rounded-md w-28 text-sm focus:outline-none focus:ring-2 focus:ring-accent/20"
                   value={days}
                   onChange={(e) => setDays(Math.max(1, Math.min(60, Number(e.target.value))))}
                 />
@@ -164,7 +164,7 @@ const InventoryForecastPage: React.FC = () => {
                       key={d}
                       onClick={() => setDays(d)}
                       className={`px-2 py-1 text-xs rounded-md border transition-colors ${
-                        days === d ? 'bg-primary text-white border-primary' : 'bg-gray-50 text-gray-700 border-gray-200'
+                        days === d ? 'bg-accent text-white border-accent' : 'bg-gray-50 text-gray-700 border-gray-200'
                       }`}
                     >
                       {d}d
@@ -179,7 +179,7 @@ const InventoryForecastPage: React.FC = () => {
                 onClick={handleFetchInventory}
                 disabled={loading}
                 className={`inline-flex items-center px-4 py-2 rounded-lg text-white transition shadow-sm ${
-                  loading ? 'bg-primary/60 cursor-not-allowed' : 'bg-primary hover:bg-primary/80'
+                  loading ? 'bg-accent/60 cursor-not-allowed' : 'bg-accent hover:bg-accent/90'
                 }`}
               >
                 {loading ? 'Loading…' : 'Get Inventory Forecast'}
@@ -224,7 +224,7 @@ const InventoryForecastPage: React.FC = () => {
                   type="number"
                   min={1}
                   max={60}
-                  className="p-2 border border-gray-200 rounded-md w-28 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                  className="p-2 border border-gray-200 rounded-md w-28 text-sm focus:outline-none focus:ring-2 focus:ring-accent/20"
                   value={revDays}
                   onChange={(e) => setRevDays(Math.max(1, Math.min(60, Number(e.target.value))))}
                 />
@@ -234,7 +234,7 @@ const InventoryForecastPage: React.FC = () => {
                       key={d}
                       onClick={() => setRevDays(d)}
                       className={`px-2 py-1 text-xs rounded-md border transition-colors ${
-                        revDays === d ? 'bg-primary text-white border-primary' : 'bg-gray-50 text-gray-700 border-gray-200'
+                        revDays === d ? 'bg-accent text-white border-accent' : 'bg-gray-50 text-gray-700 border-gray-200'
                       }`}
                     >
                       {d}d
@@ -247,7 +247,7 @@ const InventoryForecastPage: React.FC = () => {
               onClick={handleFetchRevenue}
               disabled={revLoading}
               className={`inline-flex items-center px-4 py-2 rounded-lg text-white transition shadow-sm ${
-                revLoading ? 'bg-primary/60 cursor-not-allowed' : 'bg-primary hover:bg-primary/80'
+                revLoading ? 'bg-accent/60 cursor-not-allowed' : 'bg-accent hover:bg-accent/90'
               }`}
             >
               {revLoading ? 'Loading…' : 'Get Revenue Forecast'}
@@ -279,15 +279,15 @@ const InventoryForecastPage: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
               <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
                 <div className="text-xs text-gray-500">Expected Avg Revenue</div>
-                <div className="text-2xl font-semibold text-gray-800 mt-1">₹ {revSummary.mid.toLocaleString('en-IN')}</div>
+                <div className="text-2xl font-semibold text-gray-800 mt-1 font-mono tabular-nums">₹ {revSummary.mid.toLocaleString('en-IN')}</div>
               </div>
               <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
                 <div className="text-xs text-gray-500">Lower Bound</div>
-                <div className="text-2xl font-semibold text-gray-800 mt-1">₹ {revSummary.min.toLocaleString('en-IN')}</div>
+                <div className="text-2xl font-semibold text-gray-800 mt-1 font-mono tabular-nums">₹ {revSummary.min.toLocaleString('en-IN')}</div>
               </div>
               <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
                 <div className="text-xs text-gray-500">Upper Bound</div>
-                <div className="text-2xl font-semibold text-gray-800 mt-1">₹ {revSummary.max.toLocaleString('en-IN')}</div>
+                <div className="text-2xl font-semibold text-gray-800 mt-1 font-mono tabular-nums">₹ {revSummary.max.toLocaleString('en-IN')}</div>
               </div>
             </div>
           )}

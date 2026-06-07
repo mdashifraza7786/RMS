@@ -5,14 +5,12 @@
 :root {
   --color-primary: #25476A;
   --color-secondary: #03A9F4;
-  --color-accent: #1891C3;
-  --font-family: 'Inter, sans-serif';
-  
+  --color-accent: #2196F3;
   --foreground-rgb: 0, 0, 0;
   --background-start-rgb: 214, 219, 220;
   --background-end-rgb: 255, 255, 255;
-  --bg-color: #E6E6E6;
-  --text-color: #333333;
+  --bg-color: #F5F3EF;
+  --text-color: #1a1a1a;
   --card-bg: #FFFFFF;
   --border-color: #E2E8F0;
   --input-bg: #F7FAFC;
@@ -32,6 +30,7 @@
   --input-border: #4A5568;
   --hover-bg: #4A5568;
 }
+
 /* Hide number input spinner arrows */
 input[type="number"]::-webkit-outer-spin-button,
 input[type="number"]::-webkit-inner-spin-button {
@@ -46,7 +45,7 @@ input[type="number"] {
 body {
   background: var(--bg-color);
   color: var(--text-color);
-  font-family: var(--font-family);
+  font-family: var(--font-body, system-ui, sans-serif);
   transition: background-color 0.3s, color 0.3s;
 }
 
@@ -66,12 +65,13 @@ body {
 
 /* Hide scrollbar for IE, Edge, and Safari */
 .scrollbar-hide {
-  -ms-overflow-style: none;  /* IE and Edge */
-  scrollbar-width: none;  /* Firefox */
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
+
 .loader {
   border: 4px solid #f3f3f3;
-  border-top: 4px solid #25476A; 
+  border-top: 4px solid #25476A;
   border-radius: 50%;
   width: 150px;
   height: 150px;
@@ -86,7 +86,8 @@ body {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
-.bshadow{
+
+.bshadow {
   box-shadow: 0 0 10px 1px #eee;
 }
 
@@ -96,20 +97,20 @@ body {
   width: 100%;
   max-width: 300px;
   height: 150px;
-  border: 2px dashed #d1d5db; /* Tailwind gray-300 */
-  border-radius: 0.25rem; /* Tailwind rounded */
+  border: 2px dashed #d1d5db;
+  border-radius: 0.25rem;
   cursor: pointer;
   text-align: center;
   display: flex;
   justify-content: center;
   align-items: center;
-  color: #a0aec0; /* Tailwind gray-400 */
-  font-size: 1rem; /* Tailwind text-base */
-  background-color: #f7fafc; /* Tailwind gray-100 */
+  color: #a0aec0;
+  font-size: 1rem;
+  background-color: #f7fafc;
 }
 
 .custom-file-input-wrapper:hover {
-  border-color: #a0aec0; /* Tailwind gray-400 */
+  border-color: #a0aec0;
 }
 
 .custom-file-input {
@@ -125,10 +126,8 @@ body {
 .image-preview {
   position: relative;
   width: 100%;
-  /* max-width: 300px; */
-  /* height: 150px; */
-  border: 2px dashed #d1d5db; /* Tailwind gray-300 */
-  border-radius: 0.25rem; /* Tailwind rounded */
+  border: 2px dashed #d1d5db;
+  border-radius: 0.25rem;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -150,19 +149,27 @@ body {
   cursor: pointer;
 }
 
-.popup-transition{
-  animation: popup-tran 0.3s ease-in-out;
-  transform-origin: center;
+/* Corrected popup animation — height percentage interpolation requires explicit container */
+.popup-transition {
+  animation: slide-up-fade 0.25s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
-@keyframes popup-tran {
-  0%{
-    
-    height: 0;
+
+@keyframes slide-up-fade {
+  0% {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
   }
-  100%{
-    height: 100%;
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
   }
 }
+
+@keyframes fade-in-anim {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
 /* Skeleton Shimmer Animation */
 @keyframes shimmer {
   0% {

@@ -90,7 +90,7 @@ const Dashboard: React.FC = () => {
         <div className="">
             <Title role={role} />
 
-            <div className="container mx-auto px-4 sm:px-6 py-4">
+            <div className="px-6 lg:px-10 py-4">
                 {role === 'admin' && (
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
                         <FinancialOverview

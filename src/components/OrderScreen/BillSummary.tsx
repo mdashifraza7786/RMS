@@ -19,16 +19,16 @@ const BillSummary: React.FC<BillSummaryProps> = ({
         <div className="border border-gray-100 p-6 rounded-lg shadow-sm bg-white flex flex-col h-full">
             <div className="pb-4 mb-4 border-b border-gray-100">
                 <div className="flex justify-between items-center pb-2">
-                    <span className="text-gray-600">Subtotal:</span>
-                    <span className="font-medium">₹{subtotal.toFixed(2)}</span>
+                    <span className="text-xs uppercase tracking-widest text-gray-400">Subtotal</span>
+                    <span className="font-mono font-medium tabular-nums">₹{subtotal.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between items-center pb-2">
-                    <span className="text-gray-600">GST ({(gstRate * 100).toFixed(0)}%):</span>
-                    <span className="font-medium">₹{gst.toFixed(2)}</span>
+                    <span className="text-xs uppercase tracking-widest text-gray-400">GST ({(gstRate * 100).toFixed(0)}%)</span>
+                    <span className="font-mono font-medium tabular-nums">₹{gst.toFixed(2)}</span>
                 </div>
-                <div className="flex justify-between items-center pt-3 text-lg">
-                    <span className="font-semibold text-gray-800">Total:</span>
-                    <span className="font-bold text-primary">₹{totalAmount.toFixed(2)}</span>
+                <div className="flex justify-between items-center pt-3">
+                    <span className="font-semibold text-gray-800">Total</span>
+                    <span className="font-mono font-bold text-xl text-primary tabular-nums">₹{totalAmount.toFixed(2)}</span>
                 </div>
             </div>
             <div className="flex-grow overflow-auto">
@@ -78,7 +78,7 @@ const BillSummary: React.FC<BillSummaryProps> = ({
                 <button
                     onClick={handleCompleteOrder}
                     disabled={!booked || isSubmitting}
-                    className={`w-full bg-gradient-to-r from-supporting2 to-[#8ebf11] text-white font-medium py-3 px-4 rounded-lg hover:shadow-md transition ${(!booked || isSubmitting) ? 'opacity-60 cursor-not-allowed' : ''}`}
+                    className={`w-full bg-success text-white font-semibold py-3 px-4 rounded-lg hover:bg-success/90 hover:shadow-md transition-all ${(!booked || isSubmitting) ? 'opacity-50 cursor-not-allowed' : ''}`}
                 >
                     {isSubmitting ? 'Processing...' : 'Complete Order'}
                 </button>

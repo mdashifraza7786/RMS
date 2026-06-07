@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { FaPlus, FaTrash, FaSearch, FaTimes } from "react-icons/fa";
+import PageHeader from "@/components/PageHeader";
 import { MdTableBar, MdTableRestaurant } from "react-icons/md";
 import { BiTable } from "react-icons/bi";
 import Skeleton from "@/components/ui/Skeleton";
@@ -184,13 +185,24 @@ const TableManagement = () => {
         { id: 'occupied', label: 'Occupied' }
     ];
 
+    const addTableButton = (
+        <button
+            onClick={() => setIsModalOpen(true)}
+            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-accent hover:bg-accent/90 transition"
+        >
+            <FaPlus className="mr-2" />
+            Add Table
+        </button>
+    );
+
     return (
-        <div className="container mx-auto px-6 pt-4 pb-8">
-            <div className="py-4">
-                <div className="flex items-center gap-3">
-                    <h1 className="text-xl font-semibold text-gray-800">Table Management</h1>
-                </div>
-            </div>
+        <div className="px-6 lg:px-10 py-4 pb-8">
+            <PageHeader
+                title="Table Management"
+                subtitle="Configure restaurant tables"
+                accent="primary"
+                action={addTableButton}
+            />
 
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                 <div className="p-6 border-b border-gray-100">
@@ -202,18 +214,11 @@ const TableManagement = () => {
                             <input
                                 type="search"
                                 placeholder="Search by table number..."
-                                className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary w-full"
+                                className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent/20 focus:border-accent focus:outline-none w-full"
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                             />
                         </div>
-                        <button
-                            onClick={() => setIsModalOpen(true)}
-                            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-primary/80 transition"
-                        >
-                            <FaPlus className="mr-2" />
-                            Add Table
-                        </button>
                     </div>
 
                     <div className="flex overflow-x-auto pb-1 gap-2">
@@ -222,7 +227,7 @@ const TableManagement = () => {
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id)}
                                 className={`px-4 py-2 text-sm font-medium rounded-lg transition-all whitespace-nowrap ${activeTab === tab.id
-                                    ? 'text-white bg-primary'
+                                    ? 'text-white bg-accent'
                                     : 'text-gray-500 bg-gray-100 hover:bg-gray-200'
                                     }`}
                             >
@@ -291,7 +296,7 @@ const TableManagement = () => {
                                                 value={table.assigned_waiter_id || ""}
                                                 onChange={(e) => assignWaiter(table.id, e.target.value)}
                                                 disabled={updatingTableId === table.id}
-                                                className="w-full text-xs py-1.5 px-2 border border-gray-200 rounded text-gray-600 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary disabled:opacity-50"
+                                                className="w-full text-xs py-1.5 px-2 border border-gray-200 rounded text-gray-600 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-accent/30 focus:border-accent disabled:opacity-50"
                                             >
                                                 <option value="">Unassigned (Any Waiter)</option>
                                                 {waiters.map(w => (
@@ -320,8 +325,8 @@ const TableManagement = () => {
             </div>
 
             {isModalOpen && (
-                <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-60 z-50 backdrop-blur-sm">
-                    <div className="bg-white rounded-xl shadow-xl max-w-md w-full animate-scaleIn">
+                <div className="fixed inset-0 flex items-center justify-center bg-black/50 animate-fade-in z-50 backdrop-blur-sm">
+                    <div className="bg-white rounded-xl shadow-xl max-w-md w-full animate-slide-up">
                         <div className="bg-primary text-white p-5 rounded-t-xl sticky top-0 z-10">
                             <div className="flex justify-between items-center mb-2">
                                 <h3 className="text-xl font-bold flex items-center gap-2">
@@ -358,7 +363,7 @@ const TableManagement = () => {
                                     <input
                                         type="text"
                                         placeholder="Enter table number (e.g. 1, 2, 3)"
-                                        className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-primary focus:border-primary outline-none transition-all"
+                                        className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-accent/20 focus:border-accent focus:outline-none transition-all"
                                         value={tableNumber}
                                         onChange={(e) => {
                                             error && setError(null);
@@ -397,8 +402,8 @@ const TableManagement = () => {
             )}
 
             {deleteModalVisible && (
-                <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-60 z-50 backdrop-blur-sm animate-fadeIn">
-                    <div className="bg-white rounded-xl shadow-xl max-w-md w-full animate-scaleIn p-6">
+                <div className="fixed inset-0 flex items-center justify-center bg-black/50 animate-fade-in z-50 backdrop-blur-sm">
+                    <div className="bg-white rounded-xl shadow-xl max-w-md w-full animate-slide-up p-6">
                         <div className="text-center mb-6">
                             <div className="bg-red-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
                                 <FaTrash className="text-red-500" size={24} />

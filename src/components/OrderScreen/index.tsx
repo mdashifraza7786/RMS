@@ -368,8 +368,8 @@ const OrderScreen: React.FC<OrderScreenProps> = ({
     };
 
     return (
-        <div className="fixed inset-0 bg-gray-900 bg-opacity-80 backdrop-blur-sm flex justify-center items-center z-50">
-                <div className={`${isChef ? 'w-[95%] sm:w-[80%] md:w-[60%] max-w-5xl' : 'w-[95%] sm:w-[90%]'} h-[95%] sm:h-[90%] bg-white font-normal flex flex-col relative shadow-2xl rounded-2xl p-3 sm:p-6 overflow-hidden`}>
+        <div className="fixed inset-0 bg-gray-900/80 backdrop-blur-sm flex justify-center items-center z-50 animate-fade-in">
+                <div className={`${isChef ? 'w-[95%] sm:w-[80%] md:w-[60%] max-w-5xl' : 'w-[95%] sm:w-[90%]'} h-[95%] sm:h-[90%] bg-white font-normal flex flex-col relative shadow-2xl rounded-2xl p-3 sm:p-6 overflow-hidden animate-slide-up`}>
                 {/* Header */}
                 <div className="flex justify-between items-center pb-3 sm:pb-4 border-b border-gray-100">
                     <div className="font-bold text-base sm:text-xl text-gray-800 flex flex-wrap items-center gap-2">

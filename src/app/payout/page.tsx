@@ -9,6 +9,7 @@ import { BsBank, BsPerson } from 'react-icons/bs';
 import { MdPayment } from 'react-icons/md';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import PageHeader from '@/components/PageHeader';
 
 interface PayoutInfo {
     id: number,
@@ -248,12 +249,26 @@ const Page = () => {
     ];
 
     return (
-        <div className="container mx-auto px-6 pt-4 pb-8">
-            <div className="py-4">
-                <div className="flex items-center gap-3">
-                    <h1 className="text-xl font-semibold text-gray-800">Staff Payouts</h1>
-                </div>
-            </div>
+        <div className="px-6 lg:px-10 py-4 pb-8">
+            <PageHeader
+                title="Payouts"
+                subtitle="Staff payment management"
+                accent="success"
+                action={
+                    <button
+                        onClick={handleGeneratePayouts}
+                        disabled={generating || loading}
+                        className={`inline-flex items-center px-4 py-2 rounded-lg text-white transition ${
+                            generating || loading
+                                ? 'bg-success/60 cursor-not-allowed'
+                                : 'bg-success hover:bg-success/90'
+                        }`}
+                    >
+                        <FaFileInvoiceDollar className="mr-2" />
+                        {generating ? 'Generating...' : 'Generate Payouts'}
+                    </button>
+                }
+            />
 
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                 <div className="p-6 border-b border-gray-100">
@@ -265,24 +280,10 @@ const Page = () => {
                             <input
                                 type="search"
                                 placeholder="Search by ID, name or role..."
-                                className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary w-full md:w-80"
+                                className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent/20 focus:border-accent focus:outline-none w-full md:w-80"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                             />
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <button
-                                onClick={handleGeneratePayouts}
-                                disabled={generating || loading}
-                                className={`inline-flex items-center px-4 py-2 rounded-lg text-white transition ${
-                                    generating || loading
-                                        ? 'bg-primary/60 cursor-not-allowed'
-                                        : 'bg-primary hover:bg-primary/80'
-                                }`}
-                            >
-                                <FaFileInvoiceDollar className="mr-2" />
-                                {generating ? 'Generating...' : 'Generate Payouts'}
-                            </button>
                         </div>
                     </div>
 
@@ -292,7 +293,7 @@ const Page = () => {
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id)}
                                 className={`px-4 py-2 text-sm font-medium rounded-t-lg transition-all ${activeTab === tab.id
-                                    ? 'text-primary border-b-2 border-primary bg-primary/5'
+                                    ? 'text-accent border-b-2 border-accent bg-accent/5'
                                     : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
                                     }`}
                             >
@@ -351,7 +352,7 @@ const Page = () => {
                                         ].map((header) => (
                                             <th
                                                 key={header.id}
-                                                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                                                className="px-6 py-3 text-left text-xs uppercase tracking-widest text-gray-400 font-medium"
                                             >
                                                 {header.label}
                                             </th>
@@ -374,7 +375,7 @@ const Page = () => {
                                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                                     {item.role}
                                                 </td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 font-mono tabular-nums">
                                                     {formatCurrency(item.amount)}
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -535,8 +536,8 @@ const Page = () => {
                                             <button
                                                 onClick={() => paginate(page)}
                                                 className={`px-4 py-2 rounded-lg transition-all ${
-                                                    currentPage === page 
-                                                    ? 'bg-primary text-white' 
+                                                    currentPage === page
+                                                    ? 'bg-accent text-white'
                                                     : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
                                                 }`}
                                             >
@@ -690,7 +691,7 @@ const Page = () => {
                                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#{p.userid}</td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{p.account_number || '—'}</td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{p.upi_id || '—'}</td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{formatCurrency(p.amount)}</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 font-mono tabular-nums">{formatCurrency(p.amount)}</td>
                                             <td className="px-6 py-4 whitespace-nowrap">
                                                 <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(p.status)}`}>{(p.status || '').toUpperCase()}</span>
                                             </td>
@@ -801,8 +802,8 @@ const Page = () => {
             </div>
 
             {detailsPopupVisible && selectedItem && (
-                <div className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-60 z-50 p-4 animate-fadeIn">
-                    <div className="bg-white rounded-xl shadow-xl max-w-md w-full max-h-[90vh] overflow-auto animate-scaleIn">
+                <div className="fixed inset-0 flex justify-center items-center bg-black/50 animate-fade-in z-50 p-4">
+                    <div className="bg-white rounded-xl shadow-xl max-w-md w-full max-h-[90vh] overflow-auto animate-slide-up">
                         <div className="bg-primary text-white p-5 rounded-t-xl sticky top-0 z-10">
                             <div className="flex justify-between items-center mb-2">
                                 <h3 className="text-xl font-bold flex items-center gap-2">
@@ -837,7 +838,7 @@ const Page = () => {
                                 </div>
                                 <div className="bg-gray-50 p-3 rounded-lg">
                                     <p className="text-xs text-gray-500 mb-1">Amount</p>
-                                    <p className="font-medium text-gray-900">{formatCurrency(selectedItem.amount)}</p>
+                                    <p className="font-medium text-gray-900 font-mono tabular-nums">{formatCurrency(selectedItem.amount)}</p>
                                 </div>
                             </div>
 

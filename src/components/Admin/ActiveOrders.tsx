@@ -2,7 +2,7 @@
 
 import React, { Suspense } from "react";
 import Skeleton from "../ui/Skeleton";
-import { MdKeyboardArrowLeft, MdKeyboardArrowRight, MdRestaurantMenu } from "react-icons/md";
+import { MdKeyboardArrowLeft, MdKeyboardArrowRight } from "react-icons/md";
 import Link from "next/link";
 
 interface ActiveOrdersProps {
@@ -19,6 +19,17 @@ interface ActiveOrdersProps {
   canAssignWaiter?: boolean;
 }
 
+const EmptyOrders = () => (
+  <div className="flex flex-col items-center justify-center h-32 w-full bg-gray-50 rounded-xl border border-dashed border-gray-200 gap-3">
+    <svg width="40" height="40" viewBox="0 0 40 40" fill="none" className="text-gray-300">
+      <circle cx="20" cy="20" r="18" stroke="currentColor" strokeWidth="2" strokeDasharray="4 3" />
+      <path d="M13 20h14M20 13v14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" opacity="0.4" />
+      <circle cx="20" cy="20" r="5" stroke="currentColor" strokeWidth="1.5" opacity="0.4" />
+    </svg>
+    <p className="text-gray-400 text-sm">No active orders right now</p>
+  </div>
+);
+
 const ActiveOrders: React.FC<ActiveOrdersProps> = ({
   showLeftArrow,
   showRightArrow,
@@ -34,12 +45,17 @@ const ActiveOrders: React.FC<ActiveOrdersProps> = ({
 }) => {
   return (
     <section className="bg-white rounded-xl shadow-sm p-4 sm:p-6 border border-gray-100 mb-6 sm:mb-8">
-      <div className="flex flex-wrap justify-between items-center gap-2 mb-4 sm:mb-6">
-        <h2 className="text-base sm:text-lg font-semibold text-gray-800 flex items-center gap-2">
-          <MdRestaurantMenu className="text-amber-500" />
+      <div className="flex flex-wrap justify-between items-center gap-2 mb-5">
+        <h2 className="text-base sm:text-lg font-semibold text-gray-800 flex items-center gap-2.5">
+          <span className="w-1 h-5 bg-warning rounded-full inline-block flex-shrink-0" />
           Active Orders
+          {!isTableLoading && orderedItems.length > 0 && (
+            <span className="ml-1 bg-warning/10 text-warning text-xs font-mono font-semibold px-2 py-0.5 rounded-full">
+              {orderedItems.filter(o => o.tablenumber > 0).length}
+            </span>
+          )}
         </h2>
-        <Link href="/orders/active" className="text-xs sm:text-sm text-primary hover:text-primary/80 font-medium flex items-center">
+        <Link href="/orders/active" className="text-xs sm:text-sm text-accent hover:text-accent/80 font-medium flex items-center gap-1 transition-colors">
           View All
         </Link>
       </div>
@@ -48,13 +64,13 @@ const ActiveOrders: React.FC<ActiveOrdersProps> = ({
         {showLeftArrow && (
           <button
             onClick={onScrollLeft}
-            className="absolute -left-2 sm:-left-4 top-1/2 -translate-y-1/2 w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-white shadow-md flex justify-center items-center hover:bg-gray-50 transition-all z-10"
+            className="absolute -left-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white shadow-md border border-gray-100 flex justify-center items-center hover:bg-gray-50 transition-all z-10"
           >
-            <MdKeyboardArrowLeft className="text-xl sm:text-2xl text-gray-600" />
+            <MdKeyboardArrowLeft className="text-2xl text-gray-600" />
           </button>
         )}
 
-        <div ref={sliderRef} className="flex gap-3 sm:gap-4 overflow-x-auto scroll-smooth pb-3 sm:pb-4 hide-scrollbar">
+        <div ref={sliderRef} className="flex gap-3 sm:gap-4 overflow-x-auto scroll-smooth pb-2 scrollbar-hide">
           <Suspense
             fallback={
               <div className="flex gap-4 w-full">
@@ -70,29 +86,32 @@ const ActiveOrders: React.FC<ActiveOrdersProps> = ({
                   <Skeleton key={i} variant="rect" width="280px" height="160px" className="flex-shrink-0 rounded-xl" />
                 ))}
               </div>
-            ) : orderedItems.length > 0 ? (
-              orderedItems.map((order) =>
+            ) : orderedItems.filter(o => o.tablenumber > 0).length > 0 ? (
+              orderedItems.map((order, index) =>
                 order.tablenumber > 0 ? (
-                  <OrderQueueCard
+                  <div
                     key={order.orderid}
-                    table={order.tablenumber.toString()}
-                    waiter={order.waiter_name || "Not assigned"}
-                    waiterId={order.waiter_id || null}
-                    amount={(Number(order.billing.subtotal) + Number(order.billing.subtotal) * 0.18).toFixed(2)}
-                    orid={order.orderid.toString()}
-                    orderedItems={order.itemsordered}
-                    start_time={order.start_time || ""}
-                    chefId={order.chef_id || null}
-                    onViewDetails={() => onViewOrder(order.tablenumber)}
-                    showAssignChef={canAssignChef}
-                    showAssignWaiter={canAssignWaiter}
-                  />
+                    className="animate-slide-up flex-shrink-0"
+                    style={{ animationDelay: `${index * 55}ms` }}
+                  >
+                    <OrderQueueCard
+                      table={order.tablenumber.toString()}
+                      waiter={order.waiter_name || "Not assigned"}
+                      waiterId={order.waiter_id || null}
+                      amount={(Number(order.billing.subtotal) + Number(order.billing.subtotal) * 0.18).toFixed(2)}
+                      orid={order.orderid.toString()}
+                      orderedItems={order.itemsordered}
+                      start_time={order.start_time || ""}
+                      chefId={order.chef_id || null}
+                      onViewDetails={() => onViewOrder(order.tablenumber)}
+                      showAssignChef={canAssignChef}
+                      showAssignWaiter={canAssignWaiter}
+                    />
+                  </div>
                 ) : null
               )
             ) : (
-              <div className="flex items-center justify-center h-28 sm:h-32 w-full bg-gray-50 rounded-lg border border-dashed border-gray-200 px-4">
-                <p className="text-gray-500 text-xs sm:text-sm">No active orders at the moment</p>
-              </div>
+              <EmptyOrders />
             )}
           </Suspense>
         </div>
@@ -100,9 +119,9 @@ const ActiveOrders: React.FC<ActiveOrdersProps> = ({
         {showRightArrow && (
           <button
             onClick={onScrollRight}
-            className="absolute -right-2 sm:-right-4 top-1/2 -translate-y-1/2 w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-white shadow-md flex justify-center items-center hover:bg-gray-50 transition-all z-10"
+            className="absolute -right-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white shadow-md border border-gray-100 flex justify-center items-center hover:bg-gray-50 transition-all z-10"
           >
-            <MdKeyboardArrowRight className="text-xl sm:text-2xl text-gray-600" />
+            <MdKeyboardArrowRight className="text-2xl text-gray-600" />
           </button>
         )}
       </div>
@@ -111,5 +130,3 @@ const ActiveOrders: React.FC<ActiveOrdersProps> = ({
 };
 
 export default ActiveOrders;
-
-

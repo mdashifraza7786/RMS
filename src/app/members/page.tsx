@@ -148,7 +148,7 @@ const Page: React.FC = () => {
     };
 
     return (
-        <div className="container mx-auto px-6 pt-4 pb-8">
+        <div className="px-6 lg:px-10 pb-8">
 
             <MemberHeader />
 
@@ -163,7 +163,7 @@ const Page: React.FC = () => {
                         </div>
                         <button
                             onClick={handleAddMemberPopup}
-                            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-primary/90 transition shadow-sm"
+                            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-accent hover:bg-accent/90 transition shadow-sm"
                         >
                             <FaUserPlus className="mr-2" />
                             <span>Add Member</span>

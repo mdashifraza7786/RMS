@@ -11,6 +11,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import Skeleton from '@/components/ui/Skeleton';
 import { useSession } from 'next-auth/react';
 import AttendanceHistory from '@/components/Attendance';
+import PageHeader from '@/components/PageHeader';
 
 interface AttendanceItem {
     userid: string;
@@ -194,8 +195,8 @@ const Page: React.FC = () => {
         return (
             <>
                 <ToastContainer position="top-right" autoClose={3000} />
-                <div className="container mx-auto px-6 pt-4 pb-8">
-                    <h1 className="text-xl font-semibold text-gray-800 py-4">My Attendance</h1>
+                <div className="px-6 lg:px-10 pb-8">
+                    <PageHeader title="My Attendance" subtitle="Daily attendance tracking" accent="accent" />
                     <AttendanceHistory userid={userid as string} />
                 </div>
             </>
@@ -206,27 +207,27 @@ const Page: React.FC = () => {
     return (
         <>
             <ToastContainer position="top-right" autoClose={3000} />
-            <div className="container mx-auto px-4 sm:px-6 pt-4 pb-8">
-
-                {/* Page header */}
-                <div className="flex flex-wrap items-center justify-between gap-3 pb-5">
-                    <div className="flex items-center gap-2">
-                        <MdOutlineCalendarMonth className="text-primary text-2xl" />
-                        <h1 className="text-xl font-semibold text-gray-800">Staff Attendance</h1>
-                    </div>
-                    <button
-                        className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm transition-colors ${
-                            selectedDate === today
-                                ? 'bg-primary text-white hover:bg-primary/90'
-                                : 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                        }`}
-                        onClick={handleGenerateAttendance}
-                        disabled={selectedDate !== today || loading}
-                    >
-                        <FiRefreshCcw className={loading ? 'animate-spin' : ''} />
-                        {loading ? 'Generating…' : 'Generate Attendance'}
-                    </button>
-                </div>
+            <div className="px-6 lg:px-10 pb-8">
+                <PageHeader
+                    title="Attendance"
+                    subtitle="Daily staff attendance tracking"
+                    accent="accent"
+                    action={
+                        <button
+                            className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm transition-colors ${
+                                selectedDate === today
+                                    ? 'bg-primary text-white hover:bg-primaryhover'
+                                    : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                            }`}
+                            onClick={handleGenerateAttendance}
+                            disabled={selectedDate !== today || loading}
+                        >
+                            <FiRefreshCcw className={loading ? 'animate-spin' : ''} />
+                            {loading ? 'Generating…' : 'Generate Attendance'}
+                        </button>
+                    }
+                />
+                <div>
 
                 {/* Main two-column layout */}
                 <div className="flex flex-col lg:flex-row gap-5">
@@ -339,7 +340,7 @@ const Page: React.FC = () => {
                                         <input
                                             type="search"
                                             placeholder="Search name or ID…"
-                                            className="pl-8 pr-3 py-2 text-sm border border-gray-200 rounded-lg w-full sm:w-56 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                                            className="pl-8 pr-3 py-2 text-sm border border-gray-200 rounded-lg w-full sm:w-56 focus:outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent"
                                             value={searchQuery}
                                             onChange={e => setSearchQuery(e.target.value)}
                                         />
@@ -351,7 +352,7 @@ const Page: React.FC = () => {
                                                 onClick={() => setActiveTab(tab.id)}
                                                 className={`px-3 py-1.5 text-xs font-medium rounded-full transition-all ${
                                                     activeTab === tab.id
-                                                        ? 'bg-primary text-white shadow-sm'
+                                                        ? 'bg-accent text-white shadow-sm'
                                                         : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                                                 }`}
                                             >
@@ -473,6 +474,7 @@ const Page: React.FC = () => {
                             </div>
                         </div>
                     </div>
+                </div>
                 </div>
             </div>
         </>

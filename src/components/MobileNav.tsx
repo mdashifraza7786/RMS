@@ -118,11 +118,16 @@ const MobileNav: React.FC<{ role?: string }> = ({ role = '' }) => {
     <>
       {/* Mobile header */}
       <header className="fixed top-0 left-0 right-0 bg-primary text-white shadow-md h-14 flex items-center justify-between px-4 z-30 lg:hidden">
-        <h1 className="text-base font-medium">Restaurant Management System</h1>
+        <div className="flex items-center gap-2.5">
+          <div className="w-7 h-7 rounded-lg bg-white/20 flex items-center justify-center flex-shrink-0">
+            <span className="text-white text-sm">🍽</span>
+          </div>
+          <h1 className="font-display font-bold text-[15px] tracking-tight">Restaurant MS</h1>
+        </div>
         <div className="flex items-center">
-          <button 
+          <button
             onClick={() => setIsMenuOpen(true)}
-            className="p-2 rounded-full hover:bg-primaryhover"
+            className="p-2 rounded-lg hover:bg-white/10 transition-colors"
           >
             <RiMenu3Line className="text-white text-xl" />
           </button>
@@ -141,8 +146,8 @@ const MobileNav: React.FC<{ role?: string }> = ({ role = '' }) => {
       <div className={`fixed top-0 right-0 h-full w-3/4 max-w-xs bg-white shadow-xl z-50 transform transition-transform duration-300 ease-in-out ${isMenuOpen ? 'translate-x-0' : 'translate-x-full'}`}>
         <div className="p-4 bg-primary text-white">
           <div className="flex justify-between items-center">
-            <h3 className="font-semibold">Menu</h3>
-            <button onClick={() => setIsMenuOpen(false)} className="p-2">
+            <h3 className="font-display font-bold tracking-tight">Navigation</h3>
+            <button onClick={() => setIsMenuOpen(false)} className="p-2 rounded-lg hover:bg-white/10 transition-colors text-sm font-medium">
               ✕
             </button>
           </div>
@@ -156,9 +161,9 @@ const MobileNav: React.FC<{ role?: string }> = ({ role = '' }) => {
                 href={item.href}
                 onClick={() => setIsMenuOpen(false)}
                 className={`
-                  flex items-center space-x-3 px-4 py-3 transition-all
+                  flex items-center space-x-3 px-4 py-3 transition-all rounded-lg mx-2
                   ${isPathActive(item.href, pathName)
-                    ? 'text-primary bg-primary/5 font-medium'
+                    ? 'text-accent bg-accent/5 font-semibold'
                     : 'text-gray-700 hover:bg-gray-50'}
                 `}
               >

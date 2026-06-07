@@ -7,6 +7,7 @@ import Skeleton from "@/components/ui/Skeleton";
 import { RiBillLine } from "react-icons/ri";
 import AddExpense from './popup';
 import EditExpense from './editPopup';
+import PageHeader from '@/components/PageHeader';
 
 interface Expense {
     id: string;
@@ -142,13 +143,24 @@ const ExpensePage: React.FC = () => {
         { id: 'yearly', label: 'Yearly' }
     ];
 
+    const addButton = (
+        <button
+            onClick={() => setAddPopupVisible(true)}
+            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-accent hover:bg-accent/90 transition"
+        >
+            <RiBillLine className="mr-2" />
+            Add Expense
+        </button>
+    );
+
     return (
-        <div className="container mx-auto px-6 pt-4 pb-8">
-            <div className="py-4">
-                <div className="flex items-center gap-3">
-                    <h1 className="text-xl font-semibold text-gray-800">Expenses</h1>
-                </div>
-            </div>
+        <div className="px-6 lg:px-10 py-4 pb-8">
+            <PageHeader
+                title="Expenses"
+                subtitle="Track business expenses"
+                accent="danger"
+                action={addButton}
+            />
 
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                 <div className="p-6 border-b border-gray-100">
@@ -160,18 +172,11 @@ const ExpensePage: React.FC = () => {
                             <input
                                 type="search"
                                 placeholder="Search by expense type or frequency..."
-                                className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary w-full md:w-80"
+                                className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent/20 focus:border-accent focus:outline-none w-full md:w-80"
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                             />
                         </div>
-                        <button 
-                            onClick={() => setAddPopupVisible(true)}
-                            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-primary/90 transition"
-                        >
-                            <RiBillLine className="mr-2" />
-                            Add Expense
-                        </button>
                     </div>
 
                     <div className="flex flex-wrap gap-2 border-b border-gray-200">
@@ -180,7 +185,7 @@ const ExpensePage: React.FC = () => {
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id)}
                                 className={`px-4 py-2 text-sm font-medium rounded-t-lg transition-all ${activeTab === tab.id
-                                    ? 'text-primary border-b-2 border-primary bg-primary/5'
+                                    ? 'text-accent border-b-2 border-accent bg-accent/5'
                                     : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
                                     }`}
                             >
@@ -225,7 +230,7 @@ const ExpensePage: React.FC = () => {
                                         ].map((header) => (
                                             <th
                                                 key={header.id}
-                                                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                                                className="px-6 py-3 text-left text-xs uppercase tracking-widest text-gray-400 font-medium"
                                             >
                                                 {header.label}
                                             </th>
@@ -245,7 +250,7 @@ const ExpensePage: React.FC = () => {
                                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                                     <span className="capitalize">{expense.frequency}</span>
                                                 </td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 font-mono tabular-nums">
                                                     {formatCurrency(expense.cost)}
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -398,8 +403,8 @@ const ExpensePage: React.FC = () => {
             )}
 
             {deletePopupVisible && (
-                <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-60 z-50 backdrop-blur-sm animate-fadeIn">
-                    <div className="bg-white rounded-xl shadow-xl max-w-md w-full animate-scaleIn p-6">
+                <div className="fixed inset-0 flex items-center justify-center bg-black/50 animate-fade-in z-50 backdrop-blur-sm">
+                    <div className="bg-white rounded-xl shadow-xl max-w-md w-full animate-slide-up p-6">
                         <div className="text-center mb-6">
                             <div className="bg-red-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
                                 <FaTrash className="text-red-500" size={24} />

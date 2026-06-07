@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RMS — Restaurant Management System</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,600;0,700;1,300;1,400&family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root {
+      --bg: #07070a;
+      --surface: #0e0e14;
+      --surface2: #13131c;
+      --border: #1c1c28;
+      --text: #ece8e2;
+      --muted: #686070;
+      --brand: #d4873a;
+      --admin: #8b5cf6;
+      --waiter: #06b6d4;
+      --chef: #10b981;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { background: var(--bg); color: var(--text); font-family: 'Outfit', sans-serif; font-weight: 400; line-height: 1.6; overflow-x: hidden; }
+
+    /* ── Typography ── */
+    .font-display { font-family: 'Cormorant Garamond', serif; }
+    .font-mono { font-family: 'JetBrains Mono', monospace; }
+
+    /* ── Animations ── */
+    @keyframes fadeUp   { from { opacity:0; transform:translateY(20px) } to { opacity:1; transform:translateY(0) } }
+    @keyframes fadeIn   { from { opacity:0 } to { opacity:1 } }
+    @keyframes blink    { 0%,100%{opacity:1} 50%{opacity:.3} }
+    @keyframes borderGlow { 0%,100%{opacity:.4} 50%{opacity:1} }
+
+    .a-1 { animation: fadeUp .65s ease-out .05s both }
+    .a-2 { animation: fadeUp .65s ease-out .15s both }
+    .a-3 { animation: fadeUp .65s ease-out .25s both }
+    .a-4 { animation: fadeUp .65s ease-out .35s both }
+    .a-5 { animation: fadeUp .65s ease-out .45s both }
+
+    /* ── Hero ── */
+    .hero {
+      background:
+        radial-gradient(ellipse 80% 55% at 50% -5%, rgba(212,135,58,.14) 0%, transparent 65%),
+        radial-gradient(ellipse 35% 40% at 80% 90%, rgba(139,92,246,.05) 0%, transparent 55%),
+        #07070a;
+      padding: 58px 16px 72px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .hero::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+      opacity: .022;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .hero > * { position: relative; z-index: 1; }
+
+    /* ── Badge ── */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 4px 14px;
+      border-radius: 999px;
+      background: rgba(212,135,58,.1);
+      border: 1px solid rgba(212,135,58,.22);
+      color: #d4873a;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: .07em;
+      text-transform: uppercase;
+      margin-bottom: 22px;
+    }
+    .dot { width: 6px; height: 6px; border-radius: 50%; background: #d4873a; animation: blink 2s ease-in-out infinite; display: inline-block; }
+
+    /* ── Gradient texts ── */
+    .gt-brand  { background: linear-gradient(135deg, #f5d4a0 0%, #d4873a 45%, #c4602a 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .gt-subtle { background: linear-gradient(135deg, #ece8e2 0%, #b8a898 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+
+    /* ── CTA button ── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 26px;
+      border-radius: 11px;
+      background: linear-gradient(135deg, #e8973a, #c4562a);
+      color: #fff;
+      font-family: 'Outfit', sans-serif;
+      font-weight: 600;
+      font-size: 14px;
+      text-decoration: none;
+      transition: all .2s;
+      box-shadow: 0 6px 28px rgba(212,135,58,.28), 0 2px 8px rgba(0,0,0,.4);
+      margin-bottom: 46px;
+    }
+    .btn:hover { transform: translateY(-2px); box-shadow: 0 10px 36px rgba(212,135,58,.38), 0 4px 12px rgba(0,0,0,.5); }
+
+    /* ── Credentials grid ── */
+    .cred-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      width: 100%;
+      max-width: 860px;
+    }
+    @media (max-width: 680px) { .cred-grid { grid-template-columns: 1fr; } }
+
+    .cred-card {
+      border-radius: 16px;
+      padding: 18px;
+      transition: transform .22s, box-shadow .22s;
+      position: relative;
+      overflow: hidden;
+    }
+    .cred-card:hover { transform: translateY(-3px); }
+
+    .cc-admin  { background: linear-gradient(145deg, rgba(139,92,246,.13), rgba(7,7,10,.75)); border: 1px solid rgba(139,92,246,.24); box-shadow: 0 4px 28px rgba(139,92,246,.09); }
+    .cc-waiter { background: linear-gradient(145deg, rgba(6,182,212,.13), rgba(7,7,10,.75));  border: 1px solid rgba(6,182,212,.24);  box-shadow: 0 4px 28px rgba(6,182,212,.09); }
+    .cc-chef   { background: linear-gradient(145deg, rgba(16,185,129,.13), rgba(7,7,10,.75)); border: 1px solid rgba(16,185,129,.24); box-shadow: 0 4px 28px rgba(16,185,129,.09); }
+
+    .cc-admin:hover  { box-shadow: 0 10px 40px rgba(139,92,246,.18); }
+    .cc-waiter:hover { box-shadow: 0 10px 40px rgba(6,182,212,.18); }
+    .cc-chef:hover   { box-shadow: 0 10px 40px rgba(16,185,129,.18); }
+
+    /* glow orb per card */
+    .cred-card::before {
+      content: '';
+      position: absolute;
+      width: 120px; height: 120px;
+      border-radius: 50%;
+      top: -40px; right: -30px;
+      pointer-events: none;
+      opacity: .12;
+      filter: blur(30px);
+    }
+    .cc-admin::before  { background: #8b5cf6; }
+    .cc-waiter::before { background: #06b6d4; }
+    .cc-chef::before   { background: #10b981; }
+
+    .cred-header { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+    .r-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .ri-admin  { background: rgba(139,92,246,.2); }
+    .ri-waiter { background: rgba(6,182,212,.2); }
+    .ri-chef   { background: rgba(16,185,129,.2); }
+
+    .r-name  { font-weight: 700; font-size: 15px; color: var(--text); }
+    .r-sub   { font-size: 11px; margin-top: 1px; }
+    .rs-admin  { color: #a78bfa; }
+    .rs-waiter { color: #22d3ee; }
+    .rs-chef   { color: #34d399; }
+
+    .cred-field {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(0,0,0,.28);
+      border-radius: 9px;
+      padding: 7px 11px;
+      margin-bottom: 7px;
+    }
+    .cf-label { font-size: 9px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; opacity: .45; margin-bottom: 2px; }
+    .cf-value { font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 500; color: var(--text); }
+
+    .copy-btn {
+      font-size: 10px;
+      font-weight: 600;
+      padding: 3px 9px;
+      border-radius: 6px;
+      background: rgba(255,255,255,.07);
+      border: 1px solid rgba(255,255,255,.1);
+      color: rgba(255,255,255,.45);
+      cursor: pointer;
+      transition: all .15s;
+      white-space: nowrap;
+      font-family: 'Outfit', sans-serif;
+    }
+    .copy-btn:hover { background: rgba(255,255,255,.14); color: #fff; }
+
+    .login-link {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      width: 100%;
+      padding: 8px;
+      border-radius: 9px;
+      margin-top: 10px;
+      font-size: 12px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all .2s;
+      font-family: 'Outfit', sans-serif;
+    }
+    .ll-admin  { background: rgba(139,92,246,.18); color: #c4b5fd; border: 1px solid rgba(139,92,246,.28); }
+    .ll-waiter { background: rgba(6,182,212,.18);  color: #67e8f9; border: 1px solid rgba(6,182,212,.28); }
+    .ll-chef   { background: rgba(16,185,129,.18); color: #6ee7b7; border: 1px solid rgba(16,185,129,.28); }
+    .login-link:hover { filter: brightness(1.18); transform: translateY(-1px); }
+
+    /* ── Sticky nav ── */
+    .snav {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: rgba(7,7,10,.88);
+      backdrop-filter: blur(18px);
+      border-bottom: 1px solid var(--border);
+      padding: 10px 16px;
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+    }
+    .np {
+      padding: 7px 20px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all .2s;
+      border: 1px solid transparent;
+    }
+    .np-a { color: #a78bfa; background: rgba(139,92,246,.1); border-color: rgba(139,92,246,.2); }
+    .np-w { color: #22d3ee; background: rgba(6,182,212,.1);  border-color: rgba(6,182,212,.2);  }
+    .np-c { color: #34d399; background: rgba(16,185,129,.1); border-color: rgba(16,185,129,.2); }
+    .np:hover { filter: brightness(1.2); transform: translateY(-1px); }
+
+    /* ── Stats ── */
+    .stats-bar { background: #0b0b10; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 32px 16px; }
+    .stat-item { text-align: center; padding: 0 12px; }
+    .stat-num { font-family: 'Cormorant Garamond', serif; font-size: 36px; font-weight: 700; line-height: 1; }
+
+    /* ── Role sections ── */
+    .rs { padding: 80px 16px; }
+    .rs-a { background: radial-gradient(ellipse 55% 35% at 5% 15%, rgba(139,92,246,.07) 0%, transparent 55%), var(--bg); }
+    .rs-w { background: radial-gradient(ellipse 55% 35% at 95% 15%, rgba(6,182,212,.07) 0%, transparent 55%), var(--bg); }
+    .rs-c { background: radial-gradient(ellipse 55% 35% at 50% 85%, rgba(16,185,129,.07) 0%, transparent 55%), var(--bg); }
+
+    .role-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 4px 12px;
+      border-radius: 7px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+    .rb-a { background: rgba(139,92,246,.12); color: #c4b5fd; border: 1px solid rgba(139,92,246,.24); }
+    .rb-w { background: rgba(6,182,212,.12);  color: #67e8f9; border: 1px solid rgba(6,182,212,.24);  }
+    .rb-c { background: rgba(16,185,129,.12); color: #6ee7b7; border: 1px solid rgba(16,185,129,.24); }
+
+    .section-title { font-family: 'Cormorant Garamond', serif; font-size: 42px; font-weight: 700; line-height: 1.1; margin-bottom: 6px; }
+    .section-sub { font-size: 14px; color: var(--muted); margin-bottom: 40px; }
+
+    /* ── Feature cards ── */
+    .feat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
+
+    .fc {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 15px;
+      padding: 20px;
+      transition: transform .2s, border-color .2s, box-shadow .2s;
+    }
+    .fc:hover { transform: translateY(-3px); }
+    .fc-a:hover { border-color: rgba(139,92,246,.32); box-shadow: 0 6px 28px rgba(139,92,246,.07); }
+    .fc-w:hover { border-color: rgba(6,182,212,.32);  box-shadow: 0 6px 28px rgba(6,182,212,.07); }
+    .fc-c:hover { border-color: rgba(16,185,129,.32); box-shadow: 0 6px 28px rgba(16,185,129,.07); }
+
+    .fc-icon {
+      width: 38px; height: 38px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 14px;
+    }
+    .ic-a { background: rgba(139,92,246,.12); color: #a78bfa; }
+    .ic-w { background: rgba(6,182,212,.12);  color: #22d3ee; }
+    .ic-c { background: rgba(16,185,129,.12); color: #34d399; }
+
+    .fc-title { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+    .fc-desc  { font-size: 12.5px; color: var(--muted); line-height: 1.55; }
+
+    /* ── divider ── */
+    .div { height: 1px; background: linear-gradient(90deg, transparent, var(--border), transparent); }
+
+    /* ── Footer ── */
+    .footer {
+      background: radial-gradient(ellipse 50% 55% at 50% 100%, rgba(212,135,58,.1) 0%, transparent 60%), var(--bg);
+      padding: 80px 16px;
+      text-align: center;
+    }
+
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  </style>
+</head>
+<body>
+
+<!-- ════════════════════════ HERO ════════════════════════ -->
+<section class="hero">
+  <div style="max-width:860px;width:100%;display:flex;flex-direction:column;align-items:center;position:relative;z-index:1">
+
+    <span class="badge a-1"><span class="dot"></span>Live Demo Available</span>
+
+    <h1 class="font-display a-2" style="font-size:clamp(52px,8vw,82px);font-weight:700;line-height:1.05;text-align:center;letter-spacing:-.02em;margin-bottom:2px">
+      <span class="gt-brand">Restaurant</span>
+    </h1>
+    <h1 class="font-display a-2" style="font-size:clamp(52px,8vw,82px);font-weight:300;font-style:italic;line-height:1.05;text-align:center;letter-spacing:-.02em;color:#b8a898;margin-bottom:14px">
+      Management System
+    </h1>
+
+    <p class="a-3" style="font-size:14px;color:var(--muted);text-align:center;max-width:440px;margin-bottom:24px">
+      Full-stack POS &amp; operations platform — order management, kitchen workflow, inventory, analytics and more.
+    </p>
+
+    <a href="https://rms-five-mu.vercel.app/" target="_blank" class="btn a-3">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+      Open Live App — rms-five-mu.vercel.app
+    </a>
+
+    <p class="a-4" style="font-size:10px;font-weight:700;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);margin-bottom:14px">
+      Demo Credentials — pick any role &amp; explore
+    </p>
+
+    <!-- ── CREDENTIAL CARDS ── -->
+    <div class="cred-grid a-5">
+
+      <!-- Admin -->
+      <div class="cred-card cc-admin">
+        <div class="cred-header">
+          <div class="r-icon ri-admin">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+            </svg>
+          </div>
+          <div>
+            <div class="r-name">Admin</div>
+            <div class="r-sub rs-admin">Full system control</div>
+          </div>
+        </div>
+        <div class="cred-field">
+          <div><div class="cf-label" style="color:#a78bfa">Username</div><div class="cf-value">AD0001</div></div>
+          <button class="copy-btn" onclick="cp('AD0001',this)">Copy</button>
+        </div>
+        <div class="cred-field">
+          <div><div class="cf-label" style="color:#a78bfa">Password</div><div class="cf-value">admin123</div></div>
+          <button class="copy-btn" onclick="cp('admin123',this)">Copy</button>
+        </div>
+        <a href="https://rms-five-mu.vercel.app/" target="_blank" class="login-link ll-admin">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+          Login as Admin
+        </a>
+      </div>
+
+      <!-- Waiter -->
+      <div class="cred-card cc-waiter">
+        <div class="cred-header">
+          <div class="r-icon ri-waiter">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#22d3ee" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/>
+            </svg>
+          </div>
+          <div>
+            <div class="r-name">Waiter</div>
+            <div class="r-sub rs-waiter">Order &amp; table service</div>
+          </div>
+        </div>
+        <div class="cred-field">
+          <div><div class="cf-label" style="color:#22d3ee">Username</div><div class="cf-value">WA4477</div></div>
+          <button class="copy-btn" onclick="cp('WA4477',this)">Copy</button>
+        </div>
+        <div class="cred-field">
+          <div><div class="cf-label" style="color:#22d3ee">Password</div><div class="cf-value">123456</div></div>
+          <button class="copy-btn" onclick="cp('123456',this)">Copy</button>
+        </div>
+        <a href="https://rms-five-mu.vercel.app/" target="_blank" class="login-link ll-waiter">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+          Login as Waiter
+        </a>
+      </div>
+
+      <!-- Chef -->
+      <div class="cred-card cc-chef">
+        <div class="cred-header">
+          <div class="r-icon ri-chef">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z"/>
+              <path d="M9.879 16.121A3 3 0 1012.015 11L11 14H9c0 .768.293 1.536.879 2.121z"/>
+            </svg>
+          </div>
+          <div>
+            <div class="r-name">Chef</div>
+            <div class="r-sub rs-chef">Kitchen workflow</div>
+          </div>
+        </div>
+        <div class="cred-field">
+          <div><div class="cf-label" style="color:#34d399">Username</div><div class="cf-value">CH4475</div></div>
+          <button class="copy-btn" onclick="cp('CH4475',this)">Copy</button>
+        </div>
+        <div class="cred-field">
+          <div><div class="cf-label" style="color:#34d399">Password</div><div class="cf-value">123456</div></div>
+          <button class="copy-btn" onclick="cp('123456',this)">Copy</button>
+        </div>
+        <a href="https://rms-five-mu.vercel.app/" target="_blank" class="login-link ll-chef">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+          Login as Chef
+        </a>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════ STATS ════════════════════════ -->
+<div class="stats-bar">
+  <div style="max-width:700px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr);gap:0">
+    <div class="stat-item" style="border-right:1px solid var(--border)">
+      <div class="stat-num gt-brand">3</div>
+      <div style="font-size:12px;color:var(--muted);margin-top:4px">User Roles</div>
+    </div>
+    <div class="stat-item" style="border-right:1px solid var(--border)">
+      <div class="stat-num gt-brand">12</div>
+      <div style="font-size:12px;color:var(--muted);margin-top:4px">Admin Modules</div>
+    </div>
+    <div class="stat-item" style="border-right:1px solid var(--border)">
+      <div class="stat-num" style="font-size:22px;font-family:'Cormorant Garamond',serif;font-weight:700;color:#34d399;line-height:1.6">Live</div>
+      <div style="font-size:12px;color:var(--muted);margin-top:4px">Kitchen Sync</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num gt-brand">10+</div>
+      <div style="font-size:12px;color:var(--muted);margin-top:4px">UI Themes</div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════ NAV ════════════════════════ -->
+<nav class="snav">
+  <a href="#admin"  class="np np-a">Admin</a>
+  <a href="#waiter" class="np np-w">Waiter</a>
+  <a href="#chef"   class="np np-c">Chef</a>
+</nav>
+
+<!-- ════════════════════════ ADMIN ════════════════════════ -->
+<section id="admin" class="rs rs-a">
+  <div style="max-width:1100px;margin:0 auto">
+
+    <div class="role-badge rb-a">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+      Admin Role
+    </div>
+
+    <h2 class="section-title" style="color:var(--text)">Full System Control</h2>
+    <p class="section-sub">13 modules — manage every aspect of the restaurant</p>
+
+    <div class="feat-grid">
+
+      <div class="fc fc-a">
+        <div class="fc-icon ic-a">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+        </div>
+        <div class="fc-title">Dashboard</div>
+        <div class="fc-desc">Financial overview with period filter (today / 7d / 30d / all), quick stats — tables, active orders, revenue per order, daily average — plus recent payments &amp; recent table orders panels.</div>
+      </div>
+
+      <div class="fc fc-a">
+        <div class="fc-icon ic-a">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 8h6m-6 4h4"/></svg>
+        </div>
+        <div class="fc-title">Orders History</div>
+        <div class="fc-desc">Paginated list of all orders with status filter. View full invoice — subtotal, GST, discount, payment method, assigned waiter &amp; chef. Download invoice.</div>
+      </div>
+
+      <div class="fc fc-a">
+        <div class="fc-icon ic-a">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+        </div>
+        <div class="fc-title">Active Orders &amp; Staff Assignment</div>
+        <div class="fc-desc">Live scrollable queue of all active orders. Admin can assign a chef and a waiter to any order directly from the dashboard.</div>
+      </div>
+
+      <div class="fc fc-a">
+        <div class="fc-icon ic-a">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        </div>
+        <div class="fc-title">Table Management</div>
+        <div class="fc-desc">Create &amp; delete tables, search by number, filter by availability (all / available / occupied). Assign waiters to specific tables when waiter-zones are enabled.</div>
+      </div>
+
+      <div class="fc fc-a">
+        <div class="fc-icon ic-a">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 10h16M4 14h16M4 18h7"/></svg>
+        </div>
+        <div class="fc-title">Menu Management</div>
+        <div class="fc-desc">Add, edit, delete menu items — name, price, food type (veg / non-veg), category. Link ingredients from inventory per item so stock auto-deducts on every order.</div>
+      </div>
+
+      <div class="fc fc-a">
+        <div class="fc-icon ic-a">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+        </div>
+        <div class="fc-title">Inventory Control</div>
+        <div class="fc-desc">Monitor stock levels with low-limit alerts. Add / update / delete inventory items. View kitchen orders, generate bulk purchase orders, review recent order history.</div>
+      </div>
+
+      <div class="fc fc-a">
+        <div class="fc-icon ic-a">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"/></svg>
+        </div>
+        <div class="fc-title">Inventory &amp; Revenue Forecast</div>
+        <div class="fc-desc">Select an item &amp; forecast window to get demand projections via line chart. Switch to revenue forecast mode for projected income trends.</div>
+      </div>
+
+      <div class="fc fc-a">
+        <div class="fc-icon ic-a">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+        </div>
+        <div class="fc-title">Staff Members</div>
+        <div class="fc-desc">Multi-step registration — basic info, address, payout setup. View, edit, delete staff across all roles (admin / waiter / chef / washer). Search by name or ID.</div>
+      </div>
+
+      <div class="fc fc-a">
+        <div class="fc-icon ic-a">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+        </div>
+        <div class="fc-title">Attendance Tracking</div>
+        <div class="fc-desc">Calendar date picker to browse any date. All staff records with timestamps &amp; role badges. Filter by role. Update attendance status for any staff member.</div>
+      </div>
+
+      <div class="fc fc-a">
+        <div class="fc-icon ic-a">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+        </div>
+        <div class="fc-title">Staff Payouts</div>
+        <div class="fc-desc">View paginated payout list. Generate payouts for staff. Approve or reject pending payouts. View payout details — bank account, IFSC, UPI ID, branch. Filter by status.</div>
+      </div>
+
+      <div class="fc fc-a">
+        <div class="fc-icon ic-a">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z"/></svg>
+        </div>
+        <div class="fc-title">Expense Tracking</div>
+        <div class="fc-desc">Log operational expenses — name, amount, frequency, date. Edit or delete entries. Search &amp; filter by frequency tab with paginated listing.</div>
+      </div>
+
+      <div class="fc fc-a">
+        <div class="fc-icon ic-a">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+        </div>
+        <div class="fc-title">Analytics &amp; Charts</div>
+        <div class="fc-desc">6 interactive Recharts — Sales, Profit/Loss, Demand, Chef Performance, Waiter Performance, Popular Dishes — with date range controls.</div>
+      </div>
+
+      <div class="fc fc-a">
+        <div class="fc-icon ic-a">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><circle cx="12" cy="12" r="3"/></svg>
+        </div>
+        <div class="fc-title">Settings &amp; Themes</div>
+        <div class="fc-desc">General tab — business name, address, phone, GST %, waiter-zones toggle. Theme tab — switch between 10+ UI themes (modern-cards, sunset-orange, royal-purple, etc.).</div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<div class="div"></div>
+
+<!-- ════════════════════════ WAITER ════════════════════════ -->
+<section id="waiter" class="rs rs-w">
+  <div style="max-width:1100px;margin:0 auto">
+
+    <div class="role-badge rb-w">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
+      Waiter Role
+    </div>
+
+    <h2 class="section-title" style="color:var(--text)">Order &amp; Table Service</h2>
+    <p class="section-sub">11 capabilities — from taking orders to processing payment</p>
+
+    <div class="feat-grid">
+
+      <div class="fc fc-w">
+        <div class="fc-icon ic-w">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+        </div>
+        <div class="fc-title">Dashboard Stats</div>
+        <div class="fc-desc">3-card summary showing Active Orders count, Today's Orders count, and Running Subtotal (₹) across all active orders — all live.</div>
+      </div>
+
+      <div class="fc fc-w">
+        <div class="fc-icon ic-w">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        </div>
+        <div class="fc-title">Table View (Occupied Only)</div>
+        <div class="fc-desc">Sees only occupied / active tables on the dashboard, not all tables. Clicking an active table opens the full POS Order Screen for that table.</div>
+      </div>
+
+      <div class="fc fc-w">
+        <div class="fc-icon ic-w">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+        </div>
+        <div class="fc-title">Menu Browse &amp; Search</div>
+        <div class="fc-desc">Full menu displayed with category grouping. Live search by item name. Shows price and food-type indicator (veg / non-veg) per item.</div>
+      </div>
+
+      <div class="fc fc-w">
+        <div class="fc-icon ic-w">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+        </div>
+        <div class="fc-title">Place New Order</div>
+        <div class="fc-desc">Select items, adjust quantities in cart, view running subtotal + GST + total. Confirm to place a new order — inventory auto-deducted, kitchen order created.</div>
+      </div>
+
+      <div class="fc fc-w">
+        <div class="fc-icon ic-w">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
+        </div>
+        <div class="fc-title">Add Items to Existing Order</div>
+        <div class="fc-desc">For a table with an active order, append more items — sent to kitchen as additional requests, invoice updated automatically without creating a duplicate bill.</div>
+      </div>
+
+      <div class="fc fc-w">
+        <div class="fc-icon ic-w">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 18L18 6M6 6l12 12"/></svg>
+        </div>
+        <div class="fc-title">Void Item</div>
+        <div class="fc-desc">Cancel an individual item from an active order. Kitchen is automatically notified, inventory stock is restored, invoice total is recalculated instantly.</div>
+      </div>
+
+      <div class="fc fc-w">
+        <div class="fc-icon ic-w">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/></svg>
+        </div>
+        <div class="fc-title">Assign Chef to Order</div>
+        <div class="fc-desc">From the active orders queue on the dashboard, waiter can assign a chef to any order (admin can do this too).</div>
+      </div>
+
+      <div class="fc fc-w">
+        <div class="fc-icon ic-w">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
+        </div>
+        <div class="fc-title">Checkout &amp; Payment</div>
+        <div class="fc-desc">Complete order modal — apply flat ₹ or % discount, choose payment method: cash, card, or UPI (UPI shows QR code). Marks invoice paid, table released.</div>
+      </div>
+
+      <div class="fc fc-w">
+        <div class="fc-icon ic-w">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 8h6m-6 4h4"/></svg>
+        </div>
+        <div class="fc-title">Orders History</div>
+        <div class="fc-desc">View full order history with status filter. View invoice details for any completed order — subtotal, GST, discount, payment method, assigned staff.</div>
+      </div>
+
+      <div class="fc fc-w">
+        <div class="fc-icon ic-w">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+        </div>
+        <div class="fc-title">Own Attendance</div>
+        <div class="fc-desc">Calendar view to check own attendance history — date, time, and status. Restricted to their own records only; cannot see other staff.</div>
+      </div>
+
+      <div class="fc fc-w">
+        <div class="fc-icon ic-w">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 10h16M4 14h16M4 18h7"/></svg>
+        </div>
+        <div class="fc-title">Menu (View Only)</div>
+        <div class="fc-desc">Browse the full menu for item reference — names, prices, categories. Read-only; no add / edit / delete access for waiters.</div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<div class="div"></div>
+
+<!-- ════════════════════════ CHEF ════════════════════════ -->
+<section id="chef" class="rs rs-c">
+  <div style="max-width:1100px;margin:0 auto">
+
+    <div class="role-badge rb-c">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z"/><path d="M9.879 16.121A3 3 0 1012.015 11L11 14H9c0 .768.293 1.536.879 2.121z"/></svg>
+      Chef Role
+    </div>
+
+    <h2 class="section-title" style="color:var(--text)">Kitchen Workflow</h2>
+    <p class="section-sub">8 capabilities — focused entirely on the kitchen queue</p>
+
+    <div class="feat-grid">
+
+      <div class="fc fc-c">
+        <div class="fc-icon ic-c">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+        </div>
+        <div class="fc-title">Kitchen Stats Dashboard</div>
+        <div class="fc-desc">4-card live summary: Orders in Queue, Pending Items count, Preparing Items count, Ready Items count — auto-updating without page refresh.</div>
+      </div>
+
+      <div class="fc fc-c">
+        <div class="fc-icon ic-c">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
+        </div>
+        <div class="fc-title">Active Order Queue</div>
+        <div class="fc-desc">Scrollable live queue of all active orders on the dashboard. Tap any order card to open the kitchen view for that table's items.</div>
+      </div>
+
+      <div class="fc fc-c">
+        <div class="fc-icon ic-c">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+        </div>
+        <div class="fc-title">View Ordered Items</div>
+        <div class="fc-desc">Order Screen opens directly on the Order tab (not menu). Chef sees every item, its quantity, and its current status for the selected table.</div>
+      </div>
+
+      <div class="fc fc-c">
+        <div class="fc-icon ic-c">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+        </div>
+        <div class="fc-title">Update Item Status</div>
+        <div class="fc-desc">Change each item's status: <strong style="color:var(--text)">Pending → Preparing → Ready</strong> with one tap per transition. Waiter sees the change on their screen in real-time.</div>
+      </div>
+
+      <div class="fc fc-c">
+        <div class="fc-icon ic-c">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 18L18 6M6 6l12 12"/></svg>
+        </div>
+        <div class="fc-title">Void Awareness</div>
+        <div class="fc-desc">When a waiter voids an item, it is instantly marked voided and removed from the chef's queue — no wasted preparation time.</div>
+      </div>
+
+      <div class="fc fc-c">
+        <div class="fc-icon ic-c">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 8h6m-6 4h4"/></svg>
+        </div>
+        <div class="fc-title">Orders History</div>
+        <div class="fc-desc">Access the Orders page to browse completed order records and invoice details — read-only reference view.</div>
+      </div>
+
+      <div class="fc fc-c">
+        <div class="fc-icon ic-c">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+        </div>
+        <div class="fc-title">Own Attendance</div>
+        <div class="fc-desc">Calendar view to check own attendance records by date — time and status. Restricted to their own data only.</div>
+      </div>
+
+      <div class="fc fc-c">
+        <div class="fc-icon ic-c">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 10h16M4 14h16M4 18h7"/></svg>
+        </div>
+        <div class="fc-title">Menu (View Only)</div>
+        <div class="fc-desc">Browse the full menu for reference — item names, prices, categories. Read-only; no edit access for chefs.</div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════ FOOTER ════════════════════════ -->
+<div class="div"></div>
+<section class="footer">
+  <p class="font-display" style="font-size:32px;font-weight:600;margin-bottom:8px;color:var(--text)">Ready to explore?</p>
+  <p style="font-size:14px;color:var(--muted);margin-bottom:28px;max-width:380px;margin-left:auto;margin-right:auto">Pick any credential card above and walk through the complete restaurant workflow live.</p>
+  <a href="https://rms-five-mu.vercel.app/" target="_blank" class="btn" style="margin-bottom:0">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+    rms-five-mu.vercel.app
+  </a>
+  <p style="font-size:11px;color:#2e2a38;margin-top:48px">Next.js 16 · MySQL2 · Socket.IO · NextAuth v5 · Tailwind CSS · Recharts</p>
+</section>
+
+<script>
+  function cp(text, btn) {
+    navigator.clipboard.writeText(text).then(() => {
+      const o = btn.textContent;
+      btn.textContent = 'Copied!';
+      btn.style.background = 'rgba(16,185,129,.2)';
+      btn.style.color = '#6ee7b7';
+      setTimeout(() => { btn.textContent = o; btn.style.background = ''; btn.style.color = ''; }, 1400);
+    });
+  }
+</script>
+</body>
+</html>

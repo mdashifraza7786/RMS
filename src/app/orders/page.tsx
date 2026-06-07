@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import Skeleton from "@/components/ui/Skeleton";
+import PageHeader from "@/components/PageHeader";
 import { FaSearch, FaFileInvoiceDollar, FaUserSlash, FaDownload } from "react-icons/fa";
 import { IoFastFoodOutline } from "react-icons/io5";
 import { BsClock, BsClockHistory } from "react-icons/bs";
@@ -346,12 +347,32 @@ const OrdersPage: React.FC = () => {
   ];
 
   return (
-    <div className="container mx-auto px-6 pt-4 pb-8">
-      <div className="py-4">
-          <div className="flex items-center gap-3">
-            <h1 className="text-xl font-semibold text-gray-800">Orders</h1>
+    <div className="px-6 lg:px-10 py-4 pb-8">
+      <PageHeader
+        title="Orders"
+        subtitle="All orders and invoice history"
+        accent="accent"
+        action={
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleExportCSV}
+              disabled={orders.length === 0}
+              className={`inline-flex items-center px-4 py-2 rounded-lg shadow transition-colors text-sm font-medium ${
+                orders.length === 0 ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              <FaDownload className="mr-2" />
+              Export CSV
+            </button>
+            <Link
+              href="/orders/active"
+              className="inline-flex items-center px-4 py-2 bg-accent text-white rounded-lg shadow hover:bg-accent/90 transition-colors text-sm font-medium"
+            >
+              View Active Orders
+            </Link>
           </div>
-      </div>
+        }
+      />
 
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
         <div className="p-6 border-b border-gray-100">
@@ -363,28 +384,10 @@ const OrdersPage: React.FC = () => {
               <input
                 type="search"
                 placeholder="Search by order ID, table, staff..."
-                className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary w-full md:w-80"
+                className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent/20 focus:border-accent focus:outline-none w-full md:w-80"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
-            </div>
-            <div>
-              <button
-                onClick={handleExportCSV}
-                disabled={orders.length === 0}
-                className={`mr-3 inline-flex items-center px-4 py-2 rounded-lg shadow transition-colors text-sm font-medium ${
-                  orders.length === 0 ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
-              >
-                <FaDownload className="mr-2" />
-                Export CSV
-              </button>
-              <Link
-                href="/orders/active"
-                className="inline-flex items-center px-4 py-2 bg-primary text-white rounded-lg shadow hover:bg-primary/90 transition-colors text-sm font-medium"
-              >
-                View Active Orders
-              </Link>
             </div>
           </div>
 
@@ -394,7 +397,7 @@ const OrdersPage: React.FC = () => {
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 className={`px-4 py-2 text-sm font-medium rounded-t-lg transition-all ${activeTab === tab.id
-                    ? 'text-primary border-b-2 border-primary bg-primary/5'
+                    ? 'text-accent border-b-2 border-accent bg-accent/5'
                   : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
                   }`}
               >
@@ -439,7 +442,7 @@ const OrdersPage: React.FC = () => {
                     ].map((header) => (
                       <th
                         key={header.id}
-                        className={`px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider ${header.label === "Start Time" || header.label === "End Time" ? "hidden [@media(min-width:1915px)]:table-cell" : ""}`}
+                        className={`px-6 py-3 text-left text-xs uppercase tracking-widest text-gray-400 font-medium ${header.label === "Start Time" || header.label === "End Time" ? "hidden [@media(min-width:1915px)]:table-cell" : ""}`}
                       >
                         {header.label}
                       </th>
@@ -468,7 +471,7 @@ const OrdersPage: React.FC = () => {
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                           {order.chef_name || "Not assigned"}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 font-mono tabular-nums">
                           {formatCurrency(order.order_items.reduce((sum, item) => sum + item.price * item.quantity, 0))}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 hidden [@media(min-width:1915px)]:table-cell">
@@ -612,7 +615,7 @@ const OrdersPage: React.FC = () => {
             <select
               value={pageSize}
               onChange={(e) => setPageSize(parseInt(e.target.value, 10))}
-              className="text-sm border border-gray-300 rounded-md px-2 py-1 focus:ring-primary focus:border-primary"
+              className="text-sm border border-gray-300 rounded-md px-2 py-1 focus:ring-2 focus:ring-accent/20 focus:border-accent focus:outline-none"
             >
               {[5, 10, 20, 50].map((n) => (
                 <option key={n} value={n}>{n}</option>
@@ -642,8 +645,8 @@ const OrdersPage: React.FC = () => {
       </div>
 
       {detailsPopup && selectedOrder && (
-        <div className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-60 z-50 p-4 animate-fadeIn">
-          <div className="bg-white rounded-xl shadow-xl max-w-md w-full max-h-[90vh] overflow-auto animate-scaleIn">
+        <div className="fixed inset-0 flex justify-center items-center bg-black/50 animate-fade-in z-50 p-4">
+          <div className="bg-white rounded-xl shadow-xl max-w-md w-full max-h-[90vh] overflow-auto animate-slide-up">
             <div className="bg-primary text-white p-5 rounded-t-xl sticky top-0 z-10">
               <div className="flex justify-between items-center mb-2">
                 <h3 className="text-xl font-bold flex items-center gap-2">
@@ -739,7 +742,7 @@ const OrdersPage: React.FC = () => {
                 <div className="border-t border-gray-200 my-2 pt-2">
                   <div className="flex justify-between items-center">
                     <span className="font-medium text-gray-900">Total</span>
-                    <span className="text-xl font-bold text-primary">
+                    <span className="text-xl font-bold text-accent font-mono tabular-nums">
                       {selectedInvoice
                         ? formatCurrency(selectedInvoice.total_amount)
                         : formatCurrency(
@@ -761,7 +764,7 @@ const OrdersPage: React.FC = () => {
                 {selectedOrder.status.toLowerCase() === "completed" && (
                   <button
                     onClick={handlePrintInvoice}
-                    className="px-4 py-2 bg-primary hover:bg-primary/80 text-white font-medium rounded-lg flex items-center justify-center"
+                    className="px-4 py-2 bg-primary hover:bg-primaryhover text-white font-medium rounded-lg flex items-center justify-center"
                   >
                     <FaFileInvoiceDollar className="mr-2" />
                     Print Invoice

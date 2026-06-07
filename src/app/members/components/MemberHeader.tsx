@@ -1,14 +1,13 @@
 import React from 'react';
+import PageHeader from '@/components/PageHeader';
 
 const MemberHeader: React.FC = () => {
   return (
-    <div className="flex items-center justify-between mb-4">
-      <div className="py-4">
-        <div className="flex items-center gap-3">
-          <h1 className="text-xl font-semibold text-gray-800">Members</h1>
-        </div>
-      </div>
-    </div>
+    <PageHeader
+      title="Team Members"
+      subtitle="Manage staff roles and access"
+      accent="primary"
+    />
   );
 };
 

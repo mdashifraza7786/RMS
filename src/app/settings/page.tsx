@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { useSession } from 'next-auth/react';
 import ThemeSettings from './components/ThemeSettings';
 import GeneralSettings from './components/GeneralSettings';
+import PageHeader from '@/components/PageHeader';
 import { FaPalette, FaStore } from 'react-icons/fa';
 
 const SettingsPage: React.FC = () => {
@@ -23,10 +24,12 @@ const SettingsPage: React.FC = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-6">
-      <div className="mb-6">
-        <h1 className="text-2xl font-semibold">Settings</h1>
-      </div>
+    <div className="px-6 lg:px-10 py-4 pb-8">
+      <PageHeader
+        title="Settings"
+        subtitle="Configure system preferences"
+        accent="primary"
+      />
 
       {/* Tabs */}
       <div className="flex border-b mb-6">
@@ -34,7 +37,7 @@ const SettingsPage: React.FC = () => {
           onClick={() => setActiveTab('general')}
           className={`flex items-center px-6 py-3 font-medium text-sm transition-colors ${
             activeTab === 'general'
-              ? 'border-b-2 border-primary text-primary'
+              ? 'border-b-2 border-accent text-accent'
               : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
           }`}
         >
@@ -45,7 +48,7 @@ const SettingsPage: React.FC = () => {
           onClick={() => setActiveTab('theme')}
           className={`flex items-center px-6 py-3 font-medium text-sm transition-colors ${
             activeTab === 'theme'
-              ? 'border-b-2 border-primary text-primary'
+              ? 'border-b-2 border-accent text-accent'
               : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
           }`}
         >

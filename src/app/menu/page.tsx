@@ -6,6 +6,7 @@ import { FaSearch, FaUserSlash } from "react-icons/fa";
 import { FaTimes } from "react-icons/fa";
 import { MdOutlineRestaurantMenu } from "react-icons/md";
 import AddMenu from './popup';
+import PageHeader from '@/components/PageHeader';
 import Skeleton from '@/components/ui/Skeleton';
 import Image from 'next/image';
 import IngredientModal from './IngredientModal';
@@ -172,13 +173,24 @@ const Page: React.FC = () => {
             : "bg-red-100 text-red-800";
     };
 
+    const addButton = (
+        <button
+            onClick={addMenuHandler}
+            className="inline-flex items-center px-4 py-2 gap-1.5 border border-transparent text-sm font-medium rounded-md text-white bg-accent hover:bg-accent/90 transition shadow-sm"
+        >
+            <FaPlus size={16} />
+            <span>Add Item</span>
+        </button>
+    );
+
     return (
-        <div className="container mx-auto px-6 pt-4 pb-8">
-            <div className="py-4">
-                <div className="flex items-center gap-3">
-                    <h1 className="text-xl font-semibold text-gray-800">Menu</h1>
-                </div>
-            </div>
+        <div className="px-6 lg:px-10 py-4 pb-8">
+            <PageHeader
+                title="Menu"
+                subtitle="Manage your menu items"
+                accent="warning"
+                action={addButton}
+            />
 
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                 <div className="p-6 border-b border-gray-100">
@@ -190,18 +202,11 @@ const Page: React.FC = () => {
                             <input
                                 type="search"
                                 placeholder="Search by name or ID..."
-                                className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary w-full md:w-80"
+                                className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent/20 focus:border-accent focus:outline-none w-full md:w-80"
                                 value={searchTerm}
                                 onChange={handleSearchChange}
                             />
                         </div>
-                        <button
-                            onClick={addMenuHandler}
-                            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-primary/90 transition shadow-sm"
-                        >
-                            <FaPlus size={16} />
-                            <span>Add Item</span>
-                        </button>
                     </div>
 
                     <div className="flex flex-wrap gap-2 border-b border-gray-200">
@@ -213,7 +218,7 @@ const Page: React.FC = () => {
                                     setCurrentPage(1);
                                 }}
                                 className={`px-4 py-2 text-sm font-medium rounded-t-lg transition-all ${activeCategory === category
-                                    ? 'text-primary border-b-2 border-primary bg-primary/5'
+                                    ? 'text-accent border-b-2 border-accent bg-accent/5'
                                     : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
                                     }`}
                             >
@@ -251,13 +256,13 @@ const Page: React.FC = () => {
                             <table className="min-w-full divide-y divide-gray-200 table-fixed">
                                 <thead className="bg-gray-50">
                                     <tr>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Image</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Item ID</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Item Name</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                        <th className="px-6 py-3 text-left text-xs uppercase tracking-widest text-gray-400 font-medium">Image</th>
+                                        <th className="px-6 py-3 text-left text-xs uppercase tracking-widest text-gray-400 font-medium">Item ID</th>
+                                        <th className="px-6 py-3 text-left text-xs uppercase tracking-widest text-gray-400 font-medium">Item Name</th>
+                                        <th className="px-6 py-3 text-left text-xs uppercase tracking-widest text-gray-400 font-medium">Category</th>
+                                        <th className="px-6 py-3 text-left text-xs uppercase tracking-widest text-gray-400 font-medium">Type</th>
+                                        <th className="px-6 py-3 text-left text-xs uppercase tracking-widest text-gray-400 font-medium">Price</th>
+                                        <th className="px-6 py-3 text-left text-xs uppercase tracking-widest text-gray-400 font-medium">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody className="bg-white divide-y divide-gray-200">
@@ -299,7 +304,7 @@ const Page: React.FC = () => {
                                                         {item.item_foodtype === "veg" ? "Vegetarian" : "Non-Vegetarian"}
                                                     </span>
                                                 </td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 font-mono tabular-nums">
                                                     {formatCurrency(item.item_price)}
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -442,7 +447,7 @@ const Page: React.FC = () => {
                                         onClick={() => setCurrentPage(i + 1)}
                                         className={`w-10 h-10 flex items-center justify-center rounded-md text-sm font-medium transition-colors ${
                                             currentPage === i + 1
-                                                ? 'bg-primary text-white shadow-sm'
+                                                ? 'bg-accent text-white shadow-sm'
                                                 : 'text-gray-700 hover:bg-gray-100'
                                         }`}
                                     >
@@ -467,8 +472,8 @@ const Page: React.FC = () => {
             )}
 
             {editPopupVisible && (
-                <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-60 z-50 backdrop-blur-sm">
-                    <div className="bg-white shadow-2xl rounded-xl p-8 w-[90%] max-w-[600px] relative animate-fadeIn">
+                <div className="fixed inset-0 flex items-center justify-center bg-black/50 animate-fade-in z-50 backdrop-blur-sm">
+                    <div className="bg-white shadow-2xl rounded-xl p-8 w-[90%] max-w-[600px] relative animate-slide-up">
                         {editLoading && (
                             <div className='absolute inset-0 flex flex-col justify-center items-center bg-white bg-opacity-90 rounded-xl z-10 p-8 space-y-4'>
                                 <Skeleton variant="text" width="40%" height="24px" />
@@ -501,7 +506,7 @@ const Page: React.FC = () => {
                                         Item Name
                                     </label>
                                     <input
-                                        className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all"
+                                        className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-accent/20 focus:border-accent focus:outline-none transition-all"
                                         type="text"
                                         name="item_name"
                                         value={editData.item_name}
@@ -514,7 +519,7 @@ const Page: React.FC = () => {
                                         Description
                                     </label>
                                     <textarea
-                                        className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all resize-none h-20"
+                                        className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-accent/20 focus:border-accent focus:outline-none transition-all resize-none h-20"
                                         name="item_description"
                                         value={editData.item_description}
                                         onChange={(e) => setEditData({ ...editData, item_description: e.target.value })}
@@ -527,7 +532,7 @@ const Page: React.FC = () => {
                                             Food Type
                                         </label>
                                         <select
-                                            className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all bg-white"
+                                            className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-accent/20 focus:border-accent focus:outline-none transition-all bg-white"
                                             name="item_foodtype"
                                             value={editData.item_foodtype}
                                             onChange={(e) => setEditData({ ...editData, item_foodtype: e.target.value })}
@@ -542,7 +547,7 @@ const Page: React.FC = () => {
                                             Category
                                         </label>
                                         <select
-                                            className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all bg-white"
+                                            className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-accent/20 focus:border-accent focus:outline-none transition-all bg-white"
                                             name="item_type"
                                             value={editData.item_type}
                                             onChange={(e) => setEditData({ ...editData, item_type: e.target.value })}
@@ -562,7 +567,7 @@ const Page: React.FC = () => {
                                             Price
                                         </label>
                                         <input
-                                            className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all"
+                                            className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-accent/20 focus:border-accent focus:outline-none transition-all"
                                             type="number"
                                             name="item_price"
                                             value={editData.item_price}
@@ -575,7 +580,7 @@ const Page: React.FC = () => {
                                             Making Cost
                                         </label>
                                         <input
-                                            className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all"
+                                            className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-accent/20 focus:border-accent focus:outline-none transition-all"
                                             type="number"
                                             name="making_cost"
                                             value={editData.making_cost}
@@ -633,8 +638,8 @@ const Page: React.FC = () => {
             )}
 
             {deletePopupVisible && (
-                <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-60 z-50 backdrop-blur-sm">
-                    <div className="bg-white shadow-2xl rounded-xl p-8 max-w-md w-full animate-fadeIn">
+                <div className="fixed inset-0 flex items-center justify-center bg-black/50 animate-fade-in z-50 backdrop-blur-sm">
+                    <div className="bg-white shadow-2xl rounded-xl p-8 max-w-md w-full animate-slide-up">
                         {deleteLoading && (
                             <div className='absolute inset-0 flex flex-col justify-center items-center bg-white bg-opacity-90 rounded-xl z-10 p-8 space-y-4 text-center'>
                                 <Skeleton variant="circle" width="64px" height="64px" className="mx-auto" />

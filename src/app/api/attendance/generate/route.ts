@@ -1,8 +1,14 @@
 import { dbConnect } from "@/database";
 import { NextResponse } from "next/server";
 import { RowDataPacket } from "mysql2";
+import { auth } from "@/auth";
  
 export async function GET() {
+    const session = await auth();
+    if ((session?.user as any)?.role !== "admin") {
+        return NextResponse.json({ message: "Unauthorized" }, { status: 403 });
+    }
+
     const connection = await dbConnect();
  
     try {

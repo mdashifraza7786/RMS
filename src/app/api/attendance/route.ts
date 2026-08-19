@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { RowDataPacket } from "mysql2";
 import { withErrorHandling } from "@/lib/api-handler";
 import { successResponse } from "@/lib/api-response";
+import { auth } from "@/auth";
 
 /** Convert a Date (or date-like string from MySQL) to a local YYYY-MM-DD string. */
 const localDateStr = (d: Date | string | null | undefined): string | null => {
@@ -16,9 +17,21 @@ const localDateStr = (d: Date | string | null | undefined): string | null => {
 };
 
 export const GET = withErrorHandling(async (request: Request) => {
+    const session = await auth();
+    if (!session?.user) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const sessionRole = (session.user as any)?.role as string | undefined;
+    const sessionUserid = (session.user as any)?.userid as string | undefined;
+    const isAdmin = sessionRole === "admin";
+
     const { searchParams } = new URL(request.url);
-    const userid = searchParams.get('userid') || undefined;
-    const role   = searchParams.get('role')   || undefined;
+    const requestedUserid = searchParams.get("userid") || undefined;
+    if (!isAdmin && requestedUserid && requestedUserid !== sessionUserid) {
+        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+    const targetUserid = isAdmin ? requestedUserid : sessionUserid;
     const connection = await dbConnect();
 
     try {
@@ -30,13 +43,13 @@ export const GET = withErrorHandling(async (request: Request) => {
         );
 
         let records: any;
-        if (role === 'waiter' || role === 'chef') {
+        if (targetUserid) {
             const [rows] = await connection.query<RowDataPacket[]>(
                 `SELECT userid, name, role, status,
                         DATE_FORMAT(date, '%Y-%m-%d') as date, time
                  FROM attendance
                  WHERE date = ? AND userid = ?`,
-                [fetchDate, userid]
+                [fetchDate, targetUserid]
             );
             records = rows;
         } else {
